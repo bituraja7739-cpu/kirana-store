@@ -98,16 +98,28 @@
         </div>
       </div>
 
-      <!-- Quick Action Stats -->
+      <!-- Quick Action Stats (Sales, Profit & Margin) -->
       <div class="flex items-center gap-2 text-xs md:text-sm">
-        <div class="bg-emerald-800/80 px-3 py-1.5 rounded-lg border border-emerald-600/50 text-center">
-          <span class="text-emerald-300 block text-[10px] uppercase font-semibold">Today's Sales</span>
-          <span class="font-bold text-white text-base" id="statTodaySale">₹0.00</span>
+        <!-- Today Sales -->
+        <div class="bg-emerald-800/90 px-3 py-1 rounded-lg border border-emerald-600/50 text-center shadow-xs">
+          <span class="text-emerald-300 block text-[10px] uppercase font-bold">Today's Sales (बिक्री)</span>
+          <span class="font-extrabold text-white text-base" id="statTodaySale">₹0.00</span>
         </div>
-        <div class="bg-emerald-800/80 px-3 py-1.5 rounded-lg border border-emerald-600/50 text-center">
-          <span class="text-emerald-300 block text-[10px] uppercase font-semibold">Total Items</span>
-          <span class="font-bold text-amber-300 text-base" id="statTotalItems">0</span>
+        <!-- Today Profit & Margin -->
+        <div class="bg-emerald-950/80 px-3 py-1 rounded-lg border border-amber-400/50 text-center shadow-xs">
+          <span class="text-amber-300 block text-[10px] uppercase font-bold">Today's Profit (मुनाफा)</span>
+          <span class="font-extrabold text-amber-300 text-base" id="statTodayProfit">₹0.00</span>
+          <span class="text-[9px] text-emerald-300 block font-bold leading-tight" id="statTodayMargin">0.0% Margin</span>
         </div>
+        <!-- Total Items -->
+        <div class="hidden sm:block bg-emerald-800/80 px-2.5 py-1 rounded-lg border border-emerald-600/50 text-center">
+          <span class="text-emerald-300 block text-[10px] uppercase font-semibold">Items</span>
+          <span class="font-bold text-slate-100 text-sm" id="statTotalItems">0</span>
+        </div>
+        <button onclick="openCostCalculatorModal()" class="bg-amber-400 hover:bg-amber-300 text-slate-900 font-extrabold px-3 py-2 rounded-lg shadow flex items-center gap-1.5 transition text-xs md:text-sm" title="Calculate unit cost from batch or wholesale price">
+          <i data-lucide="calculator" class="w-4 h-4"></i>
+          <span>🧮 Cost Calculator (लागत निकालें)</span>
+        </button>
         <button onclick="openBackupModal()" class="bg-emerald-800 hover:bg-emerald-900 border border-emerald-500/50 text-white font-bold px-3 py-2 rounded-lg shadow flex items-center gap-1.5 transition text-xs md:text-sm" title="Backup or Restore Store Data">
           <i data-lucide="database" class="w-4 h-4 text-amber-300"></i>
           <span>💾 Backup (JSON)</span>
@@ -701,6 +713,99 @@
     </div>
   </div>
 
+  
+  <!-- ========================================== -->
+  <!-- MODAL: WHOLESALE & BATCH COST CALCULATOR -->
+  <!-- ========================================== -->
+  <div id="costCalculatorModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden border border-slate-200 animate-in fade-in zoom-in-95">
+      <div class="bg-slate-900 text-white p-4 flex justify-between items-center">
+        <h3 class="font-bold text-base flex items-center gap-2">
+          <span>🧮 खरीद लागत & मुनाफा कैलकुलेटर (Cost & Margin Calc)</span>
+        </h3>
+        <button onclick="closeCostCalculatorModal()" class="text-slate-400 hover:text-white">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="p-5 space-y-4 text-xs md:text-sm">
+        <p class="text-slate-500 text-xs">
+          बोरा, पेटी, कार्टन या थोक मंडी में खरीदे गए माल का कुल रुपया और मात्रा डालें — यह तुरंत बताएगा कि <b>1 पीस या 1 किलो कितने का पड़ा</b> और कितने में बेचने पर कितना मुनाफा होगा!
+        </p>
+
+        <!-- Mode Toggle -->
+        <div class="grid grid-cols-2 gap-2 bg-slate-100 p-1 rounded-xl font-bold text-xs">
+          <button type="button" id="calcTab1" onclick="switchCalcMode('batchToUnit')" class="py-1.5 rounded-lg bg-emerald-700 text-white shadow">
+            1. कुल रुपये &rarr; 1 पीस/किलो लागत
+          </button>
+          <button type="button" id="calcTab2" onclick="switchCalcMode('unitToBatch')" class="py-1.5 rounded-lg text-slate-700 hover:bg-slate-200">
+            2. रेट &times; मात्रा &rarr; कुल बिल
+          </button>
+        </div>
+
+        <!-- Inputs Section -->
+        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+          <div id="costInputRowA" class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block font-bold text-slate-700 mb-1" id="costLabelA">कुल कितने रुपये दिए (Total Paid ₹):</label>
+              <input type="number" id="costInputPaid" step="any" placeholder="जैसे: 1950" oninput="runStandaloneCostCalc()" class="w-full p-2 bg-white border border-slate-300 rounded-lg font-bold text-sm focus:ring-2 focus:ring-emerald-500">
+            </div>
+            <div>
+              <label class="block font-bold text-slate-700 mb-1" id="costLabelB">कुल कितनी मात्रा मिली (Qty received):</label>
+              <input type="number" id="costInputQty" step="any" placeholder="जैसे: 50" oninput="runStandaloneCostCalc()" class="w-full p-2 bg-white border border-slate-300 rounded-lg font-bold text-sm focus:ring-2 focus:ring-emerald-500">
+            </div>
+          </div>
+
+          <!-- Extra expenses: Transport/Bhada -->
+          <div>
+            <label class="block font-semibold text-slate-600 mb-1">अतिरिक्त खर्च / भाड़ा / पल्लेदारी (Transport/Freight ₹ - Optional):</label>
+            <input type="number" id="costInputFreight" step="any" placeholder="जैसे: 50 (यदि लगा हो)" oninput="runStandaloneCostCalc()" class="w-full p-2 bg-white border border-slate-300 rounded-lg text-xs font-semibold">
+          </div>
+        </div>
+
+        <!-- Big Computed Result Box -->
+        <div class="p-4 bg-emerald-900 text-white rounded-xl flex items-center justify-between">
+          <div>
+            <span class="text-xs text-emerald-300 block" id="costResultHeading">👉 1 प्रोडक्ट की सही खरीद लागत पड़ी:</span>
+            <div class="text-2xl font-black text-amber-300" id="costResultUnitCost">₹0.00 <span class="text-xs text-emerald-200 font-normal">/ इकाई</span></div>
+          </div>
+          <div class="text-right">
+            <span class="text-[10px] text-emerald-300 block">कुल लगा पैसा (Total Cost):</span>
+            <span class="font-extrabold text-sm text-white" id="costResultTotalCost">₹0.00</span>
+          </div>
+        </div>
+
+        <!-- Selling Price & Margin Recommendations -->
+        <div class="space-y-2">
+          <span class="font-bold text-slate-700 block text-xs uppercase tracking-wider">💡 मुनाफा चार्ट (Suggested Selling Prices):</span>
+          <div class="grid grid-cols-3 gap-2 text-xs">
+            <div class="p-2 bg-emerald-50 border border-emerald-200 rounded-lg text-center">
+              <span class="text-slate-500 block text-[10px]">10% मुनाफा</span>
+              <span class="font-bold text-emerald-800 text-sm" id="sug10">₹0.00</span>
+              <span class="text-[9px] text-emerald-600 block" id="sug10Profit">+₹0</span>
+            </div>
+            <div class="p-2 bg-emerald-100 border border-emerald-300 rounded-lg text-center">
+              <span class="text-emerald-900 font-bold block text-[10px]">15% मुनाफा (Best)</span>
+              <span class="font-black text-emerald-900 text-sm" id="sug15">₹0.00</span>
+              <span class="text-[9px] text-emerald-700 block" id="sug15Profit">+₹0</span>
+            </div>
+            <div class="p-2 bg-amber-50 border border-amber-200 rounded-lg text-center">
+              <span class="text-amber-900 block text-[10px]">20% मुनाफा</span>
+              <span class="font-bold text-amber-900 text-sm" id="sug20">₹0.00</span>
+              <span class="text-[9px] text-amber-700 block" id="sug20Profit">+₹0</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-end pt-2 border-t">
+          <button onclick="closeCostCalculatorModal()" class="bg-slate-800 hover:bg-slate-900 text-white font-bold px-5 py-2 rounded-xl text-xs shadow">
+            Done (बंद करें)
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   </main>
 
 
@@ -913,6 +1018,30 @@
               <option value="pcs">Pieces / Packets (Pcs / Pkt)</option>
               <option value="litre">Litre (L) [ml handled auto]</option>
             </select>
+          </div>
+        </div>
+
+        <!-- Wholesale / Batch Cost Helper Inside Form -->
+        <div class="p-3 bg-amber-50 rounded-xl border border-amber-300 text-xs space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-amber-950 flex items-center gap-1">
+              <span>🧮 थोक / बोरा लागत से 1 पीस/किलो का भाव निकालें:</span>
+            </span>
+            <span class="text-[10px] text-amber-800">(ऑटोमेटिक भरेगा)</span>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-[11px] text-slate-600 font-semibold mb-0.5">कुल कितने रुपये में खरीदा (Total Paid ₹):</label>
+              <input type="number" id="formBatchTotalPaid" placeholder="जैसे: 1950" oninput="calcItemCostFromBatch()" class="w-full p-1.5 bg-white border border-amber-300 rounded font-bold text-xs">
+            </div>
+            <div>
+              <label class="block text-[11px] text-slate-600 font-semibold mb-0.5">कुल कितनी मात्रा मिली (Qty received):</label>
+              <input type="number" id="formBatchQty" placeholder="जैसे: 50" oninput="calcItemCostFromBatch()" class="w-full p-1.5 bg-white border border-amber-300 rounded font-bold text-xs">
+            </div>
+          </div>
+          <div id="formBatchResultBadge" class="hidden text-[11px] font-bold text-emerald-900 bg-white p-1.5 rounded border border-emerald-200 flex justify-between">
+            <span>👉 1 प्रोडक्ट की लागत पड़ी:</span>
+            <span id="formBatchResultPrice" class="text-emerald-700 font-black">₹0.00</span>
           </div>
         </div>
 
@@ -1337,11 +1466,36 @@
     // ==========================================
     function updateDashboardStats() {
       const todayStr = new Date().toISOString().split('T')[0];
-      const todaySales = storeData.sales
-        .filter(s => s.date.startsWith(todayStr))
-        .reduce((sum, s) => sum + (Number(s.grandTotal) || 0), 0);
+      const todaySalesList = storeData.sales.filter(s => s.date && s.date.startsWith(todayStr));
+
+      let todaySales = 0;
+      let todayProfit = 0;
+
+      todaySalesList.forEach(sale => {
+        const total = Number(sale.grandTotal) || 0;
+        todaySales += total;
+
+        // Calculate cost of items sold in this bill
+        let billCost = 0;
+        if (Array.isArray(sale.items)) {
+          sale.items.forEach(it => {
+            const buy = Number(it.buyRate) || 0;
+            const deduction = Number(it.baseDeduction) || Number(it.qty) || 1;
+            billCost += (buy * deduction);
+          });
+        }
+        const profit = Math.max(0, total - billCost);
+        todayProfit += profit;
+      });
+
+      const marginPct = todaySales > 0 ? ((todayProfit / todaySales) * 100).toFixed(1) : '0.0';
 
       document.getElementById('statTodaySale').innerText = '₹' + todaySales.toFixed(2);
+      const profitEl = document.getElementById('statTodayProfit');
+      const marginEl = document.getElementById('statTodayMargin');
+      if (profitEl) profitEl.innerText = '₹' + todayProfit.toFixed(2);
+      if (marginEl) marginEl.innerText = marginPct + '% Margin';
+
       document.getElementById('statTotalItems').innerText = storeData.items.length;
 
       const lowStockCount = storeData.items.filter(i => Number(i.stock) <= Number(i.minStock || 5)).length;
@@ -2501,6 +2655,116 @@
     }
     function closeBackupModal() {
       document.getElementById('easyBackupModal').classList.add('hidden');
+    }
+
+    
+    // ==========================================
+    // WHOLESALE / BATCH COST CALCULATOR LOGIC
+    // ==========================================
+    let currentCalcMode = 'batchToUnit';
+
+    function openCostCalculatorModal() {
+      document.getElementById('costCalculatorModal').classList.remove('hidden');
+      runStandaloneCostCalc();
+      lucide.createIcons();
+    }
+
+    function closeCostCalculatorModal() {
+      document.getElementById('costCalculatorModal').classList.add('hidden');
+    }
+
+    function switchCalcMode(mode) {
+      currentCalcMode = mode;
+      const tab1 = document.getElementById('calcTab1');
+      const tab2 = document.getElementById('calcTab2');
+      const labelA = document.getElementById('costLabelA');
+      const labelB = document.getElementById('costLabelB');
+      const inputPaid = document.getElementById('costInputPaid');
+
+      if (mode === 'batchToUnit') {
+        tab1.className = 'py-1.5 rounded-lg bg-emerald-700 text-white shadow';
+        tab2.className = 'py-1.5 rounded-lg text-slate-700 hover:bg-slate-200';
+        labelA.innerText = 'कुल कितने रुपये दिए (Total Paid ₹):';
+        labelB.innerText = 'कुल कितनी मात्रा मिली (Qty received):';
+        inputPaid.placeholder = 'जैसे: 1950';
+      } else {
+        tab2.className = 'py-1.5 rounded-lg bg-emerald-700 text-white shadow';
+        tab1.className = 'py-1.5 rounded-lg text-slate-700 hover:bg-slate-200';
+        labelA.innerText = 'प्रति 1 पीस/किलो खरीद रेट ₹:';
+        labelB.innerText = 'कुल स्टॉक मात्रा (Stock Qty):';
+        inputPaid.placeholder = 'जैसे: 38';
+      }
+      runStandaloneCostCalc();
+    }
+
+    function runStandaloneCostCalc() {
+      const valA = parseFloat(document.getElementById('costInputPaid').value) || 0;
+      const qty = parseFloat(document.getElementById('costInputQty').value) || 0;
+      const freight = parseFloat(document.getElementById('costInputFreight').value) || 0;
+
+      let unitCost = 0;
+      let totalCost = 0;
+
+      if (currentCalcMode === 'batchToUnit') {
+        if (qty > 0) {
+          totalCost = valA + freight;
+          unitCost = totalCost / qty;
+        }
+      } else {
+        if (qty > 0) {
+          totalCost = (valA * qty) + freight;
+          unitCost = totalCost / qty;
+        }
+      }
+
+      document.getElementById('costResultUnitCost').innerText = '₹' + unitCost.toFixed(2);
+      document.getElementById('costResultTotalCost').innerText = '₹' + totalCost.toFixed(2);
+
+      // Suggestions: 10%, 15%, 20%
+      if (unitCost > 0) {
+        const p10 = unitCost * 1.10;
+        const p15 = unitCost * 1.15;
+        const p20 = unitCost * 1.20;
+
+        document.getElementById('sug10').innerText = '₹' + p10.toFixed(2);
+        document.getElementById('sug10Profit').innerText = '+₹' + (p10 - unitCost).toFixed(2);
+
+        document.getElementById('sug15').innerText = '₹' + p15.toFixed(2);
+        document.getElementById('sug15Profit').innerText = '+₹' + (p15 - unitCost).toFixed(2);
+
+        document.getElementById('sug20').innerText = '₹' + p20.toFixed(2);
+        document.getElementById('sug20Profit').innerText = '+₹' + (p20 - unitCost).toFixed(2);
+      } else {
+        document.getElementById('sug10').innerText = '₹0.00';
+        document.getElementById('sug10Profit').innerText = '+₹0';
+        document.getElementById('sug15').innerText = '₹0.00';
+        document.getElementById('sug15Profit').innerText = '+₹0';
+        document.getElementById('sug20').innerText = '₹0.00';
+        document.getElementById('sug20Profit').innerText = '+₹0';
+      }
+    }
+
+    // Helper inside Add Item Form
+    function calcItemCostFromBatch() {
+      const paid = parseFloat(document.getElementById('formBatchTotalPaid').value) || 0;
+      const qty = parseFloat(document.getElementById('formBatchQty').value) || 0;
+      const badge = document.getElementById('formBatchResultBadge');
+      const priceSpan = document.getElementById('formBatchResultPrice');
+      const buyInput = document.getElementById('formItemBuyPrice');
+      const stockInput = document.getElementById('formItemStock');
+
+      if (paid > 0 && qty > 0) {
+        const perUnit = paid / qty;
+        badge.classList.remove('hidden');
+        priceSpan.innerText = '₹' + perUnit.toFixed(2);
+        buyInput.value = perUnit.toFixed(2);
+        if (!stockInput.value || stockInput.value === '0') {
+          stockInput.value = qty;
+        }
+        calcFormProfitMargin();
+      } else {
+        badge.classList.add('hidden');
+      }
     }
 
     // Keyboard Shortcuts
