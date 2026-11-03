@@ -1,0 +1,2527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#047857">
+  <link rel="manifest" href="manifest.json">
+  <title>Kirana Store - Stock & Rate Manager (KiranaPro)</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- SheetJS for Excel Export -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0fdf4',
+              100: '#dcfce7',
+              500: '#22c55e',
+              600: '#16a34a',
+              700: '#15803d',
+              800: '#166534',
+              900: '#14532d',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      #printArea, #printArea * {
+        visibility: visible;
+      }
+      #printArea {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+      }
+      .no-print {
+        display: none !important;
+      }
+    }
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex flex-col">
+
+  <!-- Connectivity & Sync Notification Bar -->
+  <div id="syncStatusBar" class="bg-slate-900 text-white text-xs px-4 py-1.5 flex items-center justify-between transition-colors duration-300">
+    <div class="flex items-center gap-2">
+      <span id="syncStatusDot" class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
+      <span id="syncStatusText" class="font-medium">📱 Offline Mobile Mode (Laptop is OFF - Full Search & Rates Working)</span>
+    </div>
+    <div class="flex items-center gap-2">
+      <button onclick="forceLoadParchiItems()" class="bg-amber-400 hover:bg-amber-300 text-slate-900 px-2.5 py-0.5 rounded font-black text-[11px] flex items-center gap-1 shadow"><span>🔄 Reload 75 Items</span></button>
+      <button onclick="openMobileConnectModal()" class="bg-blue-600 hover:bg-blue-500 text-white px-2.5 py-0.5 rounded font-bold text-[11px] flex items-center gap-1 shadow">
+        <i data-lucide="smartphone" class="w-3 h-3"></i>
+        <span>📱 Open on Mobile (QR Code)</span>
+      </button>
+      <button onclick="triggerSyncWithServer()" id="btnSyncNow" class="bg-emerald-600 hover:bg-emerald-500 text-white px-2.5 py-0.5 rounded font-bold text-[11px] flex items-center gap-1 shadow">
+        <i data-lucide="refresh-cw" class="w-3 h-3"></i>
+        <span>Sync with Laptop</span>
+      </button>
+      <button onclick="openSyncHelpModal()" class="text-slate-300 hover:text-white underline text-[11px]">
+        Help
+      </button>
+    </div>
+  </div>
+
+  <!-- Top Navigation Header -->
+  <header class="bg-emerald-700 text-white shadow-lg sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center space-x-3">
+        <div class="bg-amber-400 text-slate-900 p-2 rounded-xl font-black text-xl shadow flex items-center justify-center">
+          🛒
+        </div>
+        <div>
+          <h1 class="text-xl md:text-2xl font-bold tracking-tight flex items-center gap-2">
+            <span id="shopTitleDisplay">Grocery & Kirana Store</span>
+            <button onclick="editShopName()" title="Edit Store Name" class="text-xs bg-emerald-800 hover:bg-emerald-900 px-2 py-0.5 rounded border border-emerald-500/50">
+              ✏️ Edit Name
+            </button>
+          </h1>
+          <p class="text-xs text-emerald-200">Stock & Rate Management System (Works Offline on Mobile)</p>
+        </div>
+      </div>
+
+      <!-- Quick Action Stats -->
+      <div class="flex items-center gap-2 text-xs md:text-sm">
+        <div class="bg-emerald-800/80 px-3 py-1.5 rounded-lg border border-emerald-600/50 text-center">
+          <span class="text-emerald-300 block text-[10px] uppercase font-semibold">Today's Sales</span>
+          <span class="font-bold text-white text-base" id="statTodaySale">₹0.00</span>
+        </div>
+        <div class="bg-emerald-800/80 px-3 py-1.5 rounded-lg border border-emerald-600/50 text-center">
+          <span class="text-emerald-300 block text-[10px] uppercase font-semibold">Total Items</span>
+          <span class="font-bold text-amber-300 text-base" id="statTotalItems">0</span>
+        </div>
+        <button onclick="openBackupModal()" class="bg-emerald-800 hover:bg-emerald-900 border border-emerald-500/50 text-white font-bold px-3 py-2 rounded-lg shadow flex items-center gap-1.5 transition text-xs md:text-sm" title="Backup or Restore Store Data">
+          <i data-lucide="database" class="w-4 h-4 text-amber-300"></i>
+          <span>💾 Backup (JSON)</span>
+        </button>
+        <button onclick="openAddItemModal()" class="bg-amber-400 hover:bg-amber-300 text-slate-900 font-bold px-3 py-2 rounded-lg shadow flex items-center gap-1.5 transition active:scale-95 text-xs md:text-sm">
+          <i data-lucide="plus-circle" class="w-4 h-4"></i>
+          <span>+ Add New Item</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="bg-emerald-800/90 border-t border-emerald-600/40 px-4">
+      <div class="max-w-7xl mx-auto flex overflow-x-auto gap-2 py-2 text-sm">
+        <button onclick="switchTab('search')" id="tab-btn-search" class="tab-btn px-4 py-1.5 rounded-lg font-semibold flex items-center gap-2 transition bg-white text-emerald-900 shadow">
+          <i data-lucide="search" class="w-4 h-4"></i>
+          <span>Search & Rates</span>
+        </button>
+        <button onclick="switchTab('billing')" id="tab-btn-billing" class="tab-btn px-4 py-1.5 rounded-lg font-medium text-emerald-100 hover:bg-emerald-700/60 flex items-center gap-2 transition">
+          <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+          <span>POS Billing / Sell Entry</span>
+          <span id="cartCountBadge" class="hidden bg-amber-400 text-slate-900 text-xs px-1.5 py-0.2 rounded-full font-bold">0</span>
+        </button>
+        <button onclick="switchTab('stock')" id="tab-btn-stock" class="tab-btn px-4 py-1.5 rounded-lg font-medium text-emerald-100 hover:bg-emerald-700/60 flex items-center gap-2 transition">
+          <i data-lucide="boxes" class="w-4 h-4"></i>
+          <span>Stock Inventory</span>
+          <span id="lowStockBadge" class="hidden bg-red-500 text-white text-xs px-1.5 py-0.2 rounded-full font-bold">0</span>
+        </button>
+        <button onclick="switchTab('history')" id="tab-btn-history" class="tab-btn px-4 py-1.5 rounded-lg font-medium text-emerald-100 hover:bg-emerald-700/60 flex items-center gap-2 transition">
+          <i data-lucide="receipt" class="w-4 h-4"></i>
+          <span>Sales History</span>
+        </button>
+        <button onclick="switchTab('settings')" id="tab-btn-settings" class="tab-btn px-4 py-1.5 rounded-lg font-medium text-emerald-100 hover:bg-emerald-700/60 flex items-center gap-2 transition">
+          <i data-lucide="settings" class="w-4 h-4"></i>
+          <span>Backup & Settings</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="max-w-7xl mx-auto w-full p-3 md:p-6 flex-1">
+
+    <!-- ========================================== -->
+    <!-- TAB 1: INSTANT SEARCH & RATE CARDS -->
+    <!-- ========================================== -->
+    <section id="tab-search" class="tab-content block space-y-5">
+      <!-- Search Banner -->
+      <div class="bg-gradient-to-r from-emerald-600 to-teal-700 rounded-2xl p-5 md:p-7 shadow-md text-white">
+        <h2 class="text-xl md:text-2xl font-bold mb-1 flex items-center gap-2">
+          <span>⚡ Instant Item Search & Rates</span>
+        </h2>
+        <p class="text-emerald-100 text-sm mb-4">Works 100% offline on mobile even when laptop is turned off! Search any item to check Purchase Rate, Selling Rate, and unit calculations.</p>
+        
+        <div class="relative max-w-3xl">
+          <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
+            <i data-lucide="search" class="w-6 h-6"></i>
+          </div>
+          <input 
+            type="text" 
+            id="quickSearchInput"
+            oninput="handleQuickSearch(this.value)" 
+            placeholder="Type item name to search (e.g., Sugar, Dal, Oil, Salt, Soap)..." 
+            class="w-full pl-12 pr-12 py-3.5 bg-white text-slate-800 rounded-xl text-lg font-medium shadow-lg focus:outline-none focus:ring-4 focus:ring-amber-300 placeholder-slate-400"
+            autofocus
+          >
+          <button 
+            onclick="clearSearch()" 
+            id="clearSearchBtn" 
+            class="hidden absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600"
+          >
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <!-- Category Pills -->
+        <div class="flex flex-wrap gap-2 mt-4 text-xs font-semibold" id="categoryPills">
+          <button onclick="filterCategory('')" class="cat-pill active bg-amber-400 text-slate-900 px-3 py-1 rounded-full">All Items</button>
+          <button onclick="filterCategory('Grains & Pulses')" class="cat-pill bg-emerald-800/80 hover:bg-emerald-800 text-white px-3 py-1 rounded-full">Grains & Pulses</button>
+          <button onclick="filterCategory('Oils & Ghee')" class="cat-pill bg-emerald-800/80 hover:bg-emerald-800 text-white px-3 py-1 rounded-full">Oils & Ghee</button>
+          <button onclick="filterCategory('Spices')" class="cat-pill bg-emerald-800/80 hover:bg-emerald-800 text-white px-3 py-1 rounded-full">Spices</button>
+          <button onclick="filterCategory('Snacks & Biscuits')" class="cat-pill bg-emerald-800/80 hover:bg-emerald-800 text-white px-3 py-1 rounded-full">Snacks & Biscuits</button>
+          <button onclick="filterCategory('Soaps & Detergents')" class="cat-pill bg-emerald-800/80 hover:bg-emerald-800 text-white px-3 py-1 rounded-full">Soaps & Detergents</button>
+          <button onclick="filterCategory('General')" class="cat-pill bg-emerald-800/80 hover:bg-emerald-800 text-white px-3 py-1 rounded-full">General</button>
+        </div>
+      </div>
+
+      <!-- Live Search Results Grid -->
+      <div id="searchResultsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Rendered via JS -->
+      </div>
+      
+      <div id="noResultsNotice" class="hidden text-center py-12 bg-white rounded-2xl border border-slate-200">
+        <div class="text-4xl mb-2">🔍</div>
+        <h3 class="text-lg font-bold text-slate-700">No Items Found</h3>
+        <p class="text-slate-500 text-sm mt-1">Want to add this as a new item? Click below to add it now.</p>
+        <button onclick="openAddItemModal(document.getElementById('quickSearchInput').value)" class="mt-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-xl text-sm shadow">
+          + Add New Item
+        </button>
+      </div>
+    </section>
+
+
+    <!-- ========================================== -->
+    <!-- TAB 2: BILLING / POS / SELL ENTRY -->
+    <!-- ========================================== -->
+    <section id="tab-billing" class="tab-content hidden">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Left: Item Selector & Rate Calculator for Selling -->
+        <div class="lg:col-span-7 space-y-4">
+          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+            <h2 class="text-lg font-bold text-slate-800 flex items-center justify-between mb-3">
+              <span class="flex items-center gap-2">
+                <i data-lucide="tag" class="w-5 h-5 text-emerald-600"></i>
+                Select Item & Enter Quantity
+              </span>
+              <span class="text-xs font-normal text-slate-500">Step 1: Add Items</span>
+            </h2>
+
+            <div class="space-y-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Choose Item:</label>
+                <select id="posItemSelect" onchange="onPosItemSelected()" class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-medium focus:ring-2 focus:ring-emerald-500 text-sm">
+                  <option value="">-- Choose Item from List --</option>
+                </select>
+              </div>
+
+              <!-- Selected Item Details Pill -->
+              <div id="posSelectedItemCard" class="hidden p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl text-sm">
+                <div class="flex justify-between items-start mb-2">
+                  <div>
+                    <h4 id="posCardName" class="font-bold text-emerald-950 text-base">Sugar</h4>
+                    <span id="posCardCategory" class="text-xs bg-emerald-200 text-emerald-800 px-2 py-0.5 rounded-full">Grains & Pulses</span>
+                  </div>
+                  <div class="text-right">
+                    <div class="text-xs text-slate-500">Available Stock:</div>
+                    <span id="posCardStock" class="font-bold text-emerald-700 text-base">45 kg</span>
+                  </div>
+                </div>
+
+                <!-- Rates info with instant edit button -->
+                <div class="grid grid-cols-2 gap-2 text-xs bg-white p-2.5 rounded-lg border border-emerald-100">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <span class="text-slate-500 block">Selling Rate:</span>
+                      <span id="posCardSellRate" class="font-bold text-slate-800 text-sm">₹44.00 / kg</span>
+                    </div>
+                  </div>
+                  <div class="flex items-center justify-between border-l pl-2">
+                    <div>
+                      <span class="text-slate-500 block">Purchase Rate:</span>
+                      <span id="posCardBuyRate" class="font-medium text-slate-600 text-sm">₹40.00 / kg</span>
+                    </div>
+                    <button onclick="openQuickRateEditModal(document.getElementById('posItemSelect').value)" class="text-xs text-emerald-700 hover:text-emerald-900 font-bold underline ml-1">
+                      Edit
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Quantity Input & Unit Selector -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">Select Unit:</label>
+                  <select id="posUnitSelect" onchange="recalcPosPrice()" class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold focus:ring-2 focus:ring-emerald-500 text-sm">
+                    <option value="kg">Kilogram (kg)</option>
+                    <option value="gm">Gram (gm)</option>
+                    <option value="pcs">Pieces / Packets (Pcs / Pkt)</option>
+                    <option value="litre">Litre (L)</option>
+                    <option value="ml">MilliLitre (ml)</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">Quantity:</label>
+                  <div class="relative">
+                    <input 
+                      type="number" 
+                      id="posQtyInput" 
+                      step="any" 
+                      value="1" 
+                      min="0.001" 
+                      oninput="recalcPosPrice()" 
+                      class="w-full p-2.5 pr-14 bg-slate-50 border border-slate-300 rounded-xl font-bold text-base focus:ring-2 focus:ring-emerald-500"
+                    >
+                    <span id="posQtyUnitLabel" class="absolute inset-y-0 right-0 pr-3 flex items-center font-semibold text-slate-500 text-xs pointer-events-none">kg</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Quick Gram / Kg shortcut buttons -->
+              <div id="posQuickShortcuts" class="flex flex-wrap gap-1.5 pt-1">
+                <span class="text-xs text-slate-500 py-1">Quick Select:</span>
+                <button type="button" onclick="setQuickQty(50, 'gm')" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded text-xs font-semibold">50g</button>
+                <button type="button" onclick="setQuickQty(100, 'gm')" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded text-xs font-semibold">100g</button>
+                <button type="button" onclick="setQuickQty(250, 'gm')" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded text-xs font-semibold">250g (1/4 kg)</button>
+                <button type="button" onclick="setQuickQty(500, 'gm')" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded text-xs font-semibold">500g (1/2 kg)</button>
+                <button type="button" onclick="setQuickQty(1, 'kg')" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded text-xs font-semibold">1 kg</button>
+                <button type="button" onclick="setQuickQty(2, 'kg')" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded text-xs font-semibold">2 kg</button>
+                <button type="button" onclick="setQuickQty(5, 'kg')" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded text-xs font-semibold">5 kg</button>
+              </div>
+
+              <!-- Reverse Price Calculation Option: e.g. "Customer says Give me Rs 20 Sugar" -->
+              <div class="bg-amber-50 border border-amber-200 p-3 rounded-xl flex items-center justify-between text-xs">
+                <div>
+                  <span class="font-semibold text-amber-900 block">Calculate by exact Rupees (₹)?</span>
+                  <span class="text-amber-700">e.g. Customer asks: "Give me ₹20 or ₹50 worth"</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <span class="font-bold">₹</span>
+                  <input type="number" id="reverseAmountInput" placeholder="Amount ₹" class="w-24 p-1.5 bg-white border border-amber-300 rounded text-xs font-bold" oninput="calcReverseQty(this.value)">
+                </div>
+              </div>
+
+              <!-- Computed Total Box -->
+              <div class="bg-slate-900 text-white p-4 rounded-xl flex items-center justify-between">
+                <div>
+                  <span class="text-xs text-slate-400 block">Item Total:</span>
+                  <div class="text-2xl font-black text-amber-400" id="posComputedPrice">₹0.00</div>
+                  <span class="text-[11px] text-slate-400" id="posComputedBreakup">0 kg × ₹0</span>
+                </div>
+                <button 
+                  onclick="addItemToCart()" 
+                  id="btnAddToCart"
+                  disabled
+                  class="bg-emerald-500 hover:bg-emerald-400 disabled:opacity-40 disabled:cursor-not-allowed text-slate-900 font-bold px-5 py-2.5 rounded-xl shadow flex items-center gap-2 transition"
+                >
+                  <i data-lucide="plus" class="w-5 h-5"></i>
+                  <span>Add to Bill</span>
+                </button>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Current Cart / Bill Preview -->
+        <div class="lg:col-span-5 space-y-4">
+          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col h-full">
+            <div class="flex items-center justify-between border-b pb-3 mb-3">
+              <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                <i data-lucide="receipt" class="w-5 h-5 text-emerald-600"></i>
+                <span>Customer Bill Slip</span>
+              </h2>
+              <button onclick="clearCart()" class="text-xs text-red-500 hover:text-red-700 font-medium">
+                Clear Cart
+              </button>
+            </div>
+
+            <!-- Customer details input -->
+            <div class="grid grid-cols-2 gap-2 mb-3">
+              <input type="text" id="cartCustomerName" placeholder="Customer Name (Optional)" class="p-2 border border-slate-300 rounded-lg text-xs">
+              <input type="text" id="cartCustomerPhone" placeholder="Mobile No. (Optional)" class="p-2 border border-slate-300 rounded-lg text-xs">
+            </div>
+
+            <!-- Cart Items List Table -->
+            <div class="flex-1 overflow-y-auto max-h-[300px] border rounded-xl divide-y mb-3" id="cartItemsContainer">
+              <div class="p-6 text-center text-slate-400 text-sm" id="emptyCartNotice">
+                🛒 No items in cart yet.<br>Select items from the left to add.
+              </div>
+            </div>
+
+            <!-- Bill Totals & Discount -->
+            <div class="space-y-2 text-sm bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+              <div class="flex justify-between text-slate-600">
+                <span>Total Items:</span>
+                <span class="font-bold" id="cartTotalItemsCount">0</span>
+              </div>
+              <div class="flex justify-between text-slate-600">
+                <span>Subtotal:</span>
+                <span class="font-semibold" id="cartSubtotal">₹0.00</span>
+              </div>
+              <div class="flex justify-between items-center text-slate-600">
+                <span>Discount (₹):</span>
+                <input type="number" id="cartDiscount" value="0" min="0" oninput="recalcCartGrandTotal()" class="w-20 p-1 bg-white border border-slate-300 rounded text-right font-bold text-xs">
+              </div>
+              <div class="border-t pt-2 flex justify-between items-center font-black text-lg text-slate-900">
+                <span>Grand Total:</span>
+                <span class="text-emerald-700 text-xl" id="cartGrandTotal">₹0.00</span>
+              </div>
+              
+              <!-- Payment mode -->
+              <div class="pt-2 flex items-center justify-between text-xs">
+                <span class="font-semibold text-slate-700">Payment Mode:</span>
+                <select id="cartPaymentMode" class="p-1.5 border border-slate-300 rounded-lg font-semibold bg-white text-xs">
+                  <option value="Cash">💵 Cash</option>
+                  <option value="UPI">📱 Online / UPI (GPay/PhonePe)</option>
+                  <option value="Credit">📝 Credit / Khata</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Final Checkout Buttons -->
+            <div class="pt-4 flex gap-2">
+              <button 
+                onclick="checkoutBill(true)" 
+                id="btnCheckoutPrint"
+                disabled
+                class="flex-1 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-xl shadow flex items-center justify-center gap-2 transition"
+              >
+                <i data-lucide="printer" class="w-5 h-5"></i>
+                <span>Save & Print Bill</span>
+              </button>
+              <button 
+                onclick="checkoutBill(false)" 
+                id="btnCheckoutOnly"
+                disabled
+                class="bg-slate-800 hover:bg-slate-900 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-xl shadow flex items-center justify-center transition"
+                title="Deduct stock and save without printing"
+              >
+                <span>Save Only</span>
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ========================================== -->
+    <!-- TAB 3: COMPLETE STOCK INVENTORY -->
+    <!-- ========================================== -->
+    <section id="tab-stock" class="tab-content hidden space-y-4">
+      
+      <!-- Top controls & filter -->
+      <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-3 flex-1 min-w-[260px]">
+          <div class="relative w-full max-w-sm">
+            <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-3"></i>
+            <input 
+              type="text" 
+              id="stockTableSearch" 
+              oninput="renderStockTable()" 
+              placeholder="Filter inventory by name..." 
+              class="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500"
+            >
+          </div>
+          <select id="stockCategoryFilter" onchange="renderStockTable()" class="p-2 border border-slate-300 rounded-xl text-sm bg-white font-medium">
+            <option value="">All Categories</option>
+            <option value="Grains & Pulses">Grains & Pulses</option>
+            <option value="Oils & Ghee">Oils & Ghee</option>
+            <option value="Spices">Spices</option>
+            <option value="Snacks & Biscuits">Snacks & Biscuits</option>
+            <option value="Soaps & Detergents">Soaps & Detergents</option>
+            <option value="General">General</option>
+          </select>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button onclick="filterLowStockOnly()" id="lowStockToggleBtn" class="px-3 py-2 border border-red-200 bg-red-50 hover:bg-red-100 text-red-700 text-xs font-bold rounded-xl flex items-center gap-1.5 transition">
+            <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+            <span>Low Stock (<span id="lowStockCountSpan">0</span>)</span>
+          </button>
+          <button onclick="openAddItemModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-xl text-sm shadow flex items-center gap-2 transition">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            <span>+ Add New Item</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Inventory Table -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-slate-50 text-slate-600 uppercase text-xs border-b">
+              <tr>
+                <th class="py-3 px-4">Item Name</th>
+                <th class="py-3 px-4">Category</th>
+                <th class="py-3 px-4 text-right">Purchase Rate (Buy)</th>
+                <th class="py-3 px-4 text-right">Selling Rate</th>
+                <th class="py-3 px-4 text-right">Profit Margin</th>
+                <th class="py-3 px-4 text-center">Available Stock</th>
+                <th class="py-3 px-4 text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="stockTableBody" class="divide-y divide-slate-100">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+        <div id="emptyStockNotice" class="hidden p-8 text-center text-slate-500">
+          No stock records found.
+        </div>
+      </div>
+
+    </section>
+
+
+    <!-- ========================================== -->
+    <!-- TAB 4: SALES HISTORY & BILLS -->
+    <!-- ========================================== -->
+    <section id="tab-history" class="tab-content hidden space-y-4">
+      <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-wrap items-center justify-between gap-3">
+        <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+          <i data-lucide="file-text" class="w-5 h-5 text-emerald-600"></i>
+          <span>Sales & Billing Records</span>
+        </h2>
+        <div class="flex items-center gap-2">
+          <input type="date" id="historyDateFilter" onchange="renderSalesHistory()" class="p-2 border border-slate-300 rounded-xl text-xs bg-white font-medium">
+          <button onclick="resetDateFilter()" class="text-xs text-slate-600 hover:text-slate-900 border px-2 py-2 rounded-xl">All Dates</button>
+          <button onclick="exportSalesToExcel()" class="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold px-3 py-2 rounded-xl flex items-center gap-1.5 shadow">
+            <i data-lucide="download" class="w-4 h-4"></i>
+            <span>Export to Excel</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- History Table -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-slate-50 text-slate-600 uppercase text-xs border-b">
+              <tr>
+                <th class="py-3 px-4">Bill No.</th>
+                <th class="py-3 px-4">Date & Time</th>
+                <th class="py-3 px-4">Customer</th>
+                <th class="py-3 px-4">Items Breakdown</th>
+                <th class="py-3 px-4 text-right">Total Bill</th>
+                <th class="py-3 px-4 text-center">Payment Mode</th>
+                <th class="py-3 px-4 text-center">Receipt</th>
+              </tr>
+            </thead>
+            <tbody id="salesHistoryBody" class="divide-y divide-slate-100">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+        <div id="emptyHistoryNotice" class="hidden p-8 text-center text-slate-500">
+          No sales recorded yet.
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ========================================== -->
+    <!-- TAB 5: BACKUP & SETTINGS -->
+    <!-- ========================================== -->
+    <section id="tab-settings" class="tab-content hidden space-y-6 max-w-4xl mx-auto">
+      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-6">
+        <div>
+          <h2 class="text-lg font-bold text-slate-800 mb-1 flex items-center gap-2">
+            <i data-lucide="store" class="w-5 h-5 text-emerald-600"></i>
+            Store Profile & Information
+          </h2>
+          <p class="text-xs text-slate-500">This information will appear on printed customer receipts.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Store Name:</label>
+            <input type="text" id="settingShopName" class="w-full p-2.5 border border-slate-300 rounded-xl text-sm font-semibold">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Phone / Contact:</label>
+            <input type="text" id="settingShopPhone" placeholder="e.g. 9876543210" class="w-full p-2.5 border border-slate-300 rounded-xl text-sm">
+          </div>
+          <div class="md:col-span-2">
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Store Address / Tagline:</label>
+            <input type="text" id="settingShopAddress" placeholder="e.g. Main Market, Shop No. 12" class="w-full p-2.5 border border-slate-300 rounded-xl text-sm">
+          </div>
+        </div>
+        <button onclick="saveShopSettings()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-xl text-sm shadow">
+          Save Settings
+        </button>
+      </div>
+
+      <!-- Laptop Server Connection URL Config -->
+      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+        <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+          <i data-lucide="link" class="w-4 h-4 text-emerald-600"></i>
+          Laptop Server IP for Mobile Sync:
+        </h3>
+        <p class="text-xs text-slate-500">When running on mobile, specify your laptop's IP address (e.g., <code class="bg-slate-100 px-1 py-0.5 rounded">http://192.168.1.5:8080</code>) to sync updates when your laptop is turned ON.</p>
+        <div class="flex gap-2">
+          <input type="text" id="settingServerUrl" placeholder="http://localhost:8080" class="flex-1 p-2 border border-slate-300 rounded-xl text-xs font-mono">
+          <button onclick="saveServerUrlSetting()" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-xl text-xs font-bold">
+            Save IP
+          </button>
+        </div>
+      </div>
+
+      <!-- Backup / Restore Section -->
+      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+        <div>
+          <h2 class="text-lg font-bold text-slate-800 mb-1 flex items-center gap-2">
+            <i data-lucide="shield-check" class="w-5 h-5 text-emerald-600"></i>
+            Data Backup & Safety
+          </h2>
+          <p class="text-xs text-slate-500">All your data is stored 100% offline and safely on this device.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+          <div class="p-4 rounded-xl border border-emerald-200 bg-emerald-50/50 flex flex-col justify-between">
+            <div>
+              <h3 class="font-bold text-emerald-900 text-sm mb-1">📥 Download Backup File</h3>
+              <p class="text-xs text-emerald-700 mb-3">Download a 1-click backup of all items, rates, and sales history.</p>
+            </div>
+            <button onclick="downloadJsonBackup()" class="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2">
+              <i data-lucide="download" class="w-4 h-4"></i>
+              <span>Download Backup (JSON)</span>
+            </button>
+          </div>
+
+          <div class="p-4 rounded-xl border border-blue-200 bg-blue-50/50 flex flex-col justify-between">
+            <div>
+              <h3 class="font-bold text-blue-900 text-sm mb-1">📤 Restore from Backup</h3>
+              <p class="text-xs text-blue-700 mb-3">Restore your complete inventory and sales on any new or formatted PC/mobile.</p>
+            </div>
+            <label class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 cursor-pointer text-center">
+              <i data-lucide="upload" class="w-4 h-4"></i>
+              <span>Select File & Restore</span>
+              <input type="file" id="restoreFileInput" accept=".json" onchange="restoreJsonBackup(event)" class="hidden">
+            </label>
+          </div>
+        </div>
+
+        <!-- Sample Data / Reset -->
+        <div class="pt-4 border-t flex flex-wrap items-center justify-between gap-3 text-xs">
+          <button onclick="loadSampleDemoData()" class="text-amber-700 hover:text-amber-900 font-semibold underline">
+            🔄 Reload Sample Grocery Items
+          </button>
+          <button onclick="confirmResetAllData()" class="text-red-500 hover:text-red-700 font-semibold underline">
+            ⚠️ Reset All Data
+          </button>
+        </div>
+      </div>
+    </section>
+
+  
+  <!-- ========================================== -->
+  <!-- MODAL: EASY ONE-CLICK BACKUP & RESTORE -->
+  <!-- ========================================== -->
+  <div id="easyBackupModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border border-slate-200 animate-in fade-in zoom-in-95">
+      <div class="bg-emerald-700 text-white p-4 flex justify-between items-center">
+        <h3 class="font-bold text-base flex items-center gap-2">
+          <i data-lucide="database" class="w-5 h-5 text-amber-300"></i>
+          <span>Kirana Backup & Sync (डेटा बैकअप)</span>
+        </h3>
+        <button onclick="closeBackupModal()" class="text-emerald-200 hover:text-white">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="p-5 space-y-4">
+        <!-- Download Backup Box -->
+        <div class="p-4 rounded-xl border border-emerald-200 bg-emerald-50/70 space-y-2">
+          <div class="flex items-start gap-2">
+            <span class="text-2xl">📥</span>
+            <div>
+              <h4 class="font-bold text-emerald-950 text-sm">Download Backup (JSON)</h4>
+              <p class="text-xs text-emerald-800">Mobile ka ya laptop ka poora hisab 1 click mein download karein taaki data safe rahe.</p>
+            </div>
+          </div>
+          <button onclick="downloadJsonBackup()" class="w-full mt-2 bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2.5 px-4 rounded-xl shadow text-xs flex items-center justify-center gap-2">
+            <i data-lucide="download" class="w-4 h-4"></i>
+            <span>📥 Download Backup (JSON)</span>
+          </button>
+        </div>
+
+        <!-- Restore Backup Box -->
+        <div class="p-4 rounded-xl border border-blue-200 bg-blue-50/70 space-y-2">
+          <div class="flex items-start gap-2">
+            <span class="text-2xl">📤</span>
+            <div>
+              <h4 class="font-bold text-blue-950 text-sm">Restore from Backup File</h4>
+              <p class="text-xs text-blue-800">Mobile se aayi hui backup file ko laptop mein ya laptop ki file mobile mein load karein.</p>
+            </div>
+          </div>
+          <label class="w-full mt-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-4 rounded-xl shadow text-xs flex items-center justify-center gap-2 cursor-pointer text-center">
+            <i data-lucide="upload" class="w-4 h-4"></i>
+            <span>📤 Select File & Restore (फ़ाइल चुनें)</span>
+            <input type="file" accept=".json" onchange="restoreJsonBackup(event); closeBackupModal();" class="hidden">
+          </label>
+        </div>
+
+        <!-- Excel Export -->
+        <button onclick="exportSalesToExcel(); closeBackupModal();" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-800 border font-bold py-2 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5">
+          <i data-lucide="file-spreadsheet" class="w-4 h-4 text-emerald-700"></i>
+          <span>📊 Export Sales to Excel Sheet</span>
+        </button>
+
+        <div class="flex justify-end pt-1">
+          <button onclick="closeBackupModal()" class="px-4 py-1.5 border rounded-xl text-xs font-semibold text-slate-600">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  </main>
+
+
+  <!-- ========================================== -->
+  <!-- MODAL: MOBILE CONNECT QR CODE MODAL -->
+  <!-- ========================================== -->
+  <div id="mobileConnectModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden border border-slate-200 text-center p-6 space-y-4">
+      <div class="flex justify-between items-center border-b pb-2">
+        <h3 class="font-bold text-slate-800 text-base flex items-center gap-1.5">
+          <span>📱 Open on Mobile Phone</span>
+        </h3>
+        <button onclick="closeMobileConnectModal()" class="text-slate-400 hover:text-slate-700">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <p class="text-xs text-slate-600">Scan this QR code with your mobile camera or type the link below in mobile Chrome:</p>
+
+      <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 flex flex-col items-center justify-center">
+        <img id="qrCodeImage" src="" alt="Scan QR Code" class="w-48 h-48 rounded-lg shadow-sm border bg-white p-2">
+      </div>
+
+      <div class="p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl">
+        <span class="text-[10px] text-emerald-800 font-bold block uppercase">Mobile Browser Link:</span>
+        <a id="mobileDirectUrl" href="#" target="_blank" class="font-mono font-black text-sm text-emerald-700 break-all hover:underline select-all">
+          http://172.17.155.62:8080
+        </a>
+      </div>
+
+      <div class="text-[11px] text-slate-500 text-left bg-slate-50 p-3 rounded-xl border space-y-1">
+        <div>1. Make sure mobile & laptop are on the <b>same Wi-Fi</b> (or phone Hotspot).</div>
+        <div>2. In phone Chrome, tap <b>⋮ (menu) &rarr; "Add to Home Screen"</b>.</div>
+        <div>3. Once installed, it works <b>even when laptop is OFF</b>!</div>
+      </div>
+
+      <button onclick="closeMobileConnectModal()" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-2 rounded-xl text-xs">
+        Done
+      </button>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: MOBILE OFFLINE & SYNC HELP MODAL -->
+  <!-- ========================================== -->
+  <div id="syncHelpModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden border border-slate-200">
+      <div class="bg-emerald-700 text-white p-4 flex justify-between items-center">
+        <h3 class="font-bold text-base flex items-center gap-2">
+          <span>📱 How Offline Mobile + Laptop Sync Works</span>
+        </h3>
+        <button onclick="closeSyncHelpModal()" class="text-emerald-200 hover:text-white">
+          <i data-lucide="x" class="w-6 h-6"></i>
+        </button>
+      </div>
+      <div class="p-5 space-y-4 text-xs md:text-sm text-slate-700">
+        <div class="p-3 bg-emerald-50 rounded-xl border border-emerald-200">
+          <h4 class="font-bold text-emerald-950 mb-1">Step 1: Install on Mobile (One-Time)</h4>
+          <p class="text-emerald-800 text-xs leading-relaxed">
+            Open this page once in your mobile's Chrome or Safari browser. Tap the 3 dots menu and select <b>"Install App"</b> or <b>"Add to Home Screen"</b>.
+          </p>
+        </div>
+
+        <div class="p-3 bg-blue-50 rounded-xl border border-blue-200">
+          <h4 class="font-bold text-blue-950 mb-1">Step 2: When Laptop is OFF</h4>
+          <p class="text-blue-800 text-xs leading-relaxed">
+            The app opens from your phone's memory automatically! You can <b>search items, check kg/gram prices, and record sales</b> without any network or server. Everything saves securely in your phone.
+          </p>
+        </div>
+
+        <div class="p-3 bg-amber-50 rounded-xl border border-amber-200">
+          <h4 class="font-bold text-amber-950 mb-1">Step 3: When Laptop Turns ON</h4>
+          <p class="text-amber-800 text-xs leading-relaxed">
+            Turn on your laptop and start <code class="font-bold bg-white px-1 py-0.5 rounded">start_mobile_server.bat</code>. Tap <b>"Sync with Laptop"</b> on your phone. All sales done on your phone will automatically upload to your laptop, and any new items or rates from your laptop will download to your phone!
+          </p>
+        </div>
+
+        <div class="flex justify-end pt-2">
+          <button onclick="closeSyncHelpModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-xl text-xs">
+            Got It!
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ========================================== -->
+  <!-- MODAL: QUICK RATE EDIT (DIRECT 1-CLICK EDIT) -->
+  <!-- ========================================== -->
+  <div id="quickRateModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border border-slate-200 animate-in fade-in zoom-in-95 duration-200">
+      <div class="bg-emerald-700 text-white p-4 flex justify-between items-center">
+        <h3 class="font-bold text-lg flex items-center gap-2">
+          <span>✏️ Quick Rate Edit</span>
+        </h3>
+        <button onclick="closeQuickRateEditModal()" class="text-emerald-200 hover:text-white">
+          <i data-lucide="x" class="w-6 h-6"></i>
+        </button>
+      </div>
+
+      <form id="quickRateForm" onsubmit="handleQuickRateSubmit(event)" class="p-5 space-y-4">
+        <input type="hidden" id="quickRateItemId">
+        <div>
+          <span class="text-xs text-slate-500 block uppercase font-bold">Item Name:</span>
+          <h4 id="quickRateItemName" class="text-lg font-black text-slate-800">Sugar</h4>
+          <span class="text-xs text-emerald-700 font-semibold" id="quickRateItemUnit">Unit: kg</span>
+        </div>
+
+        <div class="p-4 bg-emerald-50 rounded-xl border border-emerald-200 space-y-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">
+              Purchase Rate (Buy Price) ₹:
+            </label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 pl-3 flex items-center font-bold text-slate-500">₹</span>
+              <input 
+                type="number" 
+                id="quickRateBuyPrice" 
+                step="0.01" 
+                required 
+                oninput="calcQuickRateMargin()"
+                class="w-full pl-8 pr-3 py-2 bg-white border border-slate-300 rounded-lg font-bold text-base focus:ring-2 focus:ring-emerald-500"
+              >
+            </div>
+            <span class="text-[10px] text-slate-500 mt-0.5 block" id="quickRateBuyHint">Wholesale cost per 1 kg</span>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-emerald-950 mb-1">
+              Selling Rate (Sell Price) ₹:
+            </label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 pl-3 flex items-center font-bold text-emerald-700">₹</span>
+              <input 
+                type="number" 
+                id="quickRateSellPrice" 
+                step="0.01" 
+                required 
+                oninput="calcQuickRateMargin()"
+                class="w-full pl-8 pr-3 py-2 bg-white border border-emerald-400 rounded-lg font-black text-lg text-emerald-800 focus:ring-2 focus:ring-emerald-500"
+              >
+            </div>
+            <span class="text-[10px] text-emerald-700 mt-0.5 block" id="quickRateSellHint">Customer selling price per 1 kg</span>
+          </div>
+
+          <div class="pt-2 border-t border-emerald-200 flex justify-between items-center text-xs font-bold">
+            <span class="text-slate-600">Calculated Profit Margin:</span>
+            <span id="quickRateMarginDisplay" class="text-emerald-700 font-black text-sm">₹0.00 (0%)</span>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2 border-t">
+          <button type="button" onclick="closeQuickRateEditModal()" class="px-4 py-2 border rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100">
+            Cancel
+          </button>
+          <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-2 rounded-xl text-xs shadow">
+            Save New Rates
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+
+  <!-- ========================================== -->
+  <!-- MODAL: ADD / FULL EDIT ITEM MODAL -->
+  <!-- ========================================== -->
+  <div id="itemModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden border border-slate-200 animate-in fade-in zoom-in-95 duration-200">
+      <div class="bg-emerald-700 text-white p-4 flex justify-between items-center">
+        <h3 id="itemModalTitle" class="font-bold text-lg flex items-center gap-2">
+          <span>+ Add New Grocery Item</span>
+        </h3>
+        <button onclick="closeItemModal()" class="text-emerald-200 hover:text-white">
+          <i data-lucide="x" class="w-6 h-6"></i>
+        </button>
+      </div>
+
+      <form id="itemForm" onsubmit="handleItemFormSubmit(event)" class="p-5 space-y-4">
+        <input type="hidden" id="formItemId">
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Item Name *</label>
+          <input 
+            type="text" 
+            id="formItemName" 
+            placeholder="e.g. Sugar, Chana Dal, Mustard Oil, Lux Soap..." 
+            required 
+            class="w-full p-2.5 border border-slate-300 rounded-xl font-semibold text-sm focus:ring-2 focus:ring-emerald-500"
+          >
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Category</label>
+            <select id="formItemCategory" class="w-full p-2.5 border border-slate-300 rounded-xl text-sm bg-white font-medium">
+              <option value="Grains & Pulses">Grains & Pulses</option>
+              <option value="Oils & Ghee">Oils & Ghee</option>
+              <option value="Spices">Spices</option>
+              <option value="Snacks & Biscuits">Snacks & Biscuits</option>
+              <option value="Soaps & Detergents">Soaps & Detergents</option>
+              <option value="General">General</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Base Unit *</label>
+            <select id="formItemUnit" onchange="updateFormUnitLabels()" class="w-full p-2.5 border border-slate-300 rounded-xl text-sm bg-white font-bold">
+              <option value="kg">Kilogram (kg) [Grams handled auto]</option>
+              <option value="pcs">Pieces / Packets (Pcs / Pkt)</option>
+              <option value="litre">Litre (L) [ml handled auto]</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Purchase & Sell Rates -->
+        <div class="grid grid-cols-2 gap-3 bg-emerald-50/70 p-3.5 rounded-xl border border-emerald-200">
+          <div>
+            <label class="block text-xs font-bold text-emerald-950 mb-1">
+              Purchase Rate ₹ *
+              <span class="text-[10px] text-emerald-700 font-normal block" id="formBuyUnitHint">Cost per 1 kg</span>
+            </label>
+            <input 
+              type="number" 
+              id="formItemBuyPrice" 
+              step="0.01" 
+              placeholder="0.00" 
+              required 
+              oninput="calcFormProfitMargin()" 
+              class="w-full p-2.5 bg-white border border-emerald-300 rounded-xl font-bold text-sm focus:ring-2 focus:ring-emerald-500"
+            >
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-emerald-950 mb-1">
+              Selling Rate ₹ *
+              <span class="text-[10px] text-emerald-700 font-normal block" id="formSellUnitHint">Price per 1 kg</span>
+            </label>
+            <input 
+              type="number" 
+              id="formItemSellPrice" 
+              step="0.01" 
+              placeholder="0.00" 
+              required 
+              oninput="calcFormProfitMargin()" 
+              class="w-full p-2.5 bg-white border border-emerald-300 rounded-xl font-bold text-sm text-emerald-800 focus:ring-2 focus:ring-emerald-500"
+            >
+          </div>
+          
+          <div class="col-span-2 text-xs flex justify-between font-semibold text-emerald-900 border-t border-emerald-200 pt-2">
+            <span>Profit Margin per unit:</span>
+            <span id="formMarginDisplay" class="font-bold text-emerald-700">₹0.00 (0%)</span>
+          </div>
+        </div>
+
+        <!-- Stock & Low Stock Alert -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">
+              Current Stock *
+            </label>
+            <input 
+              type="number" 
+              id="formItemStock" 
+              step="any" 
+              placeholder="e.g. 50" 
+              required 
+              class="w-full p-2.5 border border-slate-300 rounded-xl font-bold text-sm"
+            >
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">
+              Low Stock Alert Limit
+            </label>
+            <input 
+              type="number" 
+              id="formItemMinStock" 
+              step="any" 
+              value="5" 
+              class="w-full p-2.5 border border-slate-300 rounded-xl text-sm"
+            >
+          </div>
+        </div>
+
+        <div class="pt-2 flex justify-end gap-2 border-t">
+          <button type="button" onclick="closeItemModal()" class="px-4 py-2 border border-slate-300 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-100">
+            Cancel
+          </button>
+          <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-2 rounded-xl text-sm shadow">
+            Save Item
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+
+  <!-- ========================================== -->
+  <!-- MODAL: QUICK GRAM/KG RATE BREAKDOWN -->
+  <!-- ========================================== -->
+  <div id="rateModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden border border-slate-200 animate-in fade-in zoom-in-95 duration-200">
+      <div class="bg-slate-900 text-white p-4 flex justify-between items-center">
+        <div>
+          <h3 id="rateModalItemName" class="font-bold text-lg text-amber-400">Sugar</h3>
+          <p class="text-xs text-slate-300" id="rateModalSubtitle">1 kg Selling Rate: ₹44.00 | Buy Rate: ₹40.00</p>
+        </div>
+        <button onclick="closeRateModal()" class="text-slate-400 hover:text-white">
+          <i data-lucide="x" class="w-6 h-6"></i>
+        </button>
+      </div>
+
+      <div class="p-5 space-y-4">
+        <div>
+          <div class="flex justify-between items-center mb-2">
+            <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Quick Rates Chart:</h4>
+            <button onclick="openQuickRateEditModal(selectedRateItem.id)" class="text-xs text-emerald-700 hover:text-emerald-900 font-bold underline">
+              ✏️ Edit Rate
+            </button>
+          </div>
+          <div class="grid grid-cols-2 gap-2 text-sm" id="rateModalBreakdownGrid">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+
+        <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-xl space-y-3">
+          <h4 class="text-xs font-bold text-emerald-900 uppercase">Custom Quantity Calculator:</h4>
+          <div class="flex gap-2">
+            <input type="number" id="calcModalQty" step="any" placeholder="Enter quantity" class="flex-1 p-2 bg-white border border-emerald-300 rounded-lg font-bold text-sm" oninput="runModalCustomCalc()">
+            <select id="calcModalUnit" class="p-2 bg-white border border-emerald-300 rounded-lg text-sm font-semibold" onchange="runModalCustomCalc()">
+              <option value="gm">Gram (gm)</option>
+              <option value="kg">Kilogram (kg)</option>
+            </select>
+          </div>
+          <div class="flex justify-between items-center bg-white p-2.5 rounded-lg border border-emerald-200">
+            <span class="text-xs text-slate-600 font-semibold">Total Customer Price:</span>
+            <span id="calcModalResult" class="text-xl font-black text-emerald-700">₹0.00</span>
+          </div>
+        </div>
+
+        <div class="flex justify-between items-center pt-2">
+          <button onclick="transferToPosFromModal()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl shadow text-sm flex items-center justify-center gap-2">
+            <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+            <span>Add this to Bill</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ========================================== -->
+  <!-- MODAL: ADD STOCK INWARD (+STOCK) -->
+  <!-- ========================================== -->
+  <div id="addStockModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border border-slate-200">
+      <div class="bg-amber-500 text-slate-900 p-4 flex justify-between items-center font-bold">
+        <h3 class="flex items-center gap-2">
+          <i data-lucide="package-plus" class="w-5 h-5"></i>
+          <span>Add New Inward Stock (+ Stock)</span>
+        </h3>
+        <button onclick="closeAddStockModal()" class="text-slate-800 hover:text-black">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div class="p-5 space-y-4">
+        <input type="hidden" id="addStockItemId">
+        <div>
+          <span class="text-xs text-slate-500 block">Item:</span>
+          <h4 id="addStockItemName" class="text-base font-bold text-slate-800">Sugar</h4>
+          <p class="text-xs text-slate-500">Current Stock: <span id="addStockCurrentQty" class="font-bold text-emerald-700">0 kg</span></p>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">New Arrived Quantity to Add:</label>
+          <div class="flex gap-2">
+            <input type="number" id="addStockInputQty" step="any" placeholder="e.g. 50" class="flex-1 p-2.5 border border-slate-300 rounded-xl font-bold text-base focus:ring-2 focus:ring-amber-500">
+            <span id="addStockUnitBadge" class="bg-slate-100 px-3 py-2.5 border rounded-xl font-bold text-slate-700 text-sm">kg</span>
+          </div>
+        </div>
+
+        <div class="p-3 bg-slate-50 border rounded-xl space-y-2 text-xs">
+          <span class="font-bold text-slate-700 block">Update Rates (if wholesale prices changed):</span>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-slate-500 mb-0.5">New Buy Rate ₹:</label>
+              <input type="number" id="addStockNewBuyRate" step="0.01" class="w-full p-1.5 border rounded font-semibold bg-white">
+            </div>
+            <div>
+              <label class="block text-slate-500 mb-0.5">New Sell Rate ₹:</label>
+              <input type="number" id="addStockNewSellRate" step="0.01" class="w-full p-1.5 border rounded font-semibold bg-white">
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2 border-t">
+          <button onclick="closeAddStockModal()" class="px-4 py-2 border rounded-xl text-xs font-semibold text-slate-600">Cancel</button>
+          <button onclick="submitAddStock()" class="bg-amber-500 hover:bg-amber-600 font-bold px-5 py-2 rounded-xl text-xs text-slate-900 shadow">Add to Stock</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ========================================== -->
+  <!-- THERMAL / RECEIPT PRINT SLIP -->
+  <!-- ========================================== -->
+  <div id="printArea" class="hidden">
+    <div style="width: 78mm; font-family: monospace; padding: 10px; margin: auto; font-size: 12px; color: #000;">
+      <div style="text-align: center; border-bottom: 1px dashed #000; padding-bottom: 8px; margin-bottom: 8px;">
+        <h2 id="printShopName" style="font-size: 16px; font-weight: bold; margin: 0;">Grocery & Kirana Store</h2>
+        <div id="printShopPhone" style="font-size: 11px;">Ph: 9876543210</div>
+        <div id="printShopAddress" style="font-size: 10px;">Retail Grocery Store</div>
+      </div>
+
+      <div style="font-size: 11px; margin-bottom: 6px;">
+        <div><b>Bill No:</b> <span id="printBillNo">#1001</span></div>
+        <div><b>Date:</b> <span id="printBillDate">03/11/2026 12:00 PM</span></div>
+        <div id="printCustomerRow"><b>Customer:</b> <span id="printCustomerName">Cash Customer</span></div>
+      </div>
+
+      <table style="width: 100%; border-collapse: collapse; font-size: 11px; border-top: 1px dashed #000; border-bottom: 1px dashed #000; margin-bottom: 6px;">
+        <thead>
+          <tr style="text-align: left; border-bottom: 1px dotted #000;">
+            <th style="padding: 3px 0;">Item</th>
+            <th style="padding: 3px 0; text-align: center;">Qty</th>
+            <th style="padding: 3px 0; text-align: right;">Amount</th>
+          </tr>
+        </thead>
+        <tbody id="printBillItemsTable">
+        </tbody>
+      </table>
+
+      <div style="font-size: 12px; line-height: 1.4;">
+        <div style="display: flex; justify-content: space-between;">
+          <span>Subtotal:</span>
+          <span id="printSubtotal">₹0.00</span>
+        </div>
+        <div id="printDiscountRow" style="display: flex; justify-content: space-between;">
+          <span>Discount:</span>
+          <span id="printDiscount">₹0.00</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 14px; border-top: 1px dashed #000; padding-top: 4px; margin-top: 4px;">
+          <span>Grand Total:</span>
+          <span id="printGrandTotal">₹0.00</span>
+        </div>
+        <div style="margin-top: 4px; font-size: 10px;">
+          Payment Mode: <b id="printPaymentMode">Cash</b>
+        </div>
+      </div>
+
+      <div style="text-align: center; border-top: 1px dashed #000; margin-top: 10px; padding-top: 6px; font-size: 10px;">
+        *** Thank you! Visit Again! ***
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Application Scripts -->
+  <script>
+    // Register PWA Service Worker for 100% Offline Support
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then((reg) => console.log('[ServiceWorker] Registered with scope:', reg.scope))
+          .catch((err) => console.log('[ServiceWorker] Registration failed:', err));
+      });
+    }
+
+    const DEFAULT_ITEMS = [{"id": "1", "name": "सेंधा नमक 500g (Sendha Namak 500g)", "category": "General", "unit": "pcs", "buyPrice": 0, "sellPrice": 0, "stock": 20, "minStock": 5}, {"id": "2", "name": "सेंधा नमक 100g (Sendha Namak 100g)", "category": "General", "unit": "pcs", "buyPrice": 0, "sellPrice": 0, "stock": 25, "minStock": 5}, {"id": "3", "name": "रंग लाल (Red Food Color)", "category": "General", "unit": "pcs", "buyPrice": 0, "sellPrice": 0, "stock": 30, "minStock": 5}, {"id": "4", "name": "रंग पीला (Yellow Food Color)", "category": "General", "unit": "pcs", "buyPrice": 0, "sellPrice": 0, "stock": 30, "minStock": 5}, {"id": "5", "name": "सत्तू 500g (Sattu 500g)", "category": "Grains & Pulses", "unit": "pcs", "buyPrice": 0, "sellPrice": 0, "stock": 15, "minStock": 5}, {"id": "6", "name": "सत्तू 200g (Sattu 200g)", "category": "Grains & Pulses", "unit": "pcs", "buyPrice": 0, "sellPrice": 0, "stock": 20, "minStock": 5}, {"id": "7", "name": "हल्दी पाउडर 200g (Haldi 200g)", "category": "Spices", "unit": "pcs", "buyPrice": 0, "sellPrice": 0, "stock": 25, "minStock": 5}, {"id": "8", "name": "हल्दी पाउडर 100g (Haldi 100g)", "category": "Spices", "unit": "pcs", "buyPrice": 0, "sellPrice": 0, "stock": 30, "minStock": 5}, {"id": "9", "name": "दाना चीनी 100g (Daana Cheeni)", "category": "General", "unit": "pcs", "buyPrice": 0, "sellPrice": 0, "stock": 20, "minStock": 5}, {"id": "10", "name": "सादा नमक (Sada Namak)", "category": "General", "unit": "pcs", "buyPrice": 0, "sellPrice": 0, "stock": 50, "minStock": 5}, {"id": "11", "name": "खावा सोडा / मीठा सोडा (Baking Soda)", "category": "General", "unit": "pcs", "buyPrice": 0, "sellPrice": 0, "stock": 25, "minStock": 5}, {"id": "12", "name": "मोमबत्ती (Mombatti / Candles)", "category": "General", "unit": "pcs", "buyPrice": 0, "sellPrice": 0, "stock": 40, "minStock": 5}, {"id": "13", "name": "जलजीरा 50g (Jaljeera 50g)", "category": "Spices", "unit": "pcs", "buyPrice": 0, "sellPrice": 0, "stock": 30, "minStock": 5}, {"id": "14", "name": "चाट मसाला 50g (Chaat Masala 50g)", "category": "Spices", "unit": "pcs", "buyPrice": 0, "sellPrice": 0, "stock": 25, "minStock": 5}, {"id": "15", "name": "सोयाबीन बरी (Soyabean Bari)", "category": "Grains & Pulses", "unit": "kg", "buyPrice": 0, "sellPrice": 0, "stock": 25, "minStock": 5}, {"id": "16", "name": "मसूर दाल (Masoor Dal)", "category": "Grains & Pulses", "unit": "kg", "buyPrice": 0, "sellPrice": 0, "stock": 50, "minStock": 5}, {"id": "17", "name": "मैदा (Maida)", "category": "Grains & Pulses", "unit": "kg", "buyPrice": 0, "sellPrice": 0, "stock": 40, "minStock": 5}, {"id": "18", "name": "चना दाल (Chana Dal)", "category": "Grains & Pulses", "unit": "kg", "buyPrice": 0, "sellPrice": 0, "stock": 50, "minStock": 5}, {"id": "19", "name": "पापड़ (Papad)", "category": "Snacks & Biscuits", "unit": "pcs", "buyPrice": 0, "sellPrice": 0, "stock": 30, "minStock": 5}, {"id": "20", "name": "तेजपत्ता (Tejpatta)", "category": "Spices", "unit": "kg", "buyPrice": 0, "sellPrice": 0, "stock": 10, "minStock": 5}, {"id": "21", "name": "लाल मिर्च खुला (Laal Mirch Khula)", "category": "Spices", "unit": "kg", "buyPrice": 0, "sellPrice": 0, "stock": 15, "minStock": 5}, {"id": "22", "name": "लाल मिर्च तेजा (Laal Mirch Teja)", "category": "Spices", "unit": "kg", "buyPrice": 0, "sellPrice": 0, "stock": 15, "minStock": 5}, {"id": "23", "name": "धनिया खड़ा/पाउडर (Dhaniya)", "category": "Spices", "unit": "kg", "buyPrice": 0, "sellPrice": 0, "stock": 20, "minStock": 5}, {"id": "24", "name": "हल्दी खड़ी (Haldi Khadi)", "category": "Spices", "unit": "kg", "buyPrice": 0, "sellPrice": 0, "stock": 15, "minStock": 5}, {"id": "25", "name": "मरीच / काली मिर्च (Kali Mirch)", "category": "Spices", "unit": "kg", "buyPrice": 0, "sellPrice": 0, "stock": 10, "minStock": 5}, {"id": "26", "name": "जीरा (Jeera)", "category": "Spices", "unit": "kg", "buyPrice": 0, "sellPrice": 0, "stock": 25, "minStock": 5}, {"id": "27", "name": "गोदरेज डाई / साबुन (Godrej)", "category": "General", "unit": "pcs", "buyPrice": 0, "sellPrice": 0, "stock": 24, "minStock": 5}, {"id": "28", "name": "बैटरी सेल (Battery Cells)", "category": "General", "unit": "pcs", "buyPrice": 0, "sellPrice": 0, "stock": 30, "minStock": 5}, {"id": "29", "name": "गढ़ी / सूखा नारियल (Gari Dry Coconut)", "category": "General", "unit": "kg", "buyPrice": 0, "sellPrice": 0, "stock": 15, "minStock": 5}, {"id": "30", "name": "छोहारा (Chhohara Dry Dates)", "category": "General", "unit": "kg", "buyPrice": 0, "sellPrice": 0, "stock": 15, "minStock": 5}, {"id": "31", "name": "मिसरी (Mishri Sugar Candy)", "category": "General", "unit": "kg", "buyPrice": 0, "sellPrice": 0, "stock": 20, "minStock": 5}, {"id": "32", "name": "कसैली / सुपारी (Kasaili Supari)", "category": "General", "unit": "kg", "buyPrice": 0, "sellPrice": 0, "stock": 10, "minStock": 5}, {"id": "33", "name": "उजाला लिक्विड (Ujala Liquid)", "category": "Soaps & Detergents", "unit": "pcs", "buyPrice": 0, "sellPrice": 0, "stock": 20, "minStock": 5}, {"id": "34", "name": "मॉम्स मैजिक बिस्किट (Mom's Magic Biscuit)", "category": "Snacks & Biscuits", "unit": "pcs", "buyPrice": 0, "sellPrice": 0, "stock": 48, "minStock": 5}, {"id": "35", "name": "मोनाको बिस्किट (Monaco Biscuit)", "category": "Snacks & Biscuits", "unit": "pcs", "buyPrice": 0, "sellPrice": 0, "stock": 48, "minStock": 5}, {"id": "36", "name": "क्रैकजैक बिस्किट (Krackjack Biscuit)", "category": "Snacks & Biscuits", "unit": "pcs", "buyPrice": 0, "sellPrice": 0, "stock": 48, "minStock": 5}, {"id": "37", "name": "खीर चावल छोटा (Kheer Chawal Chhota)", "category": "Grains & Pulses", "unit": "kg", "buyPrice": 0, "sellPrice": 0, "stock": 30, "minStock": 5}, {"id": "38", "name": "डिस्पोजल कटोरा / दोना (Disposable Dona)", "category": "General", "unit": "pcs", "buyPrice": 0, "sellPrice": 0, "stock": 100, "minStock": 5}, {"id": "39", "name": "डिस्पोजल कप (Disposable Paper Cup)", "category": "General", "unit": "pcs", "buyPrice": 0, "sellPrice": 0, "stock": 100, "minStock": 5}, {"id": "40", "name": "डिस्पोजल ग्लास (Disposable Glass)", "category": "General", "unit": "pcs", "buyPrice": 0, "sellPrice": 0, "stock": 100, "minStock": 5}, {"id": "41", "name": "डिस्पोजल पत्तल (Disposable Pattal)", "category": "General", "unit": "pcs", "buyPrice": 0, "sellPrice": 0, "stock": 100, "minStock": 5}, {"id": "42", "name": "मीट मसाला 100g (Meat Masala)", "category": "Spices", "unit": "pcs", "buyPrice": 0, "sellPrice": 0, "stock": 20, "minStock": 5}, {"id": "43", "name": "गरम मसाला 100g (Garam Masala)", "category": "Spices", "unit": "pcs", "buyPrice": 0, "sellPrice": 0, "stock": 20, "minStock": 5}, {"id": "44", "name": "सब्जी मसाला 100g (Sabji Masala)", "category": "Spices", "unit": "pcs", "buyPrice": 0, "sellPrice": 0, "stock": 20, "minStock": 5}, {"id": "45", "name": "पनीर मसाला 50g (Paneer Masala)", "category": "Spices", "unit": "pcs", "buyPrice": 0, "sellPrice": 0, "stock": 20, "minStock": 5}, {"id": "46", "name": "धनिया पैकेट 200g (Dhaniya Packet)", "category": "Spices", "unit": "pcs", "buyPrice": 0, "sellPrice": 0, "stock": 25, "minStock": 5}, {"id": "47", "name": "मिर्च पैकेट 200g (Mirch Packet 200g)", "category": "Spices", "unit": "pcs", "buyPrice": 0, "sellPrice": 0, "stock": 25, "minStock": 5}, {"id": "48", "name": "मिर्च पैकेट 100g (Mirch Packet 100g)", "category": "Spices", "unit": "pcs", "buyPrice": 0, "sellPrice": 0, "stock": 30, "minStock": 5}, {"id": "49", "name": "सरसों दाना (Sarso Dana)", "category": "Spices", "unit": "kg", "buyPrice": 0, "sellPrice": 0, "stock": 25, "minStock": 5}, {"id": "50", "name": "लहसुन (Lahsun Garlic)", "category": "General", "unit": "kg", "buyPrice": 0, "sellPrice": 0, "stock": 15, "minStock": 5}, {"id": "51", "name": "नारियल झाड़ू (Nariyal Jhadu)", "category": "General", "unit": "pcs", "buyPrice": 0, "sellPrice": 0, "stock": 12, "minStock": 5}, {"id": "52", "name": "सीक / फूल झाड़ू (Seek / Phool Jhadu)", "category": "General", "unit": "pcs", "buyPrice": 0, "sellPrice": 0, "stock": 15, "minStock": 5}, {"id": "53", "name": "स्टील जूना / स्क्रबर (Steel Juna)", "category": "Soaps & Detergents", "unit": "pcs", "buyPrice": 0, "sellPrice": 0, "stock": 36, "minStock": 5}, {"id": "54", "name": "बेसन 250g (Besan 250g)", "category": "Grains & Pulses", "unit": "pcs", "buyPrice": 0, "sellPrice": 0, "stock": 25, "minStock": 5}, {"id": "55", "name": "सेवई (Sewai Vermicelli)", "category": "Snacks & Biscuits", "unit": "pcs", "buyPrice": 0, "sellPrice": 0, "stock": 30, "minStock": 5}, {"id": "56", "name": "साबूदाना 500g (Sabudana 500g)", "category": "Grains & Pulses", "unit": "pcs", "buyPrice": 0, "sellPrice": 0, "stock": 20, "minStock": 5}, {"id": "57", "name": "साबूदाना 200g (Sabudana 200g)", "category": "Grains & Pulses", "unit": "pcs", "buyPrice": 0, "sellPrice": 0, "stock": 25, "minStock": 5}, {"id": "58", "name": "ताजा चायपत्ती 100g (Taaza Tea 100g)", "category": "General", "unit": "pcs", "buyPrice": 0, "sellPrice": 0, "stock": 20, "minStock": 5}, {"id": "59", "name": "रेड लेबल चायपत्ती 100g (Red Label Tea)", "category": "General", "unit": "pcs", "buyPrice": 0, "sellPrice": 0, "stock": 20, "minStock": 5}, {"id": "60", "name": "लक्स साबुन (Lux Soap)", "category": "Soaps & Detergents", "unit": "pcs", "buyPrice": 0, "sellPrice": 0, "stock": 36, "minStock": 5}, {"id": "61", "name": "काजू 250g (Kaju Cashew)", "category": "General", "unit": "pcs", "buyPrice": 0, "sellPrice": 0, "stock": 15, "minStock": 5}, {"id": "62", "name": "किशमिश 100g (Kishmish Raisins)", "category": "General", "unit": "pcs", "buyPrice": 0, "sellPrice": 0, "stock": 20, "minStock": 5}, {"id": "63", "name": "पीताम्बरी पाउडर (Pitambari Powder)", "category": "Soaps & Detergents", "unit": "pcs", "buyPrice": 0, "sellPrice": 0, "stock": 24, "minStock": 5}, {"id": "64", "name": "भुजिया नमकीन 200g (Bhujia Namkeen)", "category": "Snacks & Biscuits", "unit": "pcs", "buyPrice": 0, "sellPrice": 0, "stock": 30, "minStock": 5}, {"id": "65", "name": "कुछ-कुछ नमकीन 200g (Kuch-Kuch Namkeen)", "category": "Snacks & Biscuits", "unit": "pcs", "buyPrice": 0, "sellPrice": 0, "stock": 30, "minStock": 5}, {"id": "66", "name": "टूथपेस्ट (Toothpaste)", "category": "General", "unit": "pcs", "buyPrice": 0, "sellPrice": 0, "stock": 24, "minStock": 5}, {"id": "67", "name": "गुड नाईट लिक्विड रिफिल (Good Knight Refill)", "category": "General", "unit": "pcs", "buyPrice": 0, "sellPrice": 0, "stock": 20, "minStock": 5}, {"id": "68", "name": "डव साबुन (Dove Soap)", "category": "Soaps & Detergents", "unit": "pcs", "buyPrice": 0, "sellPrice": 0, "stock": 24, "minStock": 5}, {"id": "69", "name": "पेयर्स साबुन (Pears Soap)", "category": "Soaps & Detergents", "unit": "pcs", "buyPrice": 0, "sellPrice": 0, "stock": 24, "minStock": 5}, {"id": "70", "name": "वासमोल हेयर कलर (Vasmol)", "category": "General", "unit": "pcs", "buyPrice": 0, "sellPrice": 0, "stock": 18, "minStock": 5}, {"id": "71", "name": "निहार शांति आंवला तेल (Nihar Amla Oil)", "category": "Oils & Ghee", "unit": "pcs", "buyPrice": 0, "sellPrice": 0, "stock": 24, "minStock": 5}, {"id": "72", "name": "डाबर आंवला तेल (Dabur Amla Oil)", "category": "Oils & Ghee", "unit": "pcs", "buyPrice": 0, "sellPrice": 0, "stock": 24, "minStock": 5}, {"id": "73", "name": "जैस्मिन हेयर ऑयल (Jasmine Hair Oil)", "category": "Oils & Ghee", "unit": "pcs", "buyPrice": 0, "sellPrice": 0, "stock": 20, "minStock": 5}, {"id": "74", "name": "पैराशूट नारियल तेल (Parachute Coconut Oil)", "category": "Oils & Ghee", "unit": "pcs", "buyPrice": 0, "sellPrice": 0, "stock": 24, "minStock": 5}, {"id": "75", "name": "निहार तेल जार पैक (Nihar Oil Jar)", "category": "Oils & Ghee", "unit": "pcs", "buyPrice": 0, "sellPrice": 0, "stock": 12, "minStock": 5}];
+
+    let storeData = {
+      shopName: 'Grocery & Kirana Store',
+      phone: '9876543210',
+      address: 'Main Market, Shop #12',
+      items: [],
+      sales: []
+    };
+
+    let cart = [];
+    let activeCategoryFilter = '';
+    let selectedRateItem = null;
+    let serverBaseUrl = localStorage.getItem('kiranapro_server_url') || window.location.origin;
+
+    // Load from LocalStorage (Works 100% Offline)
+    function initData() {
+      const CURRENT_VERSION = 'v3_75items';
+      const savedVersion = localStorage.getItem('kiranapro_version');
+      const saved = localStorage.getItem('kiranapro_store_v3');
+
+      // Auto force-load all 75 new items from slips if not upgraded yet
+      if (savedVersion !== CURRENT_VERSION || !saved) {
+        storeData.items = [...DEFAULT_ITEMS];
+        localStorage.setItem('kiranapro_version', CURRENT_VERSION);
+        saveToLocalStorage();
+      } else {
+        try {
+          storeData = JSON.parse(saved);
+          if (!storeData.items || storeData.items.length < 50) {
+            storeData.items = [...DEFAULT_ITEMS];
+            saveToLocalStorage();
+          }
+        } catch(e) {
+          storeData.items = [...DEFAULT_ITEMS];
+          saveToLocalStorage();
+        }
+      }
+
+      document.getElementById('shopTitleDisplay').innerText = storeData.shopName || 'Grocery & Kirana Store';
+      document.getElementById('settingShopName').value = storeData.shopName || '';
+      document.getElementById('settingShopPhone').value = storeData.phone || '';
+      document.getElementById('settingShopAddress').value = storeData.address || '';
+      document.getElementById('settingServerUrl').value = serverBaseUrl;
+
+      updateDashboardStats();
+      populatePosItemDropdown();
+      handleQuickSearch('');
+      renderStockTable();
+      renderSalesHistory();
+      lucide.createIcons();
+
+      // Check server connectivity in background
+      checkServerHealth();
+    }
+
+    function saveToLocalStorage() {
+      localStorage.setItem('kiranapro_store_v3', JSON.stringify(storeData));
+      updateDashboardStats();
+    }
+
+    // ==========================================
+    // SYNC SYSTEM: LAPTOP <-> MOBILE
+    // ==========================================
+    function checkServerHealth() {
+      const dot = document.getElementById('syncStatusDot');
+      const text = document.getElementById('syncStatusText');
+      const bar = document.getElementById('syncStatusBar');
+
+      fetch(`${serverBaseUrl}/api/data`, { cache: 'no-store' })
+        .then(res => res.json())
+        .then(data => {
+          if (data && data.items) {
+            bar.className = "bg-emerald-900 text-white text-xs px-4 py-1.5 flex items-center justify-between transition-colors duration-300";
+            dot.className = "w-2.5 h-2.5 rounded-full bg-emerald-400";
+            text.innerHTML = "🟢 <b>Laptop Server Online & Connected</b>";
+          }
+        })
+        .catch(() => {
+          bar.className = "bg-slate-900 text-white text-xs px-4 py-1.5 flex items-center justify-between transition-colors duration-300";
+          dot.className = "w-2.5 h-2.5 rounded-full bg-amber-400";
+          text.innerHTML = "📱 <b>Mobile Offline Mode</b> (Laptop is OFF - Full Search & Rates Active)";
+        });
+    }
+
+    function triggerSyncWithServer() {
+      const btn = document.getElementById('btnSyncNow');
+      btn.innerHTML = `<i data-lucide="loader" class="w-3 h-3 animate-spin"></i> Syncing...`;
+      lucide.createIcons();
+
+      fetch(`${serverBaseUrl}/api/sync`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(storeData)
+      })
+      .then(res => res.json())
+      .then(result => {
+        if (result.status === 'success' && result.db) {
+          storeData = result.db;
+          saveToLocalStorage();
+          initData();
+          alert("✅ Success! Your mobile and laptop are now 100% in sync with the latest rates & sales!");
+        } else {
+          alert("Sync error: " + (result.message || "Unknown error"));
+        }
+      })
+      .catch((err) => {
+        alert("⚠️ Laptop is currently OFF or not reachable on this Wi-Fi.\n\nDon't worry! You can keep using this app offline on your phone (Search, Rates & Sales work 100%). Just tap 'Sync' whenever your laptop turns back on!");
+      })
+      .finally(() => {
+        btn.innerHTML = `<i data-lucide="refresh-cw" class="w-3 h-3"></i> Sync with Laptop`;
+        lucide.createIcons();
+        checkServerHealth();
+      });
+    }
+
+    function openSyncHelpModal() {
+      document.getElementById('syncHelpModal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeSyncHelpModal() {
+      document.getElementById('syncHelpModal').classList.add('hidden');
+    }
+
+    function saveServerUrlSetting() {
+      const input = document.getElementById('settingServerUrl').value.trim();
+      if (input) {
+        serverBaseUrl = input.replace(/\/$/, '');
+        localStorage.setItem('kiranapro_server_url', serverBaseUrl);
+        alert("Laptop Server IP updated! Checking connection...");
+        checkServerHealth();
+      }
+    }
+
+    // ==========================================
+    // TABS NAVIGATION
+    // ==========================================
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('bg-white', 'text-emerald-900', 'shadow');
+        btn.classList.add('text-emerald-100');
+      });
+
+      const activeContent = document.getElementById('tab-' + tabId);
+      const activeBtn = document.getElementById('tab-btn-' + tabId);
+      if (activeContent) activeContent.classList.remove('hidden');
+      if (activeBtn) {
+        activeBtn.classList.add('bg-white', 'text-emerald-900', 'shadow');
+        activeBtn.classList.remove('text-emerald-100');
+      }
+
+      if (tabId === 'search') {
+        setTimeout(() => document.getElementById('quickSearchInput').focus(), 100);
+      } else if (tabId === 'stock') {
+        renderStockTable();
+      } else if (tabId === 'history') {
+        renderSalesHistory();
+      }
+      lucide.createIcons();
+    }
+
+    // ==========================================
+    // DASHBOARD STATS
+    // ==========================================
+    function updateDashboardStats() {
+      const todayStr = new Date().toISOString().split('T')[0];
+      const todaySales = storeData.sales
+        .filter(s => s.date.startsWith(todayStr))
+        .reduce((sum, s) => sum + (Number(s.grandTotal) || 0), 0);
+
+      document.getElementById('statTodaySale').innerText = '₹' + todaySales.toFixed(2);
+      document.getElementById('statTotalItems').innerText = storeData.items.length;
+
+      const lowStockCount = storeData.items.filter(i => Number(i.stock) <= Number(i.minStock || 5)).length;
+      const lowBadge = document.getElementById('lowStockBadge');
+      const lowSpan = document.getElementById('lowStockCountSpan');
+      if (lowBadge) {
+        if (lowStockCount > 0) {
+          lowBadge.innerText = lowStockCount;
+          lowBadge.classList.remove('hidden');
+        } else {
+          lowBadge.classList.add('hidden');
+        }
+      }
+      if (lowSpan) lowSpan.innerText = lowStockCount;
+    }
+
+    // ==========================================
+    // QUICK SEARCH & RATE CARDS (TAB 1)
+    // ==========================================
+    function handleQuickSearch(query) {
+      const clearBtn = document.getElementById('clearSearchBtn');
+      if (query.trim()) {
+        clearBtn.classList.remove('hidden');
+      } else {
+        clearBtn.classList.add('hidden');
+      }
+
+      const q = query.toLowerCase().trim();
+      const filtered = storeData.items.filter(item => {
+        const matchesQuery = item.name.toLowerCase().includes(q) || item.category.toLowerCase().includes(q);
+        const matchesCat = activeCategoryFilter ? item.category === activeCategoryFilter : true;
+        return matchesQuery && matchesCat;
+      });
+
+      const grid = document.getElementById('searchResultsGrid');
+      const notice = document.getElementById('noResultsNotice');
+
+      if (filtered.length === 0) {
+        grid.innerHTML = '';
+        notice.classList.remove('hidden');
+        return;
+      }
+
+      notice.classList.add('hidden');
+      grid.innerHTML = filtered.map(item => {
+        const isKg = item.unit === 'kg';
+        const isLitre = item.unit === 'litre';
+        const sell = Number(item.sellPrice);
+        const buy = Number(item.buyPrice);
+        const profit = sell - buy;
+        const profitPercent = buy > 0 ? ((profit / buy) * 100).toFixed(0) : 0;
+        const isLow = Number(item.stock) <= Number(item.minStock || 5);
+
+        let rateChipsHtml = '';
+        if (isKg) {
+          const rate100g = ((sell / 1000) * 100).toFixed(1);
+          const rate250g = (sell / 4).toFixed(1);
+          const rate500g = (sell / 2).toFixed(1);
+          rateChipsHtml = `
+            <div class="grid grid-cols-3 gap-1.5 text-[11px] bg-slate-50 p-2 rounded-lg border border-slate-200 mt-2">
+              <div class="text-center bg-white p-1 rounded shadow-2xs border">
+                <span class="text-slate-400 block text-[9px]">100 Gram</span>
+                <span class="font-bold text-slate-800">₹${rate100g}</span>
+              </div>
+              <div class="text-center bg-white p-1 rounded shadow-2xs border">
+                <span class="text-slate-400 block text-[9px]">250g (1/4 kg)</span>
+                <span class="font-bold text-slate-800">₹${rate250g}</span>
+              </div>
+              <div class="text-center bg-white p-1 rounded shadow-2xs border">
+                <span class="text-slate-400 block text-[9px]">500g (1/2 kg)</span>
+                <span class="font-bold text-slate-800">₹${rate500g}</span>
+              </div>
+            </div>
+          `;
+        } else if (isLitre) {
+          const rate500ml = (sell / 2).toFixed(1);
+          rateChipsHtml = `
+            <div class="text-[11px] bg-slate-50 p-2 rounded-lg border border-slate-200 mt-2 flex justify-between">
+              <span class="text-slate-500">Half Litre (500 ml):</span>
+              <span class="font-bold text-slate-800">₹${rate500ml}</span>
+            </div>
+          `;
+        }
+
+        return `
+          <div class="bg-white rounded-2xl p-4 shadow-sm border ${isLow ? 'border-amber-300 ring-1 ring-amber-200' : 'border-slate-200'} hover:shadow-md transition flex flex-col justify-between">
+            <div>
+              <div class="flex items-start justify-between gap-2 mb-1.5">
+                <div>
+                  <h3 class="font-bold text-slate-900 text-base leading-snug">${escapeHtml(item.name)}</h3>
+                  <span class="text-[11px] font-semibold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">${escapeHtml(item.category)}</span>
+                </div>
+                <div class="text-right">
+                  <span class="text-[10px] text-slate-400 block font-semibold uppercase">Stock</span>
+                  <span class="font-black text-xs px-2 py-0.5 rounded-lg ${isLow ? 'bg-red-100 text-red-700' : 'bg-slate-100 text-slate-700'}">
+                    ${item.stock} ${item.unit}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Main Rates Display with Direct Rate Edit Option -->
+              <div class="mt-3 grid grid-cols-2 gap-2 bg-slate-50/80 p-2.5 rounded-xl border border-slate-100 relative group">
+                <div>
+                  <span class="text-[11px] font-medium text-slate-500 block">Selling Rate:</span>
+                  <div class="text-lg font-black text-emerald-700">₹${sell.toFixed(2)} <span class="text-xs font-semibold text-slate-500">/${item.unit}</span></div>
+                </div>
+                <div class="border-l border-slate-200 pl-2">
+                  <span class="text-[11px] font-medium text-slate-500 block">Buy Rate (Cost):</span>
+                  <div class="text-base font-bold text-slate-700">₹${buy.toFixed(2)} <span class="text-xs font-semibold text-slate-500">/${item.unit}</span></div>
+                  <div class="text-[10px] font-bold text-emerald-600">+₹${profit.toFixed(1)} (${profitPercent}%) margin</div>
+                </div>
+                <button 
+                  onclick="openQuickRateEditModal('${item.id}')" 
+                  class="col-span-2 mt-1 py-1 px-2 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 rounded-lg text-xs font-bold flex items-center justify-center gap-1 transition"
+                  title="Directly edit Buy and Sell Rates"
+                >
+                  <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
+                  <span>✏️ Edit Rates</span>
+                </button>
+              </div>
+
+              ${rateChipsHtml}
+            </div>
+
+            <!-- Action buttons -->
+            <div class="flex items-center gap-2 mt-4 pt-2 border-t border-slate-100">
+              <button onclick="openRateModal('${item.id}')" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold py-2 px-3 rounded-xl flex items-center justify-center gap-1 transition">
+                <i data-lucide="calculator" class="w-3.5 h-3.5"></i>
+                <span>Gram/Kg Chart</span>
+              </button>
+              <button onclick="quickSellItem('${item.id}')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2 px-3 rounded-xl flex items-center justify-center gap-1 transition shadow" title="Sell this item">
+                <i data-lucide="shopping-cart" class="w-3.5 h-3.5"></i>
+                <span>Sell</span>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      lucide.createIcons();
+    }
+
+    function clearSearch() {
+      const input = document.getElementById('quickSearchInput');
+      input.value = '';
+      handleQuickSearch('');
+      input.focus();
+    }
+
+    function filterCategory(cat) {
+      activeCategoryFilter = cat;
+      document.querySelectorAll('#categoryPills .cat-pill').forEach(btn => {
+        btn.classList.remove('bg-amber-400', 'text-slate-900', 'active');
+        btn.classList.add('bg-emerald-800/80', 'text-white');
+      });
+      event.target.classList.add('bg-amber-400', 'text-slate-900', 'active');
+      event.target.classList.remove('bg-emerald-800/80', 'text-white');
+      handleQuickSearch(document.getElementById('quickSearchInput').value);
+    }
+
+    // ==========================================
+    // QUICK RATE EDIT MODAL
+    // ==========================================
+    function openQuickRateEditModal(itemId) {
+      const item = storeData.items.find(i => i.id === itemId);
+      if (!item) return;
+
+      document.getElementById('quickRateItemId').value = item.id;
+      document.getElementById('quickRateItemName').innerText = item.name;
+      document.getElementById('quickRateItemUnit').innerText = `Base Unit: ${item.unit}`;
+      document.getElementById('quickRateBuyPrice').value = item.buyPrice;
+      document.getElementById('quickRateSellPrice').value = item.sellPrice;
+      document.getElementById('quickRateBuyHint').innerText = `Wholesale cost per 1 ${item.unit}`;
+      document.getElementById('quickRateSellHint').innerText = `Customer selling price per 1 ${item.unit}`;
+
+      calcQuickRateMargin();
+      document.getElementById('quickRateModal').classList.remove('hidden');
+      setTimeout(() => {
+        const sellInput = document.getElementById('quickRateSellPrice');
+        sellInput.focus();
+        sellInput.select();
+      }, 100);
+      lucide.createIcons();
+    }
+
+    function closeQuickRateEditModal() {
+      document.getElementById('quickRateModal').classList.add('hidden');
+    }
+
+    function calcQuickRateMargin() {
+      const buy = parseFloat(document.getElementById('quickRateBuyPrice').value) || 0;
+      const sell = parseFloat(document.getElementById('quickRateSellPrice').value) || 0;
+      const diff = sell - buy;
+      const pct = buy > 0 ? ((diff / buy) * 100).toFixed(0) : 0;
+      document.getElementById('quickRateMarginDisplay').innerText = `+₹${diff.toFixed(2)} (${pct}%)`;
+    }
+
+    function handleQuickRateSubmit(e) {
+      e.preventDefault();
+      const itemId = document.getElementById('quickRateItemId').value;
+      const item = storeData.items.find(i => i.id === itemId);
+      if (!item) return;
+
+      const newBuy = parseFloat(document.getElementById('quickRateBuyPrice').value);
+      const newSell = parseFloat(document.getElementById('quickRateSellPrice').value);
+
+      if (isNaN(newBuy) || isNaN(newSell) || newSell <= 0) {
+        alert("Please enter valid positive numbers for rates!");
+        return;
+      }
+
+      item.buyPrice = newBuy;
+      item.sellPrice = newSell;
+
+      saveToLocalStorage();
+      closeQuickRateEditModal();
+      populatePosItemDropdown();
+      handleQuickSearch(document.getElementById('quickSearchInput').value);
+      renderStockTable();
+
+      if (selectedRateItem && selectedRateItem.id === item.id) {
+        openRateModal(item.id);
+      }
+      if (document.getElementById('posItemSelect').value === item.id) {
+        onPosItemSelected();
+      }
+    }
+
+    // ==========================================
+    // GRAM/KG RATE POPUP & CUSTOM CALCULATOR
+    // ==========================================
+    function openRateModal(itemId) {
+      const item = storeData.items.find(i => i.id === itemId);
+      if (!item) return;
+      selectedRateItem = item;
+
+      document.getElementById('rateModalItemName').innerText = item.name;
+      document.getElementById('rateModalSubtitle').innerText = `1 ${item.unit} Selling Rate: ₹${Number(item.sellPrice).toFixed(2)} | Buy Rate: ₹${Number(item.buyPrice).toFixed(2)}`;
+
+      const grid = document.getElementById('rateModalBreakdownGrid');
+      const sell = Number(item.sellPrice);
+
+      if (item.unit === 'kg') {
+        const rows = [
+          { label: '50 Gram', qty: 0.05 },
+          { label: '100 Gram', qty: 0.10 },
+          { label: '250 Gram (1/4 kg)', qty: 0.25 },
+          { label: '500 Gram (1/2 kg)', qty: 0.50 },
+          { label: '750 Gram (3/4 kg)', qty: 0.75 },
+          { label: '1 Kilogram (1 kg)', qty: 1.00 },
+          { label: '2 Kilogram (2 kg)', qty: 2.00 },
+          { label: '5 Kilogram (5 kg)', qty: 5.00 },
+        ];
+        grid.innerHTML = rows.map(r => `
+          <div class="flex justify-between items-center bg-slate-50 p-2 rounded-lg border">
+            <span class="font-medium text-slate-600">${r.label}:</span>
+            <span class="font-black text-emerald-800">₹${(sell * r.qty).toFixed(2)}</span>
+          </div>
+        `).join('');
+      } else {
+        const rows = [
+          { label: '1 Piece / Packet', qty: 1 },
+          { label: '2 Pieces', qty: 2 },
+          { label: '5 Pieces', qty: 5 },
+          { label: '10 Pieces', qty: 10 },
+          { label: '1 Dozen (12)', qty: 12 },
+          { label: '20 Pieces', qty: 20 },
+        ];
+        grid.innerHTML = rows.map(r => `
+          <div class="flex justify-between items-center bg-slate-50 p-2 rounded-lg border">
+            <span class="font-medium text-slate-600">${r.label}:</span>
+            <span class="font-black text-emerald-800">₹${(sell * r.qty).toFixed(2)}</span>
+          </div>
+        `).join('');
+      }
+
+      document.getElementById('calcModalQty').value = '';
+      document.getElementById('calcModalResult').innerText = '₹0.00';
+      document.getElementById('rateModal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeRateModal() {
+      document.getElementById('rateModal').classList.add('hidden');
+      selectedRateItem = null;
+    }
+
+    function runModalCustomCalc() {
+      if (!selectedRateItem) return;
+      const qty = parseFloat(document.getElementById('calcModalQty').value) || 0;
+      const unit = document.getElementById('calcModalUnit').value;
+      const sell = Number(selectedRateItem.sellPrice);
+
+      let price = 0;
+      if (selectedRateItem.unit === 'kg') {
+        if (unit === 'gm') {
+          price = (sell / 1000) * qty;
+        } else {
+          price = sell * qty;
+        }
+      } else {
+        price = sell * qty;
+      }
+
+      document.getElementById('calcModalResult').innerText = '₹' + price.toFixed(2);
+    }
+
+    function transferToPosFromModal() {
+      if (!selectedRateItem) return;
+      const itemId = selectedRateItem.id;
+      const qty = parseFloat(document.getElementById('calcModalQty').value) || 1;
+      const unit = document.getElementById('calcModalUnit').value;
+
+      closeRateModal();
+      switchTab('billing');
+      
+      const select = document.getElementById('posItemSelect');
+      select.value = itemId;
+      onPosItemSelected();
+      
+      if (document.getElementById('calcModalQty').value) {
+        document.getElementById('posUnitSelect').value = unit;
+        document.getElementById('posQtyInput').value = qty;
+        recalcPosPrice();
+      }
+    }
+
+    // ==========================================
+    // POS BILLING (TAB 2)
+    // ==========================================
+    function populatePosItemDropdown() {
+      const select = document.getElementById('posItemSelect');
+      const currentVal = select.value;
+      select.innerHTML = '<option value="">-- Choose Item from List --</option>' + 
+        storeData.items.map(item => `
+          <option value="${item.id}">${item.name} (${item.stock} ${item.unit} in stock - ₹${item.sellPrice}/${item.unit})</option>
+        `).join('');
+      select.value = currentVal;
+    }
+
+    function quickSellItem(itemId) {
+      switchTab('billing');
+      const select = document.getElementById('posItemSelect');
+      select.value = itemId;
+      onPosItemSelected();
+    }
+
+    function onPosItemSelected() {
+      const itemId = document.getElementById('posItemSelect').value;
+      const card = document.getElementById('posSelectedItemCard');
+      const addBtn = document.getElementById('btnAddToCart');
+
+      if (!itemId) {
+        card.classList.add('hidden');
+        addBtn.disabled = true;
+        document.getElementById('posComputedPrice').innerText = '₹0.00';
+        document.getElementById('posComputedBreakup').innerText = '0 × ₹0';
+        return;
+      }
+
+      const item = storeData.items.find(i => i.id === itemId);
+      if (!item) return;
+
+      card.classList.remove('hidden');
+      document.getElementById('posCardName').innerText = item.name;
+      document.getElementById('posCardCategory').innerText = item.category;
+      document.getElementById('posCardStock').innerText = `${item.stock} ${item.unit}`;
+      document.getElementById('posCardSellRate').innerText = `₹${Number(item.sellPrice).toFixed(2)} / ${item.unit}`;
+      document.getElementById('posCardBuyRate').innerText = `₹${Number(item.buyPrice).toFixed(2)} / ${item.unit}`;
+
+      const unitSelect = document.getElementById('posUnitSelect');
+      if (item.unit === 'kg') {
+        unitSelect.innerHTML = `
+          <option value="kg" selected>Kilogram (kg)</option>
+          <option value="gm">Gram (gm)</option>
+        `;
+        document.getElementById('posQuickShortcuts').classList.remove('hidden');
+      } else if (item.unit === 'litre') {
+        unitSelect.innerHTML = `
+          <option value="litre" selected>Litre (L)</option>
+          <option value="ml">MilliLitre (ml)</option>
+        `;
+        document.getElementById('posQuickShortcuts').classList.add('hidden');
+      } else {
+        unitSelect.innerHTML = `
+          <option value="pcs" selected>Pieces / Packets (Pcs / Pkt)</option>
+        `;
+        document.getElementById('posQuickShortcuts').classList.add('hidden');
+      }
+
+      document.getElementById('posQtyInput').value = '1';
+      document.getElementById('reverseAmountInput').value = '';
+      addBtn.disabled = false;
+      recalcPosPrice();
+    }
+
+    function recalcPosPrice() {
+      const itemId = document.getElementById('posItemSelect').value;
+      const item = storeData.items.find(i => i.id === itemId);
+      if (!item) return;
+
+      const qty = parseFloat(document.getElementById('posQtyInput').value) || 0;
+      const selectedUnit = document.getElementById('posUnitSelect').value;
+      document.getElementById('posQtyUnitLabel').innerText = selectedUnit;
+
+      const sellPrice = Number(item.sellPrice);
+      let calculatedPrice = 0;
+      let displayBreakup = '';
+
+      if (item.unit === 'kg') {
+        if (selectedUnit === 'gm') {
+          calculatedPrice = (sellPrice / 1000) * qty;
+          displayBreakup = `${qty} gm × ₹${(sellPrice/1000).toFixed(3)}/gm (₹${sellPrice}/kg)`;
+        } else {
+          calculatedPrice = sellPrice * qty;
+          displayBreakup = `${qty} kg × ₹${sellPrice}/kg`;
+        }
+      } else if (item.unit === 'litre') {
+        if (selectedUnit === 'ml') {
+          calculatedPrice = (sellPrice / 1000) * qty;
+          displayBreakup = `${qty} ml × (₹${sellPrice}/L)`;
+        } else {
+          calculatedPrice = sellPrice * qty;
+          displayBreakup = `${qty} L × ₹${sellPrice}/L`;
+        }
+      } else {
+        calculatedPrice = sellPrice * qty;
+        displayBreakup = `${qty} pcs × ₹${sellPrice}/pcs`;
+      }
+
+      document.getElementById('posComputedPrice').innerText = '₹' + calculatedPrice.toFixed(2);
+      document.getElementById('posComputedBreakup').innerText = displayBreakup;
+    }
+
+    function setQuickQty(qty, unit) {
+      document.getElementById('posUnitSelect').value = unit;
+      document.getElementById('posQtyInput').value = qty;
+      document.getElementById('reverseAmountInput').value = '';
+      recalcPosPrice();
+    }
+
+    function calcReverseQty(rupees) {
+      const amt = parseFloat(rupees);
+      const itemId = document.getElementById('posItemSelect').value;
+      const item = storeData.items.find(i => i.id === itemId);
+      if (!amt || !item || amt <= 0) return;
+
+      const sellPrice = Number(item.sellPrice);
+      if (item.unit === 'kg') {
+        const totalKg = amt / sellPrice;
+        if (totalKg < 1) {
+          const totalGm = Math.round(totalKg * 1000);
+          document.getElementById('posUnitSelect').value = 'gm';
+          document.getElementById('posQtyInput').value = totalGm;
+        } else {
+          document.getElementById('posUnitSelect').value = 'kg';
+          document.getElementById('posQtyInput').value = totalKg.toFixed(2);
+        }
+      } else {
+        const totalPcs = (amt / sellPrice).toFixed(1);
+        document.getElementById('posQtyInput').value = totalPcs;
+      }
+      recalcPosPrice();
+    }
+
+    function addItemToCart() {
+      const itemId = document.getElementById('posItemSelect').value;
+      const item = storeData.items.find(i => i.id === itemId);
+      if (!item) return;
+
+      const qty = parseFloat(document.getElementById('posQtyInput').value);
+      if (!qty || qty <= 0) {
+        alert("Please enter a valid quantity!");
+        return;
+      }
+
+      const selectedUnit = document.getElementById('posUnitSelect').value;
+      const sellPrice = Number(item.sellPrice);
+      const buyPrice = Number(item.buyPrice);
+
+      let itemTotal = 0;
+      let baseQtyDeduction = 0;
+
+      if (item.unit === 'kg') {
+        if (selectedUnit === 'gm') {
+          itemTotal = (sellPrice / 1000) * qty;
+          baseQtyDeduction = qty / 1000;
+        } else {
+          itemTotal = sellPrice * qty;
+          baseQtyDeduction = qty;
+        }
+      } else if (item.unit === 'litre') {
+        if (selectedUnit === 'ml') {
+          itemTotal = (sellPrice / 1000) * qty;
+          baseQtyDeduction = qty / 1000;
+        } else {
+          itemTotal = sellPrice * qty;
+          baseQtyDeduction = qty;
+        }
+      } else {
+        itemTotal = sellPrice * qty;
+        baseQtyDeduction = qty;
+      }
+
+      if (baseQtyDeduction > Number(item.stock)) {
+        if (!confirm(`Warning: Only ${item.stock} ${item.unit} available in stock, but you are billing ${baseQtyDeduction} ${item.unit}. Do you still want to proceed?`)) {
+          return;
+        }
+      }
+
+      cart.push({
+        id: Date.now().toString(),
+        itemId: item.id,
+        name: item.name,
+        qty: qty,
+        unit: selectedUnit,
+        baseDeduction: baseQtyDeduction,
+        rate: sellPrice,
+        buyRate: buyPrice,
+        total: itemTotal
+      });
+
+      renderCart();
+      document.getElementById('posQtyInput').value = '1';
+      document.getElementById('reverseAmountInput').value = '';
+      recalcPosPrice();
+    }
+
+    function renderCart() {
+      const container = document.getElementById('cartItemsContainer');
+      const badge = document.getElementById('cartCountBadge');
+      const checkPrint = document.getElementById('btnCheckoutPrint');
+      const checkOnly = document.getElementById('btnCheckoutOnly');
+
+      if (cart.length === 0) {
+        container.innerHTML = `
+          <div class="p-6 text-center text-slate-400 text-sm" id="emptyCartNotice">
+            🛒 No items in cart yet.<br>Select items from the left to add.
+          </div>
+        `;
+        badge.classList.add('hidden');
+        checkPrint.disabled = true;
+        checkOnly.disabled = true;
+        document.getElementById('cartTotalItemsCount').innerText = '0';
+        document.getElementById('cartSubtotal').innerText = '₹0.00';
+        document.getElementById('cartGrandTotal').innerText = '₹0.00';
+        return;
+      }
+
+      badge.innerText = cart.length;
+      badge.classList.remove('hidden');
+      checkPrint.disabled = false;
+      checkOnly.disabled = false;
+
+      let subtotal = 0;
+      container.innerHTML = cart.map((c, index) => {
+        subtotal += c.total;
+        return `
+          <div class="p-3 flex items-center justify-between hover:bg-slate-50 transition">
+            <div class="flex-1 pr-2">
+              <div class="font-bold text-slate-800 text-xs md:text-sm">${escapeHtml(c.name)}</div>
+              <div class="text-[11px] text-slate-500">
+                ${c.qty} ${c.unit} × ₹${c.rate}/${c.unit === 'gm' ? '1000g' : c.unit}
+              </div>
+            </div>
+            <div class="text-right flex items-center gap-3">
+              <span class="font-bold text-slate-900 text-sm">₹${c.total.toFixed(2)}</span>
+              <button onclick="removeCartItem(${index})" class="text-slate-300 hover:text-red-500 transition p-1">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('cartTotalItemsCount').innerText = cart.length;
+      document.getElementById('cartSubtotal').innerText = '₹' + subtotal.toFixed(2);
+      recalcCartGrandTotal();
+      lucide.createIcons();
+    }
+
+    function removeCartItem(index) {
+      cart.splice(index, 1);
+      renderCart();
+    }
+
+    function clearCart() {
+      if (cart.length > 0 && confirm("Do you want to clear all items in the cart?")) {
+        cart = [];
+        renderCart();
+      }
+    }
+
+    function recalcCartGrandTotal() {
+      const subtotal = cart.reduce((sum, item) => sum + item.total, 0);
+      const discount = parseFloat(document.getElementById('cartDiscount').value) || 0;
+      const grandTotal = Math.max(0, subtotal - discount);
+      document.getElementById('cartGrandTotal').innerText = '₹' + grandTotal.toFixed(2);
+    }
+
+    function checkoutBill(shouldPrint) {
+      if (cart.length === 0) return;
+
+      const customerName = document.getElementById('cartCustomerName').value.trim() || 'Cash Customer';
+      const customerPhone = document.getElementById('cartCustomerPhone').value.trim() || '';
+      const paymentMode = document.getElementById('cartPaymentMode').value;
+      const subtotal = cart.reduce((sum, item) => sum + item.total, 0);
+      const discount = parseFloat(document.getElementById('cartDiscount').value) || 0;
+      const grandTotal = Math.max(0, subtotal - discount);
+
+      // Deduct stock locally
+      cart.forEach(cartItem => {
+        const item = storeData.items.find(i => i.id === cartItem.itemId);
+        if (item) {
+          item.stock = Math.max(0, parseFloat((Number(item.stock) - cartItem.baseDeduction).toFixed(3)));
+        }
+      });
+
+      const billRecord = {
+        billNo: 'BILL-' + (storeData.sales.length + 1001),
+        date: new Date().toISOString(),
+        customerName: customerName,
+        customerPhone: customerPhone,
+        paymentMode: paymentMode,
+        items: [...cart],
+        subtotal: subtotal,
+        discount: discount,
+        grandTotal: grandTotal
+      };
+
+      storeData.sales.unshift(billRecord);
+      saveToLocalStorage();
+      populatePosItemDropdown();
+      handleQuickSearch(document.getElementById('quickSearchInput').value);
+      renderStockTable();
+      renderSalesHistory();
+
+      // Silent background sync if laptop is available
+      fetch(`${serverBaseUrl}/api/sync`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(storeData)
+      }).catch(() => {});
+
+      if (shouldPrint) {
+        printReceipt(billRecord);
+      } else {
+        alert(`Sale Saved Successfully!\nBill No: ${billRecord.billNo}\nTotal Amount: ₹${grandTotal.toFixed(2)}`);
+      }
+
+      cart = [];
+      document.getElementById('cartCustomerName').value = '';
+      document.getElementById('cartCustomerPhone').value = '';
+      document.getElementById('cartDiscount').value = '0';
+      renderCart();
+    }
+
+    function printReceipt(bill) {
+      document.getElementById('printShopName').innerText = storeData.shopName || 'Grocery & Kirana Store';
+      document.getElementById('printShopPhone').innerText = 'Ph: ' + (storeData.phone || '');
+      document.getElementById('printShopAddress').innerText = storeData.address || '';
+      document.getElementById('printBillNo').innerText = bill.billNo;
+      
+      const d = new Date(bill.date);
+      document.getElementById('printBillDate').innerText = d.toLocaleDateString('en-US') + ' ' + d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+      document.getElementById('printCustomerName').innerText = bill.customerName + (bill.customerPhone ? ' (' + bill.customerPhone + ')' : '');
+
+      const tableBody = document.getElementById('printBillItemsTable');
+      tableBody.innerHTML = bill.items.map(item => `
+        <tr>
+          <td style="padding: 3px 0;">${escapeHtml(item.name)}</td>
+          <td style="padding: 3px 0; text-align: center;">${item.qty} ${item.unit}</td>
+          <td style="padding: 3px 0; text-align: right;">₹${item.total.toFixed(2)}</td>
+        </tr>
+      `).join('');
+
+      document.getElementById('printSubtotal').innerText = '₹' + Number(bill.subtotal).toFixed(2);
+      if (bill.discount > 0) {
+        document.getElementById('printDiscountRow').style.display = 'flex';
+        document.getElementById('printDiscount').innerText = '-₹' + Number(bill.discount).toFixed(2);
+      } else {
+        document.getElementById('printDiscountRow').style.display = 'none';
+      }
+      document.getElementById('printGrandTotal').innerText = '₹' + Number(bill.grandTotal).toFixed(2);
+      document.getElementById('printPaymentMode').innerText = bill.paymentMode;
+
+      window.print();
+    }
+
+    // ==========================================
+    // STOCK INVENTORY TABLE (TAB 3)
+    // ==========================================
+    let isLowStockFilterActive = false;
+
+    function renderStockTable() {
+      const q = (document.getElementById('stockTableSearch').value || '').toLowerCase().trim();
+      const cat = document.getElementById('stockCategoryFilter').value;
+
+      const filtered = storeData.items.filter(item => {
+        const matchesQuery = item.name.toLowerCase().includes(q) || item.category.toLowerCase().includes(q);
+        const matchesCat = cat ? item.category === cat : true;
+        const matchesLow = isLowStockFilterActive ? Number(item.stock) <= Number(item.minStock || 5) : true;
+        return matchesQuery && matchesCat && matchesLow;
+      });
+
+      const tbody = document.getElementById('stockTableBody');
+      const empty = document.getElementById('emptyStockNotice');
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '';
+        empty.classList.remove('hidden');
+        return;
+      }
+      empty.classList.add('hidden');
+
+      tbody.innerHTML = filtered.map(item => {
+        const buy = Number(item.buyPrice);
+        const sell = Number(item.sellPrice);
+        const margin = sell - buy;
+        const marginPct = buy > 0 ? ((margin / buy) * 100).toFixed(0) : 0;
+        const isLow = Number(item.stock) <= Number(item.minStock || 5);
+
+        return `
+          <tr class="hover:bg-slate-50 transition ${isLow ? 'bg-red-50/40' : ''}">
+            <td class="py-3 px-4">
+              <div class="font-bold text-slate-800">${escapeHtml(item.name)}</div>
+              ${isLow ? '<span class="text-[10px] font-bold text-red-600 bg-red-100 px-1.5 py-0.5 rounded">Low Stock Alert!</span>' : ''}
+            </td>
+            <td class="py-3 px-4">
+              <span class="text-xs bg-slate-100 text-slate-700 px-2 py-1 rounded-full font-medium">${escapeHtml(item.category)}</span>
+            </td>
+            <td class="py-3 px-4 text-right font-medium text-slate-700">₹${buy.toFixed(2)} / ${item.unit}</td>
+            <td class="py-3 px-4 text-right font-bold text-emerald-700">₹${sell.toFixed(2)} / ${item.unit}</td>
+            <td class="py-3 px-4 text-right font-semibold text-emerald-600">+₹${margin.toFixed(1)} (${marginPct}%)</td>
+            <td class="py-3 px-4 text-center">
+              <span class="font-black px-2.5 py-1 rounded-lg text-xs ${isLow ? 'bg-red-100 text-red-700 ring-1 ring-red-300' : 'bg-emerald-100 text-emerald-800'}">
+                ${item.stock} ${item.unit}
+              </span>
+            </td>
+            <td class="py-3 px-4 text-center">
+              <div class="flex items-center justify-center gap-1.5">
+                <button onclick="openQuickRateEditModal('${item.id}')" title="Edit Buy & Sell Rates" class="p-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 rounded-lg text-xs font-bold transition flex items-center gap-1">
+                  <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
+                  <span>Rates</span>
+                </button>
+                <button onclick="openAddStockModal('${item.id}')" title="Add Inward Stock" class="p-1.5 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-lg text-xs font-bold transition flex items-center gap-1">
+                  <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                  <span>+Stock</span>
+                </button>
+                <button onclick="openEditItemModal('${item.id}')" title="Full Edit Item" class="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition">
+                  <i data-lucide="settings-2" class="w-3.5 h-3.5"></i>
+                </button>
+                <button onclick="deleteItem('${item.id}')" title="Delete Item" class="p-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition">
+                  <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      lucide.createIcons();
+    }
+
+    function filterLowStockOnly() {
+      isLowStockFilterActive = !isLowStockFilterActive;
+      const btn = document.getElementById('lowStockToggleBtn');
+      if (isLowStockFilterActive) {
+        btn.classList.add('bg-red-600', 'text-white', 'ring-2', 'ring-red-300');
+        btn.classList.remove('bg-red-50', 'text-red-700');
+      } else {
+        btn.classList.remove('bg-red-600', 'text-white', 'ring-2', 'ring-red-300');
+        btn.classList.add('bg-red-50', 'text-red-700');
+      }
+      renderStockTable();
+    }
+
+    // ==========================================
+    // ADD / FULL EDIT ITEM MODAL
+    // ==========================================
+    function openAddItemModal(prefilledName = '') {
+      document.getElementById('itemModalTitle').innerText = '+ Add New Grocery Item';
+      document.getElementById('formItemId').value = '';
+      document.getElementById('formItemName').value = prefilledName;
+      document.getElementById('formItemCategory').value = 'Grains & Pulses';
+      document.getElementById('formItemUnit').value = 'kg';
+      document.getElementById('formItemBuyPrice').value = '';
+      document.getElementById('formItemSellPrice').value = '';
+      document.getElementById('formItemStock').value = '';
+      document.getElementById('formItemMinStock').value = '5';
+      document.getElementById('formMarginDisplay').innerText = '₹0.00 (0%)';
+      updateFormUnitLabels();
+      document.getElementById('itemModal').classList.remove('hidden');
+      setTimeout(() => document.getElementById('formItemName').focus(), 100);
+      lucide.createIcons();
+    }
+
+    function openEditItemModal(itemId) {
+      const item = storeData.items.find(i => i.id === itemId);
+      if (!item) return;
+
+      document.getElementById('itemModalTitle').innerText = '✏️ Edit Item & Stock';
+      document.getElementById('formItemId').value = item.id;
+      document.getElementById('formItemName').value = item.name;
+      document.getElementById('formItemCategory').value = item.category;
+      document.getElementById('formItemUnit').value = item.unit;
+      document.getElementById('formItemBuyPrice').value = item.buyPrice;
+      document.getElementById('formItemSellPrice').value = item.sellPrice;
+      document.getElementById('formItemStock').value = item.stock;
+      document.getElementById('formItemMinStock').value = item.minStock || '5';
+      
+      updateFormUnitLabels();
+      calcFormProfitMargin();
+      document.getElementById('itemModal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeItemModal() {
+      document.getElementById('itemModal').classList.add('hidden');
+    }
+
+    function updateFormUnitLabels() {
+      const u = document.getElementById('formItemUnit').value;
+      document.getElementById('formBuyUnitHint').innerText = `Wholesale cost per 1 ${u}`;
+      document.getElementById('formSellUnitHint').innerText = `Customer selling price per 1 ${u}`;
+    }
+
+    function calcFormProfitMargin() {
+      const buy = parseFloat(document.getElementById('formItemBuyPrice').value) || 0;
+      const sell = parseFloat(document.getElementById('formItemSellPrice').value) || 0;
+      const margin = sell - buy;
+      const pct = buy > 0 ? ((margin / buy) * 100).toFixed(0) : 0;
+      document.getElementById('formMarginDisplay').innerText = `₹${margin.toFixed(2)} (${pct}%)`;
+    }
+
+    function handleItemFormSubmit(e) {
+      e.preventDefault();
+      const id = document.getElementById('formItemId').value;
+      const name = document.getElementById('formItemName').value.trim();
+      const category = document.getElementById('formItemCategory').value;
+      const unit = document.getElementById('formItemUnit').value;
+      const buyPrice = parseFloat(document.getElementById('formItemBuyPrice').value) || 0;
+      const sellPrice = parseFloat(document.getElementById('formItemSellPrice').value) || 0;
+      const stock = parseFloat(document.getElementById('formItemStock').value) || 0;
+      const minStock = parseFloat(document.getElementById('formItemMinStock').value) || 5;
+
+      if (!name) {
+        alert("Item Name is required!");
+        return;
+      }
+
+      if (id) {
+        const index = storeData.items.findIndex(i => i.id === id);
+        if (index !== -1) {
+          storeData.items[index] = {
+            ...storeData.items[index],
+            name, category, unit, buyPrice, sellPrice, stock, minStock
+          };
+        }
+      } else {
+        storeData.items.unshift({
+          id: Date.now().toString(),
+          name, category, unit, buyPrice, sellPrice, stock, minStock
+        });
+      }
+
+      saveToLocalStorage();
+      closeItemModal();
+      populatePosItemDropdown();
+      handleQuickSearch(document.getElementById('quickSearchInput').value);
+      renderStockTable();
+    }
+
+    function deleteItem(itemId) {
+      const item = storeData.items.find(i => i.id === itemId);
+      if (!item) return;
+      if (confirm(`Are you sure you want to delete "${item.name}" from inventory?`)) {
+        storeData.items = storeData.items.filter(i => i.id !== itemId);
+        saveToLocalStorage();
+        populatePosItemDropdown();
+        handleQuickSearch(document.getElementById('quickSearchInput').value);
+        renderStockTable();
+      }
+    }
+
+    // ==========================================
+    // ADD STOCK MODAL (+STOCK)
+    // ==========================================
+    function openAddStockModal(itemId) {
+      const item = storeData.items.find(i => i.id === itemId);
+      if (!item) return;
+
+      document.getElementById('addStockItemId').value = item.id;
+      document.getElementById('addStockItemName').innerText = item.name;
+      document.getElementById('addStockCurrentQty').innerText = `${item.stock} ${item.unit}`;
+      document.getElementById('addStockUnitBadge').innerText = item.unit;
+      document.getElementById('addStockInputQty').value = '';
+      document.getElementById('addStockNewBuyRate').value = item.buyPrice;
+      document.getElementById('addStockNewSellRate').value = item.sellPrice;
+
+      document.getElementById('addStockModal').classList.remove('hidden');
+      setTimeout(() => document.getElementById('addStockInputQty').focus(), 100);
+      lucide.createIcons();
+    }
+
+    function closeAddStockModal() {
+      document.getElementById('addStockModal').classList.add('hidden');
+    }
+
+    function submitAddStock() {
+      const itemId = document.getElementById('addStockItemId').value;
+      const item = storeData.items.find(i => i.id === itemId);
+      if (!item) return;
+
+      const qtyToAdd = parseFloat(document.getElementById('addStockInputQty').value);
+      if (!qtyToAdd || qtyToAdd <= 0) {
+        alert("Please enter a valid quantity!");
+        return;
+      }
+
+      const newBuy = parseFloat(document.getElementById('addStockNewBuyRate').value);
+      const newSell = parseFloat(document.getElementById('addStockNewSellRate').value);
+
+      item.stock = parseFloat((Number(item.stock) + qtyToAdd).toFixed(3));
+      if (!isNaN(newBuy) && newBuy > 0) item.buyPrice = newBuy;
+      if (!isNaN(newSell) && newSell > 0) item.sellPrice = newSell;
+
+      saveToLocalStorage();
+      closeAddStockModal();
+      populatePosItemDropdown();
+      handleQuickSearch(document.getElementById('quickSearchInput').value);
+      renderStockTable();
+      alert(`Successfully added ${qtyToAdd} ${item.unit} to stock!\nNew Available Stock: ${item.stock} ${item.unit}`);
+    }
+
+    // ==========================================
+    // SALES RECORD & HISTORY (TAB 4)
+    // ==========================================
+    function renderSalesHistory() {
+      const dateFilter = document.getElementById('historyDateFilter').value;
+      const filtered = storeData.sales.filter(s => {
+        if (!dateFilter) return true;
+        return s.date.startsWith(dateFilter);
+      });
+
+      const tbody = document.getElementById('salesHistoryBody');
+      const empty = document.getElementById('emptyHistoryNotice');
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '';
+        empty.classList.remove('hidden');
+        return;
+      }
+      empty.classList.add('hidden');
+
+      tbody.innerHTML = filtered.map(s => {
+        const d = new Date(s.date);
+        const dateStr = d.toLocaleDateString('en-US') + ' ' + d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        const itemsSummary = s.items.map(it => `${it.name} (${it.qty} ${it.unit})`).join(', ');
+
+        return `
+          <tr class="hover:bg-slate-50 transition">
+            <td class="py-3 px-4 font-mono font-bold text-slate-700 text-xs">${s.billNo}</td>
+            <td class="py-3 px-4 text-xs text-slate-500">${dateStr}</td>
+            <td class="py-3 px-4 font-semibold text-slate-800 text-xs">
+              ${escapeHtml(s.customerName)}
+              ${s.customerPhone ? `<span class="block text-[10px] text-slate-400">${s.customerPhone}</span>` : ''}
+            </td>
+            <td class="py-3 px-4 text-xs text-slate-600 max-w-xs truncate" title="${escapeHtml(itemsSummary)}">
+              ${escapeHtml(itemsSummary)}
+            </td>
+            <td class="py-3 px-4 text-right font-black text-emerald-700 text-sm">₹${Number(s.grandTotal).toFixed(2)}</td>
+            <td class="py-3 px-4 text-center">
+              <span class="text-[11px] font-bold px-2 py-0.5 rounded-full ${s.paymentMode === 'Credit' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}">
+                ${s.paymentMode}
+              </span>
+            </td>
+            <td class="py-3 px-4 text-center">
+              <button onclick="reprintBill('${s.billNo}')" title="Print Receipt" class="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition inline-flex items-center gap-1 text-xs">
+                <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+                <span>Receipt</span>
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      lucide.createIcons();
+    }
+
+    function resetDateFilter() {
+      document.getElementById('historyDateFilter').value = '';
+      renderSalesHistory();
+    }
+
+    function reprintBill(billNo) {
+      const bill = storeData.sales.find(s => s.billNo === billNo);
+      if (bill) printReceipt(bill);
+    }
+
+    function exportSalesToExcel() {
+      if (storeData.sales.length === 0) {
+        alert("No sales data available to download!");
+        return;
+      }
+
+      const rows = storeData.sales.map(s => ({
+        "Bill No": s.billNo,
+        "Date": new Date(s.date).toLocaleString(),
+        "Customer Name": s.customerName,
+        "Mobile": s.customerPhone || '',
+        "Payment Mode": s.paymentMode,
+        "Items Sold": s.items.map(it => `${it.name} (${it.qty} ${it.unit} - ₹${it.total})`).join('; '),
+        "Subtotal": s.subtotal,
+        "Discount": s.discount,
+        "Grand Total (₹)": s.grandTotal
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(rows);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Sales_History");
+      XLSX.writeFile(workbook, `Kirana_Sales_${new Date().toISOString().split('T')[0]}.xlsx`);
+    }
+
+    // ==========================================
+    // BACKUP & SETTINGS (TAB 5)
+    // ==========================================
+    function editShopName() {
+      switchTab('settings');
+      setTimeout(() => document.getElementById('settingShopName').focus(), 100);
+    }
+
+    function saveShopSettings() {
+      const name = document.getElementById('settingShopName').value.trim() || 'Grocery Store';
+      const phone = document.getElementById('settingShopPhone').value.trim();
+      const addr = document.getElementById('settingShopAddress').value.trim();
+
+      storeData.shopName = name;
+      storeData.phone = phone;
+      storeData.address = addr;
+
+      document.getElementById('shopTitleDisplay').innerText = name;
+      saveToLocalStorage();
+      alert("Store details saved successfully!");
+    }
+
+    function downloadJsonBackup() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(storeData, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `KiranaPro_Backup_${new Date().toISOString().split('T')[0]}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    }
+
+    function restoreJsonBackup(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          if (parsed && Array.isArray(parsed.items)) {
+            storeData = parsed;
+            saveToLocalStorage();
+            initData();
+            alert("Backup restored successfully!");
+          } else {
+            alert("Invalid backup file format!");
+          }
+        } catch(err) {
+          alert("Error reading file: " + err.message);
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function loadSampleDemoData() {
+      if (confirm("Do you want to reload 14 sample grocery items?")) {
+        storeData.items = [...DEFAULT_ITEMS];
+        saveToLocalStorage();
+
+      // Auto-upgrade storage if using old demo items
+      if (!saved || (storeData.items && storeData.items.length < 30)) {
+        storeData.items = [...DEFAULT_ITEMS];
+        saveToLocalStorage();
+      }
+    
+        initData();
+        alert("Sample items loaded successfully!");
+      }
+    }
+
+    function confirmResetAllData() {
+      if (confirm("CAUTION: Are you sure you want to reset all data (items + sales)?")) {
+        if (confirm("Have you downloaded a backup? Deleted data cannot be recovered!")) {
+          storeData = {
+            shopName: 'Grocery & Kirana Store',
+            phone: '',
+            address: '',
+            items: [],
+            sales: []
+          };
+          saveToLocalStorage();
+          initData();
+          alert("All data has been reset!");
+        }
+      }
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      return String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    
+    function forceLoadParchiItems() {
+      if (confirm('Do you want to reload all 75 items from the paper slips?')) {
+        storeData.items = [...DEFAULT_ITEMS];
+        localStorage.setItem('kiranapro_version', 'v3_75items');
+        saveToLocalStorage();
+        initData();
+        alert('All 75 items from your paper slips have been loaded successfully!');
+      }
+    }
+
+    function openMobileConnectModal() {
+      // Determine the mobile URL (use current host or detected IP)
+      let currentHost = window.location.hostname;
+      if (currentHost === 'localhost' || currentHost === '127.0.0.1') {
+        currentHost = '172.17.155.62';
+      }
+      const port = window.location.port || '8080';
+      const targetUrl = `http://${currentHost}:${port}`;
+
+      document.getElementById('mobileDirectUrl').innerText = targetUrl;
+      document.getElementById('mobileDirectUrl').href = targetUrl;
+
+      // QR Code via fast reliable API
+      const qrApi = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(targetUrl)}`;
+      document.getElementById('qrCodeImage').src = qrApi;
+
+      document.getElementById('mobileConnectModal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeMobileConnectModal() {
+      document.getElementById('mobileConnectModal').classList.add('hidden');
+    }
+
+    
+    function openBackupModal() {
+      document.getElementById('easyBackupModal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+    function closeBackupModal() {
+      document.getElementById('easyBackupModal').classList.add('hidden');
+    }
+
+    // Keyboard Shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (e.key === '/' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'SELECT') {
+        e.preventDefault();
+        switchTab('search');
+        document.getElementById('quickSearchInput').focus();
+      }
+      if (e.key === 'Escape') {
+        closeItemModal();
+        closeRateModal();
+        closeAddStockModal();
+        closeQuickRateEditModal();
+        closeSyncHelpModal();
+      }
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initData();
+    });
+  </script>
+</body>
+</html>

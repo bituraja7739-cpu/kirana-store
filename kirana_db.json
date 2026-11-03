@@ -1,0 +1,759 @@
+{
+  "shopName": "Grocery & Kirana Store",
+  "phone": "9876543210",
+  "address": "Main Market, Shop #12",
+  "items": [
+    {
+      "id": "1",
+      "name": "सेंधा नमक 500g (Sendha Namak 500g)",
+      "category": "General",
+      "unit": "pcs",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 20,
+      "minStock": 5
+    },
+    {
+      "id": "2",
+      "name": "सेंधा नमक 100g (Sendha Namak 100g)",
+      "category": "General",
+      "unit": "pcs",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 25,
+      "minStock": 5
+    },
+    {
+      "id": "3",
+      "name": "रंग लाल (Red Food Color)",
+      "category": "General",
+      "unit": "pcs",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 30,
+      "minStock": 5
+    },
+    {
+      "id": "4",
+      "name": "रंग पीला (Yellow Food Color)",
+      "category": "General",
+      "unit": "pcs",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 30,
+      "minStock": 5
+    },
+    {
+      "id": "5",
+      "name": "सत्तू 500g (Sattu 500g)",
+      "category": "Grains & Pulses",
+      "unit": "pcs",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 15,
+      "minStock": 5
+    },
+    {
+      "id": "6",
+      "name": "सत्तू 200g (Sattu 200g)",
+      "category": "Grains & Pulses",
+      "unit": "pcs",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 20,
+      "minStock": 5
+    },
+    {
+      "id": "7",
+      "name": "हल्दी पाउडर 200g (Haldi 200g)",
+      "category": "Spices",
+      "unit": "pcs",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 25,
+      "minStock": 5
+    },
+    {
+      "id": "8",
+      "name": "हल्दी पाउडर 100g (Haldi 100g)",
+      "category": "Spices",
+      "unit": "pcs",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 30,
+      "minStock": 5
+    },
+    {
+      "id": "9",
+      "name": "दाना चीनी 100g (Daana Cheeni)",
+      "category": "General",
+      "unit": "pcs",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 20,
+      "minStock": 5
+    },
+    {
+      "id": "10",
+      "name": "सादा नमक (Sada Namak)",
+      "category": "General",
+      "unit": "pcs",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 50,
+      "minStock": 5
+    },
+    {
+      "id": "11",
+      "name": "खावा सोडा / मीठा सोडा (Baking Soda)",
+      "category": "General",
+      "unit": "pcs",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 25,
+      "minStock": 5
+    },
+    {
+      "id": "12",
+      "name": "मोमबत्ती (Mombatti / Candles)",
+      "category": "General",
+      "unit": "pcs",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 40,
+      "minStock": 5
+    },
+    {
+      "id": "13",
+      "name": "जलजीरा 50g (Jaljeera 50g)",
+      "category": "Spices",
+      "unit": "pcs",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 30,
+      "minStock": 5
+    },
+    {
+      "id": "14",
+      "name": "चाट मसाला 50g (Chaat Masala 50g)",
+      "category": "Spices",
+      "unit": "pcs",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 25,
+      "minStock": 5
+    },
+    {
+      "id": "15",
+      "name": "सोयाबीन बरी (Soyabean Bari)",
+      "category": "Grains & Pulses",
+      "unit": "kg",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 25,
+      "minStock": 5
+    },
+    {
+      "id": "16",
+      "name": "मसूर दाल (Masoor Dal)",
+      "category": "Grains & Pulses",
+      "unit": "kg",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 50,
+      "minStock": 5
+    },
+    {
+      "id": "17",
+      "name": "मैदा (Maida)",
+      "category": "Grains & Pulses",
+      "unit": "kg",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 40,
+      "minStock": 5
+    },
+    {
+      "id": "18",
+      "name": "चना दाल (Chana Dal)",
+      "category": "Grains & Pulses",
+      "unit": "kg",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 50,
+      "minStock": 5
+    },
+    {
+      "id": "19",
+      "name": "पापड़ (Papad)",
+      "category": "Snacks & Biscuits",
+      "unit": "pcs",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 30,
+      "minStock": 5
+    },
+    {
+      "id": "20",
+      "name": "तेजपत्ता (Tejpatta)",
+      "category": "Spices",
+      "unit": "kg",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 10,
+      "minStock": 5
+    },
+    {
+      "id": "21",
+      "name": "लाल मिर्च खुला (Laal Mirch Khula)",
+      "category": "Spices",
+      "unit": "kg",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 15,
+      "minStock": 5
+    },
+    {
+      "id": "22",
+      "name": "लाल मिर्च तेजा (Laal Mirch Teja)",
+      "category": "Spices",
+      "unit": "kg",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 15,
+      "minStock": 5
+    },
+    {
+      "id": "23",
+      "name": "धनिया खड़ा/पाउडर (Dhaniya)",
+      "category": "Spices",
+      "unit": "kg",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 20,
+      "minStock": 5
+    },
+    {
+      "id": "24",
+      "name": "हल्दी खड़ी (Haldi Khadi)",
+      "category": "Spices",
+      "unit": "kg",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 15,
+      "minStock": 5
+    },
+    {
+      "id": "25",
+      "name": "मरीच / काली मिर्च (Kali Mirch)",
+      "category": "Spices",
+      "unit": "kg",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 10,
+      "minStock": 5
+    },
+    {
+      "id": "26",
+      "name": "जीरा (Jeera)",
+      "category": "Spices",
+      "unit": "kg",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 25,
+      "minStock": 5
+    },
+    {
+      "id": "27",
+      "name": "गोदरेज डाई / साबुन (Godrej)",
+      "category": "General",
+      "unit": "pcs",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 24,
+      "minStock": 5
+    },
+    {
+      "id": "28",
+      "name": "बैटरी सेल (Battery Cells)",
+      "category": "General",
+      "unit": "pcs",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 30,
+      "minStock": 5
+    },
+    {
+      "id": "29",
+      "name": "गढ़ी / सूखा नारियल (Gari Dry Coconut)",
+      "category": "General",
+      "unit": "kg",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 15,
+      "minStock": 5
+    },
+    {
+      "id": "30",
+      "name": "छोहारा (Chhohara Dry Dates)",
+      "category": "General",
+      "unit": "kg",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 15,
+      "minStock": 5
+    },
+    {
+      "id": "31",
+      "name": "मिसरी (Mishri Sugar Candy)",
+      "category": "General",
+      "unit": "kg",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 20,
+      "minStock": 5
+    },
+    {
+      "id": "32",
+      "name": "कसैली / सुपारी (Kasaili Supari)",
+      "category": "General",
+      "unit": "kg",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 10,
+      "minStock": 5
+    },
+    {
+      "id": "33",
+      "name": "उजाला लिक्विड (Ujala Liquid)",
+      "category": "Soaps & Detergents",
+      "unit": "pcs",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 20,
+      "minStock": 5
+    },
+    {
+      "id": "34",
+      "name": "मॉम्स मैजिक बिस्किट (Mom's Magic Biscuit)",
+      "category": "Snacks & Biscuits",
+      "unit": "pcs",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 48,
+      "minStock": 5
+    },
+    {
+      "id": "35",
+      "name": "मोनाको बिस्किट (Monaco Biscuit)",
+      "category": "Snacks & Biscuits",
+      "unit": "pcs",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 48,
+      "minStock": 5
+    },
+    {
+      "id": "36",
+      "name": "क्रैकजैक बिस्किट (Krackjack Biscuit)",
+      "category": "Snacks & Biscuits",
+      "unit": "pcs",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 48,
+      "minStock": 5
+    },
+    {
+      "id": "37",
+      "name": "खीर चावल छोटा (Kheer Chawal Chhota)",
+      "category": "Grains & Pulses",
+      "unit": "kg",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 30,
+      "minStock": 5
+    },
+    {
+      "id": "38",
+      "name": "डिस्पोजल कटोरा / दोना (Disposable Dona)",
+      "category": "General",
+      "unit": "pcs",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 100,
+      "minStock": 5
+    },
+    {
+      "id": "39",
+      "name": "डिस्पोजल कप (Disposable Paper Cup)",
+      "category": "General",
+      "unit": "pcs",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 100,
+      "minStock": 5
+    },
+    {
+      "id": "40",
+      "name": "डिस्पोजल ग्लास (Disposable Glass)",
+      "category": "General",
+      "unit": "pcs",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 100,
+      "minStock": 5
+    },
+    {
+      "id": "41",
+      "name": "डिस्पोजल पत्तल (Disposable Pattal)",
+      "category": "General",
+      "unit": "pcs",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 100,
+      "minStock": 5
+    },
+    {
+      "id": "42",
+      "name": "मीट मसाला 100g (Meat Masala)",
+      "category": "Spices",
+      "unit": "pcs",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 20,
+      "minStock": 5
+    },
+    {
+      "id": "43",
+      "name": "गरम मसाला 100g (Garam Masala)",
+      "category": "Spices",
+      "unit": "pcs",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 20,
+      "minStock": 5
+    },
+    {
+      "id": "44",
+      "name": "सब्जी मसाला 100g (Sabji Masala)",
+      "category": "Spices",
+      "unit": "pcs",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 20,
+      "minStock": 5
+    },
+    {
+      "id": "45",
+      "name": "पनीर मसाला 50g (Paneer Masala)",
+      "category": "Spices",
+      "unit": "pcs",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 20,
+      "minStock": 5
+    },
+    {
+      "id": "46",
+      "name": "धनिया पैकेट 200g (Dhaniya Packet)",
+      "category": "Spices",
+      "unit": "pcs",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 25,
+      "minStock": 5
+    },
+    {
+      "id": "47",
+      "name": "मिर्च पैकेट 200g (Mirch Packet 200g)",
+      "category": "Spices",
+      "unit": "pcs",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 25,
+      "minStock": 5
+    },
+    {
+      "id": "48",
+      "name": "मिर्च पैकेट 100g (Mirch Packet 100g)",
+      "category": "Spices",
+      "unit": "pcs",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 30,
+      "minStock": 5
+    },
+    {
+      "id": "49",
+      "name": "सरसों दाना (Sarso Dana)",
+      "category": "Spices",
+      "unit": "kg",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 25,
+      "minStock": 5
+    },
+    {
+      "id": "50",
+      "name": "लहसुन (Lahsun Garlic)",
+      "category": "General",
+      "unit": "kg",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 15,
+      "minStock": 5
+    },
+    {
+      "id": "51",
+      "name": "नारियल झाड़ू (Nariyal Jhadu)",
+      "category": "General",
+      "unit": "pcs",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 12,
+      "minStock": 5
+    },
+    {
+      "id": "52",
+      "name": "सीक / फूल झाड़ू (Seek / Phool Jhadu)",
+      "category": "General",
+      "unit": "pcs",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 15,
+      "minStock": 5
+    },
+    {
+      "id": "53",
+      "name": "स्टील जूना / स्क्रबर (Steel Juna)",
+      "category": "Soaps & Detergents",
+      "unit": "pcs",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 36,
+      "minStock": 5
+    },
+    {
+      "id": "54",
+      "name": "बेसन 250g (Besan 250g)",
+      "category": "Grains & Pulses",
+      "unit": "pcs",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 25,
+      "minStock": 5
+    },
+    {
+      "id": "55",
+      "name": "सेवई (Sewai Vermicelli)",
+      "category": "Snacks & Biscuits",
+      "unit": "pcs",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 30,
+      "minStock": 5
+    },
+    {
+      "id": "56",
+      "name": "साबूदाना 500g (Sabudana 500g)",
+      "category": "Grains & Pulses",
+      "unit": "pcs",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 20,
+      "minStock": 5
+    },
+    {
+      "id": "57",
+      "name": "साबूदाना 200g (Sabudana 200g)",
+      "category": "Grains & Pulses",
+      "unit": "pcs",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 25,
+      "minStock": 5
+    },
+    {
+      "id": "58",
+      "name": "ताजा चायपत्ती 100g (Taaza Tea 100g)",
+      "category": "General",
+      "unit": "pcs",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 20,
+      "minStock": 5
+    },
+    {
+      "id": "59",
+      "name": "रेड लेबल चायपत्ती 100g (Red Label Tea)",
+      "category": "General",
+      "unit": "pcs",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 20,
+      "minStock": 5
+    },
+    {
+      "id": "60",
+      "name": "लक्स साबुन (Lux Soap)",
+      "category": "Soaps & Detergents",
+      "unit": "pcs",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 36,
+      "minStock": 5
+    },
+    {
+      "id": "61",
+      "name": "काजू 250g (Kaju Cashew)",
+      "category": "General",
+      "unit": "pcs",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 15,
+      "minStock": 5
+    },
+    {
+      "id": "62",
+      "name": "किशमिश 100g (Kishmish Raisins)",
+      "category": "General",
+      "unit": "pcs",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 20,
+      "minStock": 5
+    },
+    {
+      "id": "63",
+      "name": "पीताम्बरी पाउडर (Pitambari Powder)",
+      "category": "Soaps & Detergents",
+      "unit": "pcs",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 24,
+      "minStock": 5
+    },
+    {
+      "id": "64",
+      "name": "भुजिया नमकीन 200g (Bhujia Namkeen)",
+      "category": "Snacks & Biscuits",
+      "unit": "pcs",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 30,
+      "minStock": 5
+    },
+    {
+      "id": "65",
+      "name": "कुछ-कुछ नमकीन 200g (Kuch-Kuch Namkeen)",
+      "category": "Snacks & Biscuits",
+      "unit": "pcs",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 30,
+      "minStock": 5
+    },
+    {
+      "id": "66",
+      "name": "टूथपेस्ट (Toothpaste)",
+      "category": "General",
+      "unit": "pcs",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 24,
+      "minStock": 5
+    },
+    {
+      "id": "67",
+      "name": "गुड नाईट लिक्विड रिफिल (Good Knight Refill)",
+      "category": "General",
+      "unit": "pcs",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 20,
+      "minStock": 5
+    },
+    {
+      "id": "68",
+      "name": "डव साबुन (Dove Soap)",
+      "category": "Soaps & Detergents",
+      "unit": "pcs",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 24,
+      "minStock": 5
+    },
+    {
+      "id": "69",
+      "name": "पेयर्स साबुन (Pears Soap)",
+      "category": "Soaps & Detergents",
+      "unit": "pcs",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 24,
+      "minStock": 5
+    },
+    {
+      "id": "70",
+      "name": "वासमोल हेयर कलर (Vasmol)",
+      "category": "General",
+      "unit": "pcs",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 18,
+      "minStock": 5
+    },
+    {
+      "id": "71",
+      "name": "निहार शांति आंवला तेल (Nihar Amla Oil)",
+      "category": "Oils & Ghee",
+      "unit": "pcs",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 24,
+      "minStock": 5
+    },
+    {
+      "id": "72",
+      "name": "डाबर आंवला तेल (Dabur Amla Oil)",
+      "category": "Oils & Ghee",
+      "unit": "pcs",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 24,
+      "minStock": 5
+    },
+    {
+      "id": "73",
+      "name": "जैस्मिन हेयर ऑयल (Jasmine Hair Oil)",
+      "category": "Oils & Ghee",
+      "unit": "pcs",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 20,
+      "minStock": 5
+    },
+    {
+      "id": "74",
+      "name": "पैराशूट नारियल तेल (Parachute Coconut Oil)",
+      "category": "Oils & Ghee",
+      "unit": "pcs",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 24,
+      "minStock": 5
+    },
+    {
+      "id": "75",
+      "name": "निहार तेल जार पैक (Nihar Oil Jar)",
+      "category": "Oils & Ghee",
+      "unit": "pcs",
+      "buyPrice": 0,
+      "sellPrice": 0,
+      "stock": 12,
+      "minStock": 5
+    }
+  ],
+  "sales": [],
+  "lastUpdated": ""
+}

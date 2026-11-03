@@ -1,0 +1,1 @@
+# KiranaPro uses Python standard libraries (no external pip dependencies needed)
