@@ -115,17 +115,29 @@ class KiranaRequestHandler(http.server.SimpleHTTPRequestHandler):
                 incoming_data = json.loads(post_body.decode('utf-8'))
                 current_db = load_db()
 
-                # Merge items: update rates & stocks
-                laptop_items_map = {item['id']: item for item in current_db.get('items', [])}
-                mobile_items = incoming_data.get('items', [])
-                for m_item in mobile_items:
-                    m_id = m_item.get('id')
-                    if m_id in laptop_items_map:
-                        # Update fields
-                        laptop_items_map[m_id].update(m_item)
+                # Merge items with timestamp awareness (newest update always wins!)
+                laptop_items_map = {str(item['id']): item for item in current_db.get('items', [])}
+                client_items = incoming_data.get('items', [])
+                
+                for c_item in client_items:
+                    c_id = str(c_item.get('id'))
+                    if c_id in laptop_items_map:
+                        server_item = laptop_items_map[c_id]
+                        server_ts = float(server_item.get('updatedAt') or 0)
+                        client_ts = float(c_item.get('updatedAt') or 0)
+                        
+                        # If client has newer or equal update, apply it
+                        if client_ts >= server_ts:
+                            laptop_items_map[c_id] = c_item
+                        else:
+                            # Keep server item because server had a more recent edit!
+                            pass
                     else:
-                        laptop_items_map[m_id] = m_item
+                        laptop_items_map[c_id] = c_item
+                
                 current_db['items'] = list(laptop_items_map.values())
+                import time
+                current_db['lastUpdated'] = int(time.time() * 1000)
 
                 # Merge sales: add non-duplicate sales by billNo
                 existing_bills = {s.get('billNo') for s in current_db.get('sales', [])}

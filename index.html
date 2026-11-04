@@ -1401,7 +1401,11 @@
     let cart = [];
     let activeCategoryFilter = '';
     let selectedRateItem = null;
-    let serverBaseUrl = localStorage.getItem('kiranapro_server_url') || window.location.origin;
+    let defaultServer = window.location.origin;
+    if (!defaultServer || defaultServer === 'null' || window.location.protocol === 'file:') {
+      defaultServer = 'http://172.17.155.62:8080';
+    }
+    let serverBaseUrl = localStorage.getItem('kiranapro_server_url') || defaultServer;
 
     // Load from LocalStorage (Works 100% Offline)
     function initData() {
@@ -1444,84 +1448,156 @@
       checkServerHealth();
     }
 
-    function saveToLocalStorage() {
+    let isSyncingToServer = false;
+
+    function saveToLocalStorage(triggerServerSync = true) {
       localStorage.setItem('kiranapro_store_v3', JSON.stringify(storeData));
       updateDashboardStats();
+
+      // Automatically push updates to Laptop / Cloud Server in real time!
+      if (triggerServerSync) {
+        syncWithServer(false);
+      }
     }
 
     // ==========================================
-    // SYNC SYSTEM: LAPTOP <-> MOBILE
+    // REAL-TIME AUTO-SYNC ENGINE (LAPTOP <-> MOBILE <-> CLOUD)
     // ==========================================
-    function checkServerHealth() {
-      const dot = document.getElementById('syncStatusDot');
-      const text = document.getElementById('syncStatusText');
-      const bar = document.getElementById('syncStatusBar');
+    let lastSyncTimestamp = 0;
+    let syncFailureCount = 0;
 
-      fetch(`${serverBaseUrl}/api/data`, { cache: 'no-store' })
-        .then(res => res.json())
-        .then(data => {
-          if (data && data.items) {
-            bar.className = "bg-emerald-900 text-white text-xs px-4 py-1.5 flex items-center justify-between transition-colors duration-300";
-            dot.className = "w-2.5 h-2.5 rounded-full bg-emerald-400";
-            text.innerHTML = "🟢 <b>Laptop Server Online & Connected</b>";
-          }
-        })
-        .catch(() => {
-          bar.className = "bg-slate-900 text-white text-xs px-4 py-1.5 flex items-center justify-between transition-colors duration-300";
-          dot.className = "w-2.5 h-2.5 rounded-full bg-amber-400";
-          text.innerHTML = "📱 <b>Mobile Offline Mode</b> (Laptop is OFF - Full Search & Rates Active)";
-        });
+    function checkServerHealth() {
+      syncWithServer(false);
     }
 
     function triggerSyncWithServer() {
+      syncWithServer(true);
+    }
+
+    function syncWithServer(isManual = false) {
+      if (isSyncingToServer) return;
+      isSyncingToServer = true;
+
+      const dot = document.getElementById('syncStatusDot');
+      const text = document.getElementById('syncStatusText');
+      const bar = document.getElementById('syncStatusBar');
       const btn = document.getElementById('btnSyncNow');
-      btn.innerHTML = `<i data-lucide="loader" class="w-3 h-3 animate-spin"></i> Syncing...`;
-      lucide.createIcons();
+
+      if (isManual && btn) {
+        btn.innerHTML = `<i data-lucide="loader" class="w-3 h-3 animate-spin"></i> Syncing...`;
+        if (window.lucide) lucide.createIcons();
+      }
+
+      // Ensure every item has an updatedAt timestamp before sending
+      if (storeData.items) {
+        storeData.items.forEach(it => {
+          if (!it.updatedAt) it.updatedAt = Date.now();
+        });
+      }
 
       fetch(`${serverBaseUrl}/api/sync`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(storeData)
       })
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      })
       .then(result => {
-        if (result.status === 'success' && result.db) {
-          storeData = result.db;
-          saveToLocalStorage();
-          initData();
-          alert("✅ Success! Your mobile and laptop are now 100% in sync with the latest rates & sales!");
-        } else {
-          alert("Sync error: " + (result.message || "Unknown error"));
+        isSyncingToServer = false;
+        syncFailureCount = 0;
+
+        if (result && result.db) {
+          const serverDb = result.db;
+          let hasLocalUpdates = false;
+
+          // Merge server items into local storeData
+          if (Array.isArray(serverDb.items)) {
+            const localMap = {};
+            (storeData.items || []).forEach(it => { localMap[String(it.id)] = it; });
+
+            serverDb.items.forEach(srvItem => {
+              const id = String(srvItem.id);
+              const locItem = localMap[id];
+              if (!locItem) {
+                // New item from server
+                storeData.items.push(srvItem);
+                hasLocalUpdates = true;
+              } else {
+                const srvTs = Number(srvItem.updatedAt) || 0;
+                const locTs = Number(locItem.updatedAt) || 0;
+                if (srvTs > locTs || srvItem.buyPrice !== locItem.buyPrice || srvItem.sellPrice !== locItem.sellPrice || srvItem.stock !== locItem.stock) {
+                  // Server has newer rates/stock! Update local!
+                  Object.assign(locItem, srvItem);
+                  hasLocalUpdates = true;
+                }
+              }
+            });
+          }
+
+          // Merge sales from server
+          if (Array.isArray(serverDb.sales)) {
+            const localBillNos = new Set((storeData.sales || []).map(s => s.billNo));
+            serverDb.sales.forEach(srvSale => {
+              if (!localBillNos.has(srvSale.billNo)) {
+                storeData.sales.unshift(srvSale);
+                localBillNos.add(srvSale.billNo);
+                hasLocalUpdates = true;
+              }
+            });
+          }
+
+          if (hasLocalUpdates) {
+            saveToLocalStorage(false); // save locally without re-sending
+            populatePosItemDropdown();
+            const q = document.getElementById('quickSearchInput') ? document.getElementById('quickSearchInput').value : '';
+            handleQuickSearch(q);
+            renderStockTable();
+            renderSalesHistory();
+          }
+
+          const nowTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          if (bar) bar.className = "bg-emerald-900 text-white text-xs px-4 py-1.5 flex items-center justify-between transition-colors duration-300";
+          if (dot) dot.className = "w-2.5 h-2.5 rounded-full bg-emerald-400";
+          if (text) text.innerHTML = `🟢 <b>Live Synced with Laptop & Cloud</b> <span class="text-[10px] text-emerald-200">(${nowTime})</span>`;
+
+          if (isManual) {
+            alert("✅ Synced! All rates, stock, and sales are now 100% up to date on both mobile and laptop!");
+          }
         }
       })
-      .catch((err) => {
-        alert("⚠️ Laptop is currently OFF or not reachable on this Wi-Fi.\n\nDon't worry! You can keep using this app offline on your phone (Search, Rates & Sales work 100%). Just tap 'Sync' whenever your laptop turns back on!");
+      .catch(err => {
+        isSyncingToServer = false;
+        syncFailureCount++;
+
+        if (bar) bar.className = "bg-slate-900 text-white text-xs px-4 py-1.5 flex items-center justify-between transition-colors duration-300";
+        if (dot) dot.className = "w-2.5 h-2.5 rounded-full bg-amber-400";
+        if (text) text.innerHTML = "📱 <b>Mobile Offline Mode</b> (Laptop/Server is currently OFF - All Local Data Active)";
+
+        if (isManual) {
+          alert("⚠️ Could not connect to laptop/server.\n\nMake sure laptop server is running or both devices are connected to Wi-Fi/Render.\n\nYour data is safely stored in this device and will sync automatically when connected!");
+        }
       })
       .finally(() => {
-        btn.innerHTML = `<i data-lucide="refresh-cw" class="w-3 h-3"></i> Sync with Laptop`;
-        lucide.createIcons();
-        checkServerHealth();
+        if (btn) {
+          btn.innerHTML = `<i data-lucide="refresh-cw" class="w-3 h-3"></i> <span>Sync with Laptop</span>`;
+          if (window.lucide) lucide.createIcons();
+        }
       });
     }
 
-    function openSyncHelpModal() {
-      document.getElementById('syncHelpModal').classList.remove('hidden');
-      lucide.createIcons();
-    }
-
-    function closeSyncHelpModal() {
-      document.getElementById('syncHelpModal').classList.add('hidden');
-    }
-
-    function saveServerUrlSetting() {
-      const input = document.getElementById('settingServerUrl').value.trim();
-      if (input) {
-        serverBaseUrl = input.replace(/\/$/, '');
-        localStorage.setItem('kiranapro_server_url', serverBaseUrl);
-        alert("Laptop Server IP updated! Checking connection...");
-        checkServerHealth();
+    // Auto-Sync Every 8 Seconds in background
+    setInterval(() => {
+      if (!document.hidden && !isSyncingToServer) {
+        syncWithServer(false);
       }
-    }
+    }, 8000);
+
+    // Sync immediately when user switches to this window/app
+    window.addEventListener('focus', () => {
+      syncWithServer(false);
+    });
 
     // ==========================================
     // TABS NAVIGATION
@@ -1805,8 +1881,9 @@
 
       item.buyPrice = newBuy;
       item.sellPrice = newSell;
+      item.updatedAt = Date.now();
 
-      saveToLocalStorage();
+      saveToLocalStorage(true);
       closeQuickRateEditModal();
       populatePosItemDropdown();
       handleQuickSearch(document.getElementById('quickSearchInput').value);
@@ -2448,13 +2525,13 @@
         if (index !== -1) {
           storeData.items[index] = {
             ...storeData.items[index],
-            name, category, unit, buyPrice, sellPrice, stock, minStock
+            name, category, unit, buyPrice, sellPrice, stock, minStock, updatedAt: Date.now()
           };
         }
       } else {
         storeData.items.unshift({
           id: Date.now().toString(),
-          name, category, unit, buyPrice, sellPrice, stock, minStock
+          name, category, unit, buyPrice, sellPrice, stock, minStock, updatedAt: Date.now()
         });
       }
 
@@ -2516,6 +2593,7 @@
       const newSell = parseFloat(document.getElementById('addStockNewSellRate').value);
 
       item.stock = parseFloat((Number(item.stock) + qtyToAdd).toFixed(3));
+      item.updatedAt = Date.now();
       if (!isNaN(newBuy) && newBuy > 0) item.buyPrice = newBuy;
       if (!isNaN(newSell) && newSell > 0) item.sellPrice = newSell;
 
