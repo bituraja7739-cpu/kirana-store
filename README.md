@@ -1,6 +1,6 @@
-# 🛒 KiranaPro - Grocery & Kirana Store Stock & Rate Management Software
+# 🛒 KiranaPro - Grocery & Kirana Store Stock & Rate Management Software (v3.2 Live Cloud Sync)
 
-A fast, lightweight, and offline stock, rate, and POS billing management application built specifically for grocery and retail stores.
+A fast, lightweight, and offline-capable stock, rate, and POS billing management application built specifically for grocery and retail stores with real-time cloud auto-sync between mobile and laptop.
 
 ---
 
