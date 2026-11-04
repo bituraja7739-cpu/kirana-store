@@ -1132,11 +1132,13 @@
             </select>
           </div>
           <div>
-            <label class="block text-xs font-bold text-slate-700 mb-1">Base Unit *</label>
-            <select id="formItemUnit" onchange="updateFormUnitLabels()" class="w-full p-2.5 border border-slate-300 rounded-xl text-sm bg-white font-bold">
-              <option value="kg">Kilogram (kg) [Grams handled auto]</option>
-              <option value="pcs">Pieces / Packets (Pcs / Pkt)</option>
-              <option value="litre">Litre (L) [ml handled auto]</option>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Base Unit (मापने की इकाई) *</label>
+            <select id="formItemUnit" onchange="updateFormUnitLabels()" class="w-full p-2.5 border border-slate-300 rounded-xl text-sm bg-white font-bold text-slate-800">
+              <option value="kg">⚖️ किलोग्राम (Kilogram - kg)</option>
+              <option value="gm">⚖️ ग्राम (Gram - gm)</option>
+              <option value="pcs">📦 पीस / पैकेट (Pieces - pcs)</option>
+              <option value="litre">🥛 लीटर (Litre - L)</option>
+              <option value="ml">🥛 मिलीलीटर (MilliLitre - ml)</option>
             </select>
           </div>
         </div>
@@ -1236,32 +1238,78 @@
           </div>
         </div>
 
-        <!-- Stock & Low Stock Alert -->
-        <div class="grid grid-cols-2 gap-3">
+        <!-- Stock & Low Stock Alert (Kg & Gram Separated for Convenience) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
           <div>
-            <label class="block text-xs font-bold text-slate-700 mb-1">
-              Current Stock *
-            </label>
-            <input 
-              type="number" 
-              id="formItemStock" 
-              step="any" 
-              placeholder="e.g. 50" 
-              required 
-              class="w-full p-2.5 border border-slate-300 rounded-xl font-bold text-sm"
-            >
+            <div class="flex items-center justify-between mb-1">
+              <label class="block text-xs font-bold text-slate-700">
+                Current Stock (मौजूदा स्टॉक) *
+              </label>
+              <span id="formStockUnitSummary" class="text-[11px] font-black text-emerald-700"></span>
+            </div>
+            
+            <!-- Dual Kg + Gram Inputs for KG items (Separated as requested) -->
+            <div id="stockDualKgGmBox" class="grid grid-cols-2 gap-1.5">
+              <div class="relative">
+                <input 
+                  type="number" 
+                  id="formItemStockKg" 
+                  min="0" 
+                  step="any" 
+                  placeholder="0" 
+                  oninput="onKgGmInputChanged()" 
+                  class="w-full p-2 pr-7 border border-slate-300 rounded-xl font-bold text-sm bg-white focus:ring-2 focus:ring-emerald-500"
+                >
+                <span class="absolute inset-y-0 right-0 pr-2 flex items-center text-xs font-bold text-slate-500 pointer-events-none">kg</span>
+              </div>
+              <div class="relative">
+                <input 
+                  type="number" 
+                  id="formItemStockGm" 
+                  min="0" 
+                  max="999" 
+                  step="any" 
+                  placeholder="0" 
+                  oninput="onKgGmInputChanged()" 
+                  class="w-full p-2 pr-7 border border-slate-300 rounded-xl font-bold text-sm bg-white focus:ring-2 focus:ring-emerald-500"
+                >
+                <span class="absolute inset-y-0 right-0 pr-2 flex items-center text-xs font-bold text-slate-500 pointer-events-none">gm</span>
+              </div>
+            </div>
+
+            <!-- Single Input for GM, PCS, LITRE, ML -->
+            <div id="stockSingleBox" class="hidden relative">
+              <input 
+                type="number" 
+                id="formItemStockSingle" 
+                step="any" 
+                placeholder="0" 
+                oninput="onSingleStockInputChanged()" 
+                class="w-full p-2 pr-12 border border-slate-300 rounded-xl font-bold text-sm bg-white focus:ring-2 focus:ring-emerald-500"
+              >
+              <span id="stockSingleUnitBadge" class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-xs font-bold text-slate-500 pointer-events-none">pcs</span>
+            </div>
+
+            <!-- Hidden master stock field holding the final decimal value -->
+            <input type="hidden" id="formItemStock" value="0">
+            <p class="text-[10px] text-slate-500 mt-1" id="stockHelperText">💡 किलो और ग्राम अलग-अलग भरें (जैसे: 10 kg 500 gm = 10.5 kg)</p>
           </div>
+
           <div>
             <label class="block text-xs font-bold text-slate-700 mb-1">
-              Low Stock Alert Limit
+              Low Stock Alert Limit (कम स्टॉक चेतावनी)
             </label>
-            <input 
-              type="number" 
-              id="formItemMinStock" 
-              step="any" 
-              value="5" 
-              class="w-full p-2.5 border border-slate-300 rounded-xl text-sm"
-            >
+            <div class="relative">
+              <input 
+                type="number" 
+                id="formItemMinStock" 
+                step="any" 
+                value="5" 
+                class="w-full p-2 pr-12 border border-slate-300 rounded-xl text-sm font-bold bg-white focus:ring-2 focus:ring-emerald-500"
+              >
+              <span id="formMinStockUnitBadge" class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-xs font-bold text-slate-400 pointer-events-none">kg</span>
+            </div>
+            <p class="text-[10px] text-slate-400 mt-1">इससे कम होते ही लाल चेतावनी दिखेगी</p>
           </div>
         </div>
 
@@ -1355,11 +1403,26 @@
         </div>
 
         <div>
-          <label class="block text-xs font-bold text-slate-700 mb-1">New Arrived Quantity to Add:</label>
-          <div class="flex gap-2">
-            <input type="number" id="addStockInputQty" step="any" placeholder="e.g. 50" class="flex-1 p-2.5 border border-slate-300 rounded-xl font-bold text-base focus:ring-2 focus:ring-amber-500">
-            <span id="addStockUnitBadge" class="bg-slate-100 px-3 py-2.5 border rounded-xl font-bold text-slate-700 text-sm">kg</span>
+          <label class="block text-xs font-bold text-slate-700 mb-1">New Arrived Quantity to Add (नया आया माल जोड़ें):</label>
+          
+          <!-- Dual Kg/Gm input if item.unit === 'kg' -->
+          <div id="addStockDualBox" class="grid grid-cols-2 gap-2">
+            <div class="relative">
+              <input type="number" id="addStockInputKg" step="any" placeholder="0" class="w-full p-2.5 pr-8 border border-slate-300 rounded-xl font-bold text-base focus:ring-2 focus:ring-amber-500">
+              <span class="absolute inset-y-0 right-0 pr-2.5 flex items-center font-bold text-slate-500 text-xs pointer-events-none">kg</span>
+            </div>
+            <div class="relative">
+              <input type="number" id="addStockInputGm" step="any" placeholder="0" class="w-full p-2.5 pr-8 border border-slate-300 rounded-xl font-bold text-base focus:ring-2 focus:ring-amber-500">
+              <span class="absolute inset-y-0 right-0 pr-2.5 flex items-center font-bold text-slate-500 text-xs pointer-events-none">gm</span>
+            </div>
           </div>
+
+          <!-- Single input if other units -->
+          <div id="addStockSingleBox" class="hidden flex gap-2">
+            <input type="number" id="addStockInputQty" step="any" placeholder="e.g. 50" class="flex-1 p-2.5 border border-slate-300 rounded-xl font-bold text-base focus:ring-2 focus:ring-amber-500">
+            <span id="addStockUnitBadge" class="bg-slate-100 px-3 py-2.5 border rounded-xl font-bold text-slate-700 text-sm">pcs</span>
+          </div>
+          <p id="addStockKgGmHint" class="text-[10px] text-slate-500 mt-1">💡 किलो और ग्राम दोनों भर सकते हैं (जैसे: 25 kg 500 gm)</p>
         </div>
 
         <div class="p-3 bg-slate-50 border rounded-xl space-y-2 text-xs">
@@ -2111,10 +2174,22 @@
           <option value="gm">Gram (gm)</option>
         `;
         document.getElementById('posQuickShortcuts').classList.remove('hidden');
+      } else if (item.unit === 'gm') {
+        unitSelect.innerHTML = `
+          <option value="gm" selected>Gram (gm)</option>
+          <option value="kg">Kilogram (kg)</option>
+        `;
+        document.getElementById('posQuickShortcuts').classList.remove('hidden');
       } else if (item.unit === 'litre') {
         unitSelect.innerHTML = `
           <option value="litre" selected>Litre (L)</option>
           <option value="ml">MilliLitre (ml)</option>
+        `;
+        document.getElementById('posQuickShortcuts').classList.add('hidden');
+      } else if (item.unit === 'ml') {
+        unitSelect.innerHTML = `
+          <option value="ml" selected>MilliLitre (ml)</option>
+          <option value="litre">Litre (L)</option>
         `;
         document.getElementById('posQuickShortcuts').classList.add('hidden');
       } else {
@@ -2225,10 +2300,26 @@
           itemTotal = sellPrice * qty;
           baseQtyDeduction = qty;
         }
+      } else if (item.unit === 'gm') {
+        if (selectedUnit === 'kg') {
+          itemTotal = (sellPrice * 1000) * qty;
+          baseQtyDeduction = qty * 1000;
+        } else {
+          itemTotal = sellPrice * qty;
+          baseQtyDeduction = qty;
+        }
       } else if (item.unit === 'litre') {
         if (selectedUnit === 'ml') {
           itemTotal = (sellPrice / 1000) * qty;
           baseQtyDeduction = qty / 1000;
+        } else {
+          itemTotal = sellPrice * qty;
+          baseQtyDeduction = qty;
+        }
+      } else if (item.unit === 'ml') {
+        if (selectedUnit === 'litre') {
+          itemTotal = (sellPrice * 1000) * qty;
+          baseQtyDeduction = qty * 1000;
         } else {
           itemTotal = sellPrice * qty;
           baseQtyDeduction = qty;
@@ -2473,6 +2564,7 @@
               <span class="font-black px-2.5 py-1 rounded-lg text-xs ${isLow ? 'bg-red-100 text-red-700 ring-1 ring-red-300' : 'bg-emerald-100 text-emerald-800'}">
                 ${item.stock} ${item.unit}
               </span>
+              ${item.unit === 'kg' && Number(item.stock) % 1 !== 0 ? `<div class="text-[10px] text-slate-500 font-bold mt-0.5">${Math.floor(Number(item.stock))}kg ${Math.round((Number(item.stock) % 1) * 1000)}g</div>` : ''}
             </td>
             <td class="py-3 px-4 text-center">
               <div class="flex items-center justify-center gap-1.5">
@@ -2524,6 +2616,9 @@
       document.getElementById('formItemBuyPrice').value = '';
       document.getElementById('formItemSellPrice').value = '';
       document.getElementById('formItemStock').value = '';
+      if(document.getElementById('formItemStockKg')) document.getElementById('formItemStockKg').value = '';
+      if(document.getElementById('formItemStockGm')) document.getElementById('formItemStockGm').value = '';
+      if(document.getElementById('formItemStockSingle')) document.getElementById('formItemStockSingle').value = '';
       document.getElementById('formItemMinStock').value = '5';
       document.getElementById('formMarginDisplay').innerText = '₹0.00 (0%)';
       originalFormItemStock = 0;
@@ -2548,8 +2643,8 @@
       document.getElementById('formItemUnit').value = item.unit;
       document.getElementById('formItemBuyPrice').value = item.buyPrice;
       document.getElementById('formItemSellPrice').value = item.sellPrice;
-      document.getElementById('formItemStock').value = item.stock;
       originalFormItemStock = parseFloat(item.stock) || 0;
+      setFormStockValue(item.stock, item.unit || 'kg');
       if(document.getElementById('formBatchTotalPaid')) document.getElementById('formBatchTotalPaid').value = '';
       if(document.getElementById('formBatchQty')) document.getElementById('formBatchQty').value = '';
       if(document.getElementById('formBatchStockOptions')) document.getElementById('formBatchStockOptions').classList.add('hidden');
@@ -2566,10 +2661,83 @@
       document.getElementById('itemModal').classList.add('hidden');
     }
 
+    // Dual Kg/Gram Helper Functions
+    function onKgGmInputChanged() {
+      const kg = parseFloat(document.getElementById('formItemStockKg').value) || 0;
+      const gm = parseFloat(document.getElementById('formItemStockGm').value) || 0;
+      const total = parseFloat((kg + (gm / 1000)).toFixed(3));
+      document.getElementById('formItemStock').value = total;
+      const summary = document.getElementById('formStockUnitSummary');
+      if (summary) {
+        if (gm > 0) {
+          summary.innerText = `(${kg} kg ${gm} gm = ${total} kg)`;
+        } else {
+          summary.innerText = `(${total} kg)`;
+        }
+      }
+    }
+
+    function onSingleStockInputChanged() {
+      const val = parseFloat(document.getElementById('formItemStockSingle').value) || 0;
+      document.getElementById('formItemStock').value = val;
+      const u = document.getElementById('formItemUnit').value;
+      const summary = document.getElementById('formStockUnitSummary');
+      if (summary) summary.innerText = `(${val} ${u})`;
+    }
+
+    function setFormStockValue(val, unit) {
+      const num = parseFloat(val) || 0;
+      document.getElementById('formItemStock').value = num;
+      if (unit === 'kg') {
+        const kg = Math.floor(num);
+        const gm = Math.round((num - kg) * 1000);
+        document.getElementById('formItemStockKg').value = kg > 0 || num === 0 ? kg : '';
+        document.getElementById('formItemStockGm').value = gm > 0 ? gm : '';
+        const summary = document.getElementById('formStockUnitSummary');
+        if (summary) {
+          if (gm > 0) summary.innerText = `(${kg} kg ${gm} gm = ${num} kg)`;
+          else summary.innerText = `(${num} kg)`;
+        }
+      } else {
+        document.getElementById('formItemStockSingle').value = num > 0 ? num : (num === 0 ? 0 : '');
+        const summary = document.getElementById('formStockUnitSummary');
+        if (summary) summary.innerText = `(${num} ${unit})`;
+      }
+    }
+
     function updateFormUnitLabels() {
       const u = document.getElementById('formItemUnit').value;
-      document.getElementById('formBuyUnitHint').innerText = `Wholesale cost per 1 ${u}`;
-      document.getElementById('formSellUnitHint').innerText = `Customer selling price per 1 ${u}`;
+      const dualBox = document.getElementById('stockDualKgGmBox');
+      const singleBox = document.getElementById('stockSingleBox');
+      const singleBadge = document.getElementById('stockSingleUnitBadge');
+      const minBadge = document.getElementById('formMinStockUnitBadge');
+      const helper = document.getElementById('stockHelperText');
+
+      if (minBadge) minBadge.innerText = u;
+
+      if (u === 'kg') {
+        if (dualBox) dualBox.classList.remove('hidden');
+        if (singleBox) singleBox.classList.add('hidden');
+        if (helper) helper.innerText = '💡 किलो और ग्राम अलग-अलग भर सकते हैं (जैसे: 10 kg 500 gm = 10.5 kg)';
+        document.getElementById('formBuyUnitHint').innerText = `थोक खरीद भाव प्रति 1 kg`;
+        document.getElementById('formSellUnitHint').innerText = `ग्राहक बिक्री भाव प्रति 1 kg`;
+        onKgGmInputChanged();
+      } else {
+        if (dualBox) dualBox.classList.add('hidden');
+        if (singleBox) singleBox.classList.remove('hidden');
+        if (singleBadge) singleBadge.innerText = u;
+
+        let uName = u;
+        if (u === 'gm') uName = '1 gm (या 100g का भाव / 100)';
+        else if (u === 'pcs') uName = '1 पीस / पैकेट';
+        else if (u === 'litre') uName = '1 लीटर';
+        else if (u === 'ml') uName = '1 ml';
+
+        if (helper) helper.innerText = `💡 मात्रा भरें (${u} में)`;
+        document.getElementById('formBuyUnitHint').innerText = `खरीद भाव प्रति ${uName}`;
+        document.getElementById('formSellUnitHint').innerText = `बिक्री भाव प्रति ${uName}`;
+        onSingleStockInputChanged();
+      }
     }
 
     function calcFormProfitMargin() {
@@ -2588,7 +2756,17 @@
       const unit = document.getElementById('formItemUnit').value;
       const buyPrice = parseFloat(document.getElementById('formItemBuyPrice').value) || 0;
       const sellPrice = parseFloat(document.getElementById('formItemSellPrice').value) || 0;
-      const stock = parseFloat(document.getElementById('formItemStock').value) || 0;
+      
+      let stock = 0;
+      if (unit === 'kg') {
+        const kg = parseFloat(document.getElementById('formItemStockKg').value) || 0;
+        const gm = parseFloat(document.getElementById('formItemStockGm').value) || 0;
+        stock = parseFloat((kg + (gm / 1000)).toFixed(3));
+      } else {
+        stock = parseFloat(document.getElementById('formItemStockSingle').value) || 0;
+      }
+      document.getElementById('formItemStock').value = stock;
+
       const minStock = parseFloat(document.getElementById('formItemMinStock').value) || 5;
 
       if (!name) {
@@ -2641,14 +2819,47 @@
 
       document.getElementById('addStockItemId').value = item.id;
       document.getElementById('addStockItemName').innerText = item.name;
-      document.getElementById('addStockCurrentQty').innerText = `${item.stock} ${item.unit}`;
-      document.getElementById('addStockUnitBadge').innerText = item.unit;
-      document.getElementById('addStockInputQty').value = '';
+      
+      let curDisp = `${item.stock} ${item.unit}`;
+      if (item.unit === 'kg') {
+        const n = Number(item.stock);
+        const k = Math.floor(n);
+        const g = Math.round((n - k) * 1000);
+        if (g > 0) curDisp = `${n} kg (${k} kg ${g}g)`;
+      }
+      document.getElementById('addStockCurrentQty').innerText = curDisp;
+
+      const dualBox = document.getElementById('addStockDualBox');
+      const singleBox = document.getElementById('addStockSingleBox');
+      const hint = document.getElementById('addStockKgGmHint');
+
+      if (item.unit === 'kg') {
+        if (dualBox) dualBox.classList.remove('hidden');
+        if (singleBox) singleBox.classList.add('hidden');
+        if (hint) hint.classList.remove('hidden');
+        document.getElementById('addStockInputKg').value = '';
+        document.getElementById('addStockInputGm').value = '';
+      } else {
+        if (dualBox) dualBox.classList.add('hidden');
+        if (singleBox) singleBox.classList.remove('hidden');
+        if (hint) hint.classList.add('hidden');
+        document.getElementById('addStockUnitBadge').innerText = item.unit;
+        document.getElementById('addStockInputQty').value = '';
+      }
+
       document.getElementById('addStockNewBuyRate').value = item.buyPrice;
       document.getElementById('addStockNewSellRate').value = item.sellPrice;
 
       document.getElementById('addStockModal').classList.remove('hidden');
-      setTimeout(() => document.getElementById('addStockInputQty').focus(), 100);
+      setTimeout(() => {
+        if (item.unit === 'kg') {
+          const kgInp = document.getElementById('addStockInputKg');
+          if (kgInp) kgInp.focus();
+        } else {
+          const qInp = document.getElementById('addStockInputQty');
+          if (qInp) qInp.focus();
+        }
+      }, 100);
       lucide.createIcons();
     }
 
@@ -2661,9 +2872,17 @@
       const item = storeData.items.find(i => i.id === itemId);
       if (!item) return;
 
-      const qtyToAdd = parseFloat(document.getElementById('addStockInputQty').value);
-      if (!qtyToAdd || qtyToAdd <= 0) {
-        alert("Please enter a valid quantity!");
+      let qtyToAdd = 0;
+      if (item.unit === 'kg') {
+        const kg = parseFloat(document.getElementById('addStockInputKg').value) || 0;
+        const gm = parseFloat(document.getElementById('addStockInputGm').value) || 0;
+        qtyToAdd = parseFloat((kg + (gm / 1000)).toFixed(3));
+      } else {
+        qtyToAdd = parseFloat(document.getElementById('addStockInputQty').value) || 0;
+      }
+
+      if (qtyToAdd <= 0) {
+        alert("कृपया सही मात्रा (Quantity) डालें!");
         return;
       }
 
@@ -3046,13 +3265,14 @@
         return;
       }
 
+      const curUnit = document.getElementById('formItemUnit').value || 'kg';
       if (mode === 'add') {
         const newTotal = parseFloat((originalFormItemStock + qty).toFixed(3));
-        stockInput.value = newTotal;
-        alert(`✅ पुराने स्टॉक में जोड़ दिया गया!\nपुराना: ${originalFormItemStock} + नया: ${qty} = कुल स्टॉक: ${newTotal}`);
+        setFormStockValue(newTotal, curUnit);
+        alert(`✅ पुराने स्टॉक में जोड़ दिया गया!\nपुराना: ${originalFormItemStock} + नया: ${qty} = कुल स्टॉक: ${newTotal} ${curUnit}`);
       } else {
-        stockInput.value = qty;
-        alert(`✅ पुराना स्टॉक हटाकर नया स्टॉक सेट कर दिया गया!\nअब करंट स्टॉक: ${qty}`);
+        setFormStockValue(qty, curUnit);
+        alert(`✅ पुराना स्टॉक हटाकर नया स्टॉक सेट कर दिया गया!\nअब करंट स्टॉक: ${qty} ${curUnit}`);
       }
 
       stockInput.classList.add('ring-4', 'ring-emerald-400');
