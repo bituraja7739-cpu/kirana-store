@@ -4,3 +4,5 @@ __pycache__/
 .DS_Store
 *.log
 KiranaPro_Offline_APK_Package.zip
+supabase_config.json
+.env

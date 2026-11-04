@@ -63,6 +63,131 @@ def get_local_ip():
     except Exception:
         return "127.0.0.1"
 
+
+# ==========================================
+# SUPABASE CLOUD DATABASE CONFIGURATION
+# ==========================================
+def get_supabase_credentials():
+    url = os.environ.get("SUPABASE_URL", "")
+    key = os.environ.get("SUPABASE_KEY", "")
+    cfg_path = os.path.join(BASE_DIR, "supabase_config.json")
+    if os.path.exists(cfg_path):
+        try:
+            with open(cfg_path, "r", encoding="utf-8") as f:
+                cfg = json.load(f)
+                url = url or cfg.get("SUPABASE_URL", "")
+                key = key or cfg.get("SUPABASE_KEY", "")
+        except Exception:
+            pass
+    return url, key
+
+SUPABASE_URL, SUPABASE_KEY = get_supabase_credentials()
+
+def fetch_from_supabase():
+    try:
+        import urllib.request
+        headers = {
+            "apikey": SUPABASE_KEY,
+            "Authorization": f"Bearer {SUPABASE_KEY}",
+            "Content-Type": "application/json"
+        }
+        # 1. Fetch items
+        req_items = urllib.request.Request(f"{SUPABASE_URL}/rest/v1/items?select=*&order=id.asc", headers=headers)
+        with urllib.request.urlopen(req_items, timeout=5) as resp:
+            db_items = json.loads(resp.read().decode("utf-8"))
+
+        # Map snake_case to camelCase
+        items = []
+        for it in db_items:
+            items.append({
+                "id": str(it.get("id")),
+                "name": it.get("name"),
+                "category": it.get("category", "General"),
+                "unit": it.get("unit", "pcs"),
+                "buyPrice": float(it.get("buy_price", 0)),
+                "sellPrice": float(it.get("sell_price", 0)),
+                "stock": float(it.get("stock", 0)),
+                "minStock": float(it.get("min_stock", 5)),
+                "updatedAt": int(it.get("updated_at", 0))
+            })
+
+        # 2. Fetch sales
+        req_sales = urllib.request.Request(f"{SUPABASE_URL}/rest/v1/sales?select=*&order=date.desc", headers=headers)
+        sales = []
+        with urllib.request.urlopen(req_sales, timeout=5) as resp:
+            db_sales = json.loads(resp.read().decode("utf-8"))
+            for s in db_sales:
+                sales.append({
+                    "billNo": s.get("bill_no"),
+                    "date": s.get("date"),
+                    "customerName": s.get("customer_name"),
+                    "customerPhone": s.get("customer_phone"),
+                    "paymentMode": s.get("payment_mode"),
+                    "items": s.get("items", []),
+                    "subtotal": float(s.get("subtotal", 0)),
+                    "discount": float(s.get("discount", 0)),
+                    "grandTotal": float(s.get("grand_total", 0))
+                })
+
+        return {
+            "shopName": "किराना स्टोर (Kirana Store)",
+            "phone": "9876543210",
+            "address": "मेन मार्केट",
+            "items": items,
+            "sales": sales,
+            "lastUpdated": ""
+        }
+    except Exception as e:
+        # Fallback to local db if Supabase is initializing or table not yet created
+        return None
+
+def push_to_supabase(db_data):
+    try:
+        import urllib.request
+        headers = {
+            "apikey": SUPABASE_KEY,
+            "Authorization": f"Bearer {SUPABASE_KEY}",
+            "Content-Type": "application/json",
+            "Prefer": "resolution=merge-duplicates"
+        }
+        # Push items
+        items = db_data.get("items", [])
+        if items:
+            rows = [{
+                "id": str(it.get("id")),
+                "name": it.get("name"),
+                "category": it.get("category", "General"),
+                "unit": it.get("unit", "pcs"),
+                "buy_price": float(it.get("buyPrice", 0)),
+                "sell_price": float(it.get("sellPrice", 0)),
+                "stock": float(it.get("stock", 0)),
+                "min_stock": float(it.get("minStock", 5)),
+                "updated_at": int(it.get("updatedAt", 0))
+            } for it in items]
+            req = urllib.request.Request(f"{SUPABASE_URL}/rest/v1/items", data=json.dumps(rows).encode("utf-8"), headers=headers, method="POST")
+            with urllib.request.urlopen(req, timeout=6) as resp:
+                pass
+
+        # Push sales
+        sales = db_data.get("sales", [])
+        if sales:
+            sale_rows = [{
+                "bill_no": s.get("billNo"),
+                "date": str(s.get("date")),
+                "customer_name": s.get("customerName", "Cash Customer"),
+                "customer_phone": s.get("customerPhone", ""),
+                "payment_mode": s.get("paymentMode", "Cash"),
+                "items": s.get("items", []),
+                "subtotal": float(s.get("subtotal", 0)),
+                "discount": float(s.get("discount", 0)),
+                "grand_total": float(s.get("grandTotal", 0))
+            } for s in sales[:50]]
+            req_sales = urllib.request.Request(f"{SUPABASE_URL}/rest/v1/sales", data=json.dumps(sale_rows).encode("utf-8"), headers=headers, method="POST")
+            with urllib.request.urlopen(req_sales, timeout=6) as resp:
+                pass
+    except Exception as e:
+        pass
+
 class KiranaRequestHandler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=BASE_DIR, **kwargs)
@@ -83,7 +208,11 @@ class KiranaRequestHandler(http.server.SimpleHTTPRequestHandler):
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
             self.end_headers()
-            db_data = load_db()
+            db_data = fetch_from_supabase()
+            if not db_data or not db_data.get('items'):
+                db_data = load_db()
+            else:
+                save_db(db_data)
             self.wfile.write(json.dumps(db_data).encode("utf-8"))
             return
         elif self.path == "/sw.js":
@@ -156,6 +285,11 @@ class KiranaRequestHandler(http.server.SimpleHTTPRequestHandler):
                     current_db['address'] = incoming_data['address']
 
                 save_db(current_db)
+                try:
+                    import threading
+                    threading.Thread(target=push_to_supabase, args=(current_db,), daemon=True).start()
+                except Exception:
+                    pass
 
                 self.send_response(200)
                 self.send_header("Content-Type", "application/json")
