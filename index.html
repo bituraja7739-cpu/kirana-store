@@ -294,6 +294,36 @@
               <span>20% मुनाफा: <b class="text-white" id="liveQuickSug20">₹0.00</b></span>
             </div>
           </div>
+
+          <!-- Quick Stock Updater Widget right on Main Page -->
+          <div class="md:col-span-12 bg-slate-50 p-3 rounded-xl border border-slate-200 flex flex-wrap items-center justify-between gap-2 text-xs">
+            <div class="flex items-center gap-2 flex-1 min-w-[200px]">
+              <span class="font-bold text-slate-700 whitespace-nowrap">📦 किस सामान में स्टॉक अपडेट करना है?</span>
+              <select id="liveQuickApplyItemSelect" onchange="onLiveQuickItemSelectChange()" class="p-1.5 border rounded-lg font-bold bg-white text-xs flex-1 max-w-xs">
+                <option value="">-- सामान चुनें (Choose Item) --</option>
+              </select>
+            </div>
+            <div class="flex items-center gap-2">
+              <button 
+                type="button" 
+                onclick="applyLiveQuickToSelected('add')" 
+                id="btnLiveQuickAdd"
+                disabled
+                class="bg-emerald-700 hover:bg-emerald-800 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold py-1.5 px-3 rounded-lg shadow text-xs transition"
+              >
+                ➕ पुराने में जोड़ें (+ Stock)
+              </button>
+              <button 
+                type="button" 
+                onclick="applyLiveQuickToSelected('replace')" 
+                id="btnLiveQuickReplace"
+                disabled
+                class="bg-slate-800 hover:bg-slate-900 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold py-1.5 px-3 rounded-lg shadow text-xs transition"
+              >
+                🔄 नया स्टॉक सेट करें (पुराना हटाएं)
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1129,9 +1159,41 @@
               <input type="number" id="formBatchQty" placeholder="जैसे: 50" oninput="calcItemCostFromBatch()" class="w-full p-1.5 bg-white border border-amber-300 rounded font-bold text-xs">
             </div>
           </div>
-          <div id="formBatchResultBadge" class="hidden text-[11px] font-bold text-emerald-900 bg-white p-1.5 rounded border border-emerald-200 flex justify-between">
-            <span>👉 1 प्रोडक्ट की लागत पड़ी:</span>
-            <span id="formBatchResultPrice" class="text-emerald-700 font-black">₹0.00</span>
+          <div id="formBatchResultBadge" class="hidden text-[11px] font-bold text-emerald-900 bg-white p-2 rounded-xl border border-emerald-200 flex justify-between items-center">
+            <span>👉 1 प्रोडक्ट की खरीद लागत पड़ी:</span>
+            <span id="formBatchResultPrice" class="text-emerald-700 font-black text-sm">₹0.00</span>
+          </div>
+
+          <!-- 2 Stock Action Buttons Requested by User -->
+          <div id="formBatchStockOptions" class="hidden pt-2 border-t border-amber-300 space-y-2">
+            <div class="text-[11px] text-amber-950 font-bold flex items-center justify-between bg-white/70 px-2.5 py-1 rounded-lg border border-amber-200">
+              <span>दुकान में पुराना स्टॉक: <b id="formBatchOldStockDisplay" class="text-slate-800">0</b></span>
+              <span>नया आया माल: <b id="formBatchNewQtyDisplay" class="text-emerald-700 font-black">0</b></span>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-2">
+              <!-- Button 1: UPDATE STOCK (Old + New) -->
+              <button 
+                type="button" 
+                onclick="applyBatchStock('add')" 
+                id="btnBatchAdd"
+                class="bg-emerald-700 hover:bg-emerald-800 text-white p-2.5 rounded-xl text-xs font-black shadow transition active:scale-95 flex flex-col items-center justify-center text-center"
+              >
+                <span class="flex items-center gap-1">➕ 1. पुराने स्टॉक में जोड़ें</span>
+                <span class="text-[10px] font-normal text-emerald-200 mt-0.5" id="btnPreviewAddText">(पुराना + नया जुड़ेगा)</span>
+              </button>
+
+              <!-- Button 2: OVERWRITE WITH NEW STOCK -->
+              <button 
+                type="button" 
+                onclick="applyBatchStock('replace')" 
+                id="btnBatchReplace"
+                class="bg-slate-800 hover:bg-slate-900 text-white p-2.5 rounded-xl text-xs font-black shadow transition active:scale-95 flex flex-col items-center justify-center text-center"
+              >
+                <span class="flex items-center gap-1">🔄 2. नया स्टॉक सेट करें</span>
+                <span class="text-[10px] font-normal text-slate-300 mt-0.5" id="btnPreviewReplaceText">(पुराना हटाकर सिर्फ नया)</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -1439,6 +1501,7 @@
 
       updateDashboardStats();
       populatePosItemDropdown();
+      populateLiveQuickDropdown();
       handleQuickSearch('');
       renderStockTable();
       renderSalesHistory();
@@ -1551,6 +1614,7 @@
           if (hasLocalUpdates) {
             saveToLocalStorage(false); // save locally without re-sending
             populatePosItemDropdown();
+      populateLiveQuickDropdown();
             const q = document.getElementById('quickSearchInput') ? document.getElementById('quickSearchInput').value : '';
             handleQuickSearch(q);
             renderStockTable();
@@ -1886,6 +1950,7 @@
       saveToLocalStorage(true);
       closeQuickRateEditModal();
       populatePosItemDropdown();
+      populateLiveQuickDropdown();
       handleQuickSearch(document.getElementById('quickSearchInput').value);
       renderStockTable();
 
@@ -2302,6 +2367,7 @@
       storeData.sales.unshift(billRecord);
       saveToLocalStorage();
       populatePosItemDropdown();
+      populateLiveQuickDropdown();
       handleQuickSearch(document.getElementById('quickSearchInput').value);
       renderStockTable();
       renderSalesHistory();
@@ -2460,6 +2526,11 @@
       document.getElementById('formItemStock').value = '';
       document.getElementById('formItemMinStock').value = '5';
       document.getElementById('formMarginDisplay').innerText = '₹0.00 (0%)';
+      originalFormItemStock = 0;
+      if(document.getElementById('formBatchTotalPaid')) document.getElementById('formBatchTotalPaid').value = '';
+      if(document.getElementById('formBatchQty')) document.getElementById('formBatchQty').value = '';
+      if(document.getElementById('formBatchStockOptions')) document.getElementById('formBatchStockOptions').classList.add('hidden');
+      if(document.getElementById('formBatchResultBadge')) document.getElementById('formBatchResultBadge').classList.add('hidden');
       updateFormUnitLabels();
       document.getElementById('itemModal').classList.remove('hidden');
       setTimeout(() => document.getElementById('formItemName').focus(), 100);
@@ -2478,6 +2549,11 @@
       document.getElementById('formItemBuyPrice').value = item.buyPrice;
       document.getElementById('formItemSellPrice').value = item.sellPrice;
       document.getElementById('formItemStock').value = item.stock;
+      originalFormItemStock = parseFloat(item.stock) || 0;
+      if(document.getElementById('formBatchTotalPaid')) document.getElementById('formBatchTotalPaid').value = '';
+      if(document.getElementById('formBatchQty')) document.getElementById('formBatchQty').value = '';
+      if(document.getElementById('formBatchStockOptions')) document.getElementById('formBatchStockOptions').classList.add('hidden');
+      if(document.getElementById('formBatchResultBadge')) document.getElementById('formBatchResultBadge').classList.add('hidden');
       document.getElementById('formItemMinStock').value = item.minStock || '5';
       
       updateFormUnitLabels();
@@ -2538,6 +2614,7 @@
       saveToLocalStorage();
       closeItemModal();
       populatePosItemDropdown();
+      populateLiveQuickDropdown();
       handleQuickSearch(document.getElementById('quickSearchInput').value);
       renderStockTable();
     }
@@ -2549,6 +2626,7 @@
         storeData.items = storeData.items.filter(i => i.id !== itemId);
         saveToLocalStorage();
         populatePosItemDropdown();
+      populateLiveQuickDropdown();
         handleQuickSearch(document.getElementById('quickSearchInput').value);
         renderStockTable();
       }
@@ -2600,6 +2678,7 @@
       saveToLocalStorage();
       closeAddStockModal();
       populatePosItemDropdown();
+      populateLiveQuickDropdown();
       handleQuickSearch(document.getElementById('quickSearchInput').value);
       renderStockTable();
       alert(`Successfully added ${qtyToAdd} ${item.unit} to stock!\nNew Available Stock: ${item.stock} ${item.unit}`);
@@ -2918,26 +2997,136 @@
       }
     }
 
-    // Helper inside Add Item Form
+    // ==========================================
+    // STOCK ACTION BUTTONS (ADD VS REPLACE) LOGIC
+    // ==========================================
+    let originalFormItemStock = 0;
+
     function calcItemCostFromBatch() {
       const paid = parseFloat(document.getElementById('formBatchTotalPaid').value) || 0;
       const qty = parseFloat(document.getElementById('formBatchQty').value) || 0;
       const badge = document.getElementById('formBatchResultBadge');
       const priceSpan = document.getElementById('formBatchResultPrice');
+      const optionsBox = document.getElementById('formBatchStockOptions');
+      const oldStockDisp = document.getElementById('formBatchOldStockDisplay');
+      const newQtyDisp = document.getElementById('formBatchNewQtyDisplay');
+      const prevAdd = document.getElementById('btnPreviewAddText');
+      const prevRep = document.getElementById('btnPreviewReplaceText');
       const buyInput = document.getElementById('formItemBuyPrice');
-      const stockInput = document.getElementById('formItemStock');
 
       if (paid > 0 && qty > 0) {
         const perUnit = paid / qty;
         badge.classList.remove('hidden');
         priceSpan.innerText = '₹' + perUnit.toFixed(2);
         buyInput.value = perUnit.toFixed(2);
-        if (!stockInput.value || stockInput.value === '0') {
-          stockInput.value = qty;
-        }
+
+        // Show Stock Action Buttons
+        optionsBox.classList.remove('hidden');
+        oldStockDisp.innerText = originalFormItemStock;
+        newQtyDisp.innerText = qty;
+
+        const sumStock = (originalFormItemStock + qty).toFixed(1).replace(/\.0$/, '');
+        prevAdd.innerText = `(कुल होगा: ${originalFormItemStock} + ${qty} = ${sumStock})`;
+        prevRep.innerText = `(पुराना हटेगा, सिर्फ नया ${qty} रहेगा)`;
+
         calcFormProfitMargin();
       } else {
         badge.classList.add('hidden');
+        optionsBox.classList.add('hidden');
+      }
+    }
+
+    // Apply Button 1: Add to Old Stock OR Button 2: Replace with New Stock
+    function applyBatchStock(mode) {
+      const qty = parseFloat(document.getElementById('formBatchQty').value) || 0;
+      const stockInput = document.getElementById('formItemStock');
+
+      if (qty <= 0) {
+        alert("कृपया मात्रा (Qty) डालें!");
+        return;
+      }
+
+      if (mode === 'add') {
+        const newTotal = parseFloat((originalFormItemStock + qty).toFixed(3));
+        stockInput.value = newTotal;
+        alert(`✅ पुराने स्टॉक में जोड़ दिया गया!\nपुराना: ${originalFormItemStock} + नया: ${qty} = कुल स्टॉक: ${newTotal}`);
+      } else {
+        stockInput.value = qty;
+        alert(`✅ पुराना स्टॉक हटाकर नया स्टॉक सेट कर दिया गया!\nअब करंट स्टॉक: ${qty}`);
+      }
+
+      stockInput.classList.add('ring-4', 'ring-emerald-400');
+      setTimeout(() => stockInput.classList.remove('ring-4', 'ring-emerald-400'), 1500);
+    }
+
+    // Main Page Live Quick Stock Updater
+    function populateLiveQuickDropdown() {
+      const select = document.getElementById('liveQuickApplyItemSelect');
+      if (!select) return;
+      const currentVal = select.value;
+      select.innerHTML = '<option value="">-- सामान चुनें (Choose Item) --</option>' +
+        (storeData.items || []).map(item => `
+          <option value="${item.id}">${item.name} (पुराना स्टॉक: ${item.stock} ${item.unit})</option>
+        `).join('');
+      select.value = currentVal;
+    }
+
+    function onLiveQuickItemSelectChange() {
+      const itemId = document.getElementById('liveQuickApplyItemSelect').value;
+      const btnAdd = document.getElementById('btnLiveQuickAdd');
+      const btnRep = document.getElementById('btnLiveQuickReplace');
+      const isEnabled = Boolean(itemId);
+      if (btnAdd) btnAdd.disabled = !isEnabled;
+      if (btnRep) btnRep.disabled = !isEnabled;
+    }
+
+    function applyLiveQuickToSelected(mode) {
+      const itemId = document.getElementById('liveQuickApplyItemSelect').value;
+      if (!itemId) {
+        alert("कृपया सामान चुनें!");
+        return;
+      }
+      const item = storeData.items.find(i => String(i.id) === String(itemId));
+      if (!item) return;
+
+      const valA = parseFloat(document.getElementById('liveQuickInputA').value) || 0;
+      const qty = parseFloat(document.getElementById('liveQuickInputB').value) || 0;
+
+      if (qty <= 0) {
+        alert("कृपया स्टॉक मात्रा डालें!");
+        return;
+      }
+
+      let perUnitCost = 0;
+      if (liveQuickMode === 'totalToUnit') {
+        perUnitCost = valA > 0 ? (valA / qty) : Number(item.buyPrice);
+      } else {
+        perUnitCost = valA > 0 ? valA : Number(item.buyPrice);
+      }
+
+      const oldStock = Number(item.stock) || 0;
+      if (mode === 'add') {
+        item.stock = parseFloat((oldStock + qty).toFixed(3));
+        if (perUnitCost > 0) item.buyPrice = parseFloat(perUnitCost.toFixed(2));
+        item.updatedAt = Date.now();
+        saveToLocalStorage(true);
+        populatePosItemDropdown();
+      populateLiveQuickDropdown();
+        populateLiveQuickDropdown();
+        handleQuickSearch(document.getElementById('quickSearchInput') ? document.getElementById('quickSearchInput').value : '');
+        renderStockTable();
+        alert(`✅ ${item.name} में पुराना + नया स्टॉक जुड़ गया!\nपुराना: ${oldStock} + नया: ${qty} = कुल: ${item.stock} ${item.unit}\nनया खरीद भाव: ₹${item.buyPrice}`);
+      } else {
+        item.stock = qty;
+        if (perUnitCost > 0) item.buyPrice = parseFloat(perUnitCost.toFixed(2));
+        item.updatedAt = Date.now();
+        saveToLocalStorage(true);
+        populatePosItemDropdown();
+      populateLiveQuickDropdown();
+        populateLiveQuickDropdown();
+        handleQuickSearch(document.getElementById('quickSearchInput') ? document.getElementById('quickSearchInput').value : '');
+        renderStockTable();
+        alert(`✅ ${item.name} का पुराना स्टॉक हट गया!\nअब करंट स्टॉक सिर्फ नया: ${item.stock} ${item.unit}\nनया खरीद भाव: ₹${item.buyPrice}`);
       }
     }
 
