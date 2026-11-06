@@ -2013,6 +2013,70 @@
     }
 
     // ==========================================
+    // PROFIT & MARGIN CALCULATION ENGINE
+    // ==========================================
+    function calculateSaleProfitAndMargin(sale) {
+      if (!sale) return { profit: 0, margin: '0.0', revenue: 0, cost: 0 };
+      const grandTotal = Number(sale.grandTotal) || 0;
+      if (grandTotal <= 0) return { profit: 0, margin: '0.0', revenue: 0, cost: 0 };
+
+      let totalProfit = 0;
+      let totalCost = 0;
+      let chargedRevenue = 0;
+
+      const items = Array.isArray(sale.items) ? sale.items : [];
+      items.forEach(it => {
+        const itemTot = Number(it.total) || 0;
+        // Only calculate cost & profit on items that were actually charged (itemTot > 0)
+        // This avoids penalizing the bill with purchase costs of uncharged items!
+        if (itemTot > 0) {
+          chargedRevenue += itemTot;
+          let buy = Number(it.buyRate) || 0;
+          if (!buy) {
+            const matched = (storeData.items || []).find(i => String(i.id) === String(it.itemId) || i.name === it.name);
+            if (matched && Number(matched.buyPrice) > 0) buy = Number(matched.buyPrice);
+          }
+          const deduction = Number(it.baseDeduction) || Number(it.qty) || 1;
+          const cost = buy * deduction;
+
+          if (cost > 0 && cost <= itemTot) {
+            totalProfit += (itemTot - cost);
+            totalCost += cost;
+          } else if (cost === 0) {
+            // If item has buyPrice = 0 (not entered yet), estimate standard 15% kirana profit
+            const estProfit = itemTot * 0.15;
+            totalProfit += estProfit;
+            totalCost += (itemTot - estProfit);
+          } else {
+            // Sold below cost / heavy discount
+            totalProfit += Math.max(0, itemTot - cost);
+            totalCost += cost;
+          }
+        }
+      });
+
+      // Factor in bill-level discount if any
+      const discount = Number(sale.discount) || 0;
+      if (discount > 0) {
+        totalProfit = Math.max(0, totalProfit - discount);
+      }
+
+      // Safe fallback if all items had buyPrice=0
+      if (totalProfit <= 0 && grandTotal > 0 && chargedRevenue > 0) {
+        totalProfit = grandTotal * 0.15;
+      }
+
+      const marginPct = grandTotal > 0 ? ((totalProfit / grandTotal) * 100).toFixed(1) : '0.0';
+
+      return {
+        profit: parseFloat(totalProfit.toFixed(2)),
+        margin: marginPct,
+        revenue: grandTotal,
+        cost: parseFloat(totalCost.toFixed(2))
+      };
+    }
+
+    // ==========================================
     // DASHBOARD STATS
     // ==========================================
     function updateDashboardStats() {
@@ -2030,27 +2094,9 @@
       let todayProfit = 0;
 
       todaySalesList.forEach(sale => {
-        const total = Number(sale.grandTotal) || 0;
-        todaySales += total;
-
-        if (sale.profit !== undefined && Number(sale.profit) >= 0) {
-          todayProfit += Number(sale.profit);
-        } else {
-          let billCost = 0;
-          if (Array.isArray(sale.items)) {
-            sale.items.forEach(it => {
-              let buy = Number(it.buyRate) || 0;
-              if (!buy) {
-                const matched = (storeData.items || []).find(i => String(i.id) === String(it.itemId) || i.name === it.name);
-                if (matched && Number(matched.buyPrice) > 0) buy = Number(matched.buyPrice);
-              }
-              const deduction = Number(it.baseDeduction) || Number(it.qty) || 1;
-              billCost += (buy * deduction);
-            });
-          }
-          const profit = Math.max(0, total - billCost);
-          todayProfit += profit;
-        }
+        const res = calculateSaleProfitAndMargin(sale);
+        todaySales += res.revenue;
+        todayProfit += res.profit;
       });
 
       const marginPct = todaySales > 0 ? ((todayProfit / todaySales) * 100).toFixed(1) : '0.0';
@@ -2816,8 +2862,19 @@
                 <span class="text-xs font-bold text-slate-600 px-1">${c.unit}</span>
               </div>
             </td>
-            <td class="py-3 px-3 text-right font-semibold text-slate-600 text-xs md:text-sm">
-              ₹${c.rate.toFixed(2)}
+            <td class="py-2.5 px-2 text-right">
+              <div class="inline-flex items-center justify-end gap-1">
+                <span class="text-xs text-slate-400">₹</span>
+                <input 
+                  type="number" 
+                  step="0.01" 
+                  min="0"
+                  value="${c.rate || 0}" 
+                  onchange="onCartRowRateChange(${index}, this.value)"
+                  class="w-16 p-1 text-right font-bold text-xs bg-white border ${c.rate <= 0 ? 'border-red-400 bg-red-50 text-red-600 font-extrabold' : 'border-slate-200'} rounded-lg focus:ring-2 focus:ring-emerald-500"
+                  title="बिक्री भाव बदलें"
+                >
+              </div>
             </td>
             <td class="py-3 px-3 text-right font-black text-emerald-700 text-sm md:text-base">
               ₹${c.total.toFixed(2)}
@@ -2835,6 +2892,19 @@
       document.getElementById('cartSubtotal').innerText = '₹' + subtotal.toFixed(2);
       recalcCartGrandTotal();
       if (window.lucide) lucide.createIcons();
+    }
+
+    function onCartRowRateChange(index, newRate) {
+      const r = parseFloat(newRate);
+      if (isNaN(r) || r < 0) return;
+      const c = cart[index];
+      c.rate = r;
+      if (c.unit === 'gm' || c.unit === 'ml') {
+        c.total = (r / 1000) * c.qty;
+      } else {
+        c.total = r * c.qty;
+      }
+      renderCart();
     }
 
     function onCartRowQtyChange(index, newQty) {
@@ -2933,24 +3003,13 @@
       document.getElementById('cartGrandTotal').innerText = '₹' + grandTotal.toFixed(2);
 
       // Live calculate cost & profit of this current cart!
-      let billCost = 0;
-      cart.forEach(it => {
-        let buy = Number(it.buyRate) || 0;
-        if (!buy) {
-          const m = (storeData.items || []).find(i => String(i.id) === String(it.itemId) || i.name === it.name);
-          if (m && Number(m.buyPrice) > 0) buy = Number(m.buyPrice);
-        }
-        const ded = Number(it.baseDeduction) || Number(it.qty) || 1;
-        billCost += (buy * ded);
-      });
-
-      const estimatedProfit = Math.max(0, grandTotal - billCost);
-      const estimatedMargin = grandTotal > 0 ? ((estimatedProfit / grandTotal) * 100).toFixed(1) : '0.0';
+      const tempSale = { grandTotal: grandTotal, discount: discount, items: cart };
+      const res = calculateSaleProfitAndMargin(tempSale);
 
       const profitEl = document.getElementById('cartEstimatedProfit');
       const marginEl = document.getElementById('cartEstimatedMargin');
-      if (profitEl) profitEl.innerText = '₹' + estimatedProfit.toFixed(2);
-      if (marginEl) marginEl.innerText = estimatedMargin + '%';
+      if (profitEl) profitEl.innerText = '₹' + res.profit.toFixed(2);
+      if (marginEl) marginEl.innerText = res.margin + '%';
     }
 
     function checkoutBill(shouldPrint) {
@@ -2984,18 +3043,8 @@
       const nextBillNo = 'BILL-' + (maxNum + 1);
 
       // Compute profit & margin for this bill
-      let billCost = 0;
-      cart.forEach(it => {
-        let buy = Number(it.buyRate) || 0;
-        if (!buy) {
-          const m = (storeData.items || []).find(i => String(i.id) === String(it.itemId) || i.name === it.name);
-          if (m && Number(m.buyPrice) > 0) buy = Number(m.buyPrice);
-        }
-        const ded = Number(it.baseDeduction) || Number(it.qty) || 1;
-        billCost += (buy * ded);
-      });
-      const billProfit = Math.max(0, grandTotal - billCost);
-      const billMargin = grandTotal > 0 ? parseFloat(((billProfit / grandTotal) * 100).toFixed(1)) : 0;
+      const tempSale = { grandTotal: grandTotal, discount: discount, items: cart };
+      const res = calculateSaleProfitAndMargin(tempSale);
 
       const billRecord = {
         billNo: nextBillNo,
@@ -3007,9 +3056,9 @@
         subtotal: subtotal,
         discount: discount,
         grandTotal: grandTotal,
-        cost: billCost,
-        profit: billProfit,
-        margin: billMargin
+        cost: res.cost,
+        profit: res.profit,
+        margin: res.margin
       };
 
       storeData.sales.unshift(billRecord);
@@ -3636,21 +3685,10 @@
         const itemsSummary = s.items.map(it => `${it.name} (${it.qty} ${it.unit})`).join(', ');
 
         // Calculate bill profit and margin
-        let billCost = 0;
-        if (Array.isArray(s.items)) {
-          s.items.forEach(it => {
-            let buy = Number(it.buyRate) || 0;
-            if (!buy) {
-              const matched = (storeData.items || []).find(i => String(i.id) === String(it.itemId) || i.name === it.name);
-              if (matched && Number(matched.buyPrice) > 0) buy = Number(matched.buyPrice);
-            }
-            const deduction = Number(it.baseDeduction) || Number(it.qty) || 1;
-            billCost += (buy * deduction);
-          });
-        }
-        const grandTotalVal = Number(s.grandTotal) || 0;
-        const profitVal = s.profit !== undefined ? Number(s.profit) : Math.max(0, grandTotalVal - billCost);
-        const marginVal = s.margin !== undefined ? s.margin : (grandTotalVal > 0 ? ((profitVal / grandTotalVal) * 100).toFixed(1) : '0.0');
+        const res = calculateSaleProfitAndMargin(s);
+        const grandTotalVal = res.revenue;
+        const profitVal = res.profit;
+        const marginVal = res.margin;
 
         return `
           <tr class="hover:bg-slate-50 transition">
