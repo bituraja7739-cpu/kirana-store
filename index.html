@@ -340,11 +340,7 @@
           + Add New Item
         </button>
       </div>
-            <!-- Compatibility Fallbacks -->
-        <select id="posItemSelect" class="hidden"></select>
-        <select id="posUnitSelect" class="hidden"><option value="kg">kg</option></select>
-        <input type="hidden" id="posQtyInput" value="1">
-</section>
+    </section>
 
 
     <!-- ========================================== -->
@@ -410,19 +406,45 @@
 
         </div>
 
-        <!-- Select Dropdown (In case item not in search or browsing list) -->
-        <div class="flex items-center gap-2 pt-1 border-t border-slate-100">
-          <label for="posItemSelect" class="text-xs font-bold text-slate-700 whitespace-nowrap flex items-center gap-1.5">
-            <i data-lucide="list-filter" class="w-4 h-4 text-emerald-600"></i>
-            <span>या लिस्ट से चुनें (Select List):</span>
-          </label>
-          <select 
-            id="posItemSelect" 
-            onchange="onPosDropdownSelect(this.value)" 
-            class="flex-1 p-2 bg-slate-50 border border-slate-300 rounded-xl font-semibold text-xs text-slate-800 focus:ring-2 focus:ring-emerald-500 focus:bg-white transition cursor-pointer"
-          >
-            <option value="">-- लिस्ट से कोई भी सामान चुनें (क्लिक करते ही बिल में जुड़ेगा) --</option>
-          </select>
+        <!-- Category Filter & Select List Section (All & Category options) -->
+        <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-black text-slate-800 flex items-center gap-1.5">
+              <i data-lucide="layers" class="w-4 h-4 text-emerald-600"></i>
+              <span>या लिस्ट से चुनें (कैटेगरी और सामान):</span>
+            </span>
+            <span id="posDropdownItemCount" class="text-[11px] text-emerald-700 font-bold"></span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-12 gap-2">
+            <!-- Category Filter Dropdown -->
+            <div class="sm:col-span-4">
+              <select 
+                id="posCategorySelect" 
+                onchange="onPosCategoryChange()" 
+                class="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-bold text-xs text-slate-800 focus:ring-2 focus:ring-emerald-500 cursor-pointer shadow-2xs"
+              >
+                <option value="ALL">📁 सभी कैटेगरी (All Categories)</option>
+                <option value="Grains & Pulses">🌾 Grains & Pulses (दालें/अनाज)</option>
+                <option value="Spices">🌶️ Spices (मसाले)</option>
+                <option value="Oils & Ghee">🛢️ Oils & Ghee (तेल/घी)</option>
+                <option value="Snacks & Biscuits">🍪 Snacks & Biscuits (बिस्कुट/नमकीन)</option>
+                <option value="Soaps & Detergents">🧼 Soaps & Detergents (साबुन/सर्फ)</option>
+                <option value="General">📦 General (अन्य किराना)</option>
+              </select>
+            </div>
+
+            <!-- Product Select Dropdown -->
+            <div class="sm:col-span-8">
+              <select 
+                id="posItemSelect" 
+                onchange="onPosDropdownSelect(this.value)" 
+                class="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-bold text-xs text-slate-800 focus:ring-2 focus:ring-emerald-500 cursor-pointer shadow-2xs"
+              >
+                <option value="">-- सामान चुनें (क्लिक करते ही बिल में जुड़ेगा) --</option>
+              </select>
+            </div>
+          </div>
         </div>
 
         <!-- Speed Dial Hotkeys (1-Tap Fast Staple Items) -->
@@ -698,7 +720,7 @@
                 <th class="py-3 px-4">Items Breakdown</th>
                 <th class="py-3 px-4 text-right">Total Bill</th>
                 <th class="py-3 px-4 text-center">Payment Mode</th>
-                <th class="py-3 px-4 text-center">Receipt</th>
+                <th class="py-3 px-4 text-center">Actions (एक्शन)</th>
               </tr>
             </thead>
             <tbody id="salesHistoryBody" class="divide-y divide-slate-100">
@@ -1486,55 +1508,148 @@
 
 
   <!-- ========================================== -->
-  <!-- THERMAL / RECEIPT PRINT SLIP -->
+  <!-- PROFESSIONAL TAX INVOICE PRINT TEMPLATE (MYBILLBOOK / VYAPAR STYLE) -->
   <!-- ========================================== -->
   <div id="printArea" class="hidden">
-    <div style="width: 78mm; font-family: monospace; padding: 10px; margin: auto; font-size: 12px; color: #000;">
-      <div style="text-align: center; border-bottom: 1px dashed #000; padding-bottom: 8px; margin-bottom: 8px;">
-        <h2 id="printShopName" style="font-size: 16px; font-weight: bold; margin: 0;">Grocery & Kirana Store</h2>
-        <div id="printShopPhone" style="font-size: 11px;">Ph: 9876543210</div>
-        <div id="printShopAddress" style="font-size: 10px;">Retail Grocery Store</div>
+    <div style="max-width: 800px; margin: 0 auto; padding: 20px; font-family: 'Segoe UI', Arial, sans-serif; color: #1e293b; background: #fff; border: 1.5px solid #334155;">
+      
+      <!-- Top Title Bar -->
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1.5px solid #334155; padding-bottom: 8px; margin-bottom: 12px;">
+        <div style="font-size: 18px; font-weight: 900; letter-spacing: 1px; color: #0f172a;">TAX INVOICE</div>
+        <div style="font-size: 11px; font-weight: 700; border: 1px solid #64748b; padding: 2px 8px; border-radius: 4px; color: #475569;">ORIGINAL FOR RECIPIENT</div>
       </div>
 
-      <div style="font-size: 11px; margin-bottom: 6px;">
-        <div><b>Bill No:</b> <span id="printBillNo">#1001</span></div>
-        <div><b>Date:</b> <span id="printBillDate">03/11/2026 12:00 PM</span></div>
-        <div id="printCustomerRow"><b>Customer:</b> <span id="printCustomerName">Cash Customer</span></div>
+      <!-- Header: Store Info (Left) & Invoice Meta (Right) -->
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1.5px solid #334155; padding-bottom: 12px; margin-bottom: 12px;">
+        <div style="flex: 1; padding-right: 20px;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="width: 42px; height: 42px; background: #059669; color: #fff; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 900;">🛍️</div>
+            <div>
+              <h1 id="printShopName" style="font-size: 20px; font-weight: 900; margin: 0; color: #065f46; text-transform: uppercase;">Grocery & Kirana Store</h1>
+              <div id="printShopAddress" style="font-size: 11px; color: #475569; margin-top: 2px;">Main Road, Market Area</div>
+            </div>
+          </div>
+          <div style="font-size: 11px; color: #334155; margin-top: 6px;">
+            <span><b>Mobile:</b> <span id="printShopPhone">9876543210</span></span>
+            <span style="margin-left: 12px;"><b>GSTIN:</b> 27AUPRA5842C1Z2</span>
+          </div>
+        </div>
+
+        <!-- Right Side: Invoice Meta Box -->
+        <div style="border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px 12px; font-size: 11px; min-width: 220px; background: #f8fafc;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+            <span style="color: #64748b;">Invoice No:</span>
+            <b id="printBillNo" style="font-size: 13px; color: #0f172a;">BILL-1001</b>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+            <span style="color: #64748b;">Invoice Date:</span>
+            <b id="printBillDate">06-11-2026</b>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: #64748b;">Payment Mode:</span>
+            <b id="printPaymentMode" style="color: #047857;">CASH</b>
+          </div>
+        </div>
       </div>
 
-      <table style="width: 100%; border-collapse: collapse; font-size: 11px; border-top: 1px dashed #000; border-bottom: 1px dashed #000; margin-bottom: 6px;">
-        <thead>
-          <tr style="text-align: left; border-bottom: 1px dotted #000;">
-            <th style="padding: 3px 0;">Item</th>
-            <th style="padding: 3px 0; text-align: center;">Qty</th>
-            <th style="padding: 3px 0; text-align: right;">Amount</th>
+      <!-- Bill To & Ship To Row -->
+      <div style="display: flex; border: 1px solid #cbd5e1; border-radius: 6px; margin-bottom: 14px; font-size: 11px; background: #fafafa;">
+        <div style="flex: 1; padding: 8px 12px; border-right: 1px solid #cbd5e1;">
+          <div style="font-size: 10px; font-weight: 800; color: #64748b; text-transform: uppercase;">BILL TO:</div>
+          <div id="printCustomerName" style="font-size: 13px; font-weight: 800; color: #0f172a; margin-top: 2px;">Cash Customer</div>
+          <div id="printCustomerPhone" style="color: #475569; margin-top: 2px;">Mobile: -</div>
+        </div>
+        <div style="flex: 1; padding: 8px 12px;">
+          <div style="font-size: 10px; font-weight: 800; color: #64748b; text-transform: uppercase;">SHIP TO:</div>
+          <div style="font-size: 12px; font-weight: 700; color: #0f172a; margin-top: 2px;">Same as billing address</div>
+          <div style="color: #64748b; margin-top: 2px;">Counter Delivery (दुकान से प्राप्त)</div>
+        </div>
+      </div>
+
+      <!-- Items Grid Table (Bordered & Striped) -->
+      <table style="width: 100%; border-collapse: collapse; font-size: 11px; border: 1.5px solid #334155; margin-bottom: 12px;">
+        <thead style="background: #e2e8f0; color: #0f172a; border-bottom: 1.5px solid #334155; font-weight: 800; text-transform: uppercase;">
+          <tr>
+            <th style="padding: 6px 8px; border-right: 1px solid #cbd5e1; width: 35px; text-align: center;">S.No.</th>
+            <th style="padding: 6px 8px; border-right: 1px solid #cbd5e1; text-align: left;">ITEMS (सामान)</th>
+            <th style="padding: 6px 8px; border-right: 1px solid #cbd5e1; width: 60px; text-align: center;">HSN</th>
+            <th style="padding: 6px 8px; border-right: 1px solid #cbd5e1; width: 85px; text-align: center;">QTY (मात्रा)</th>
+            <th style="padding: 6px 8px; border-right: 1px solid #cbd5e1; width: 75px; text-align: right;">RATE (₹)</th>
+            <th style="padding: 6px 8px; border-right: 1px solid #cbd5e1; width: 65px; text-align: right;">DISC. (₹)</th>
+            <th style="padding: 6px 8px; width: 95px; text-align: right;">AMOUNT (₹)</th>
           </tr>
         </thead>
         <tbody id="printBillItemsTable">
+          <!-- Dynamically filled with invoice rows -->
         </tbody>
+        <tfoot style="border-top: 1.5px solid #334155; font-weight: 900; background: #f1f5f9; font-size: 12px;">
+          <tr>
+            <td colspan="3" style="padding: 8px; border-right: 1px solid #cbd5e1; text-align: right;">TOTAL:</td>
+            <td id="printTotalQty" style="padding: 8px; border-right: 1px solid #cbd5e1; text-align: center;">0</td>
+            <td style="padding: 8px; border-right: 1px solid #cbd5e1;"></td>
+            <td id="printDiscount" style="padding: 8px; border-right: 1px solid #cbd5e1; text-align: right; color: #dc2626;">₹0.00</td>
+            <td id="printGrandTotal" style="padding: 8px; text-align: right; font-size: 14px; color: #065f46;">₹0.00</td>
+          </tr>
+        </tfoot>
       </table>
 
-      <div style="font-size: 12px; line-height: 1.4;">
-        <div style="display: flex; justify-content: space-between;">
-          <span>Subtotal:</span>
-          <span id="printSubtotal">₹0.00</span>
-        </div>
-        <div id="printDiscountRow" style="display: flex; justify-content: space-between;">
-          <span>Discount:</span>
-          <span id="printDiscount">₹0.00</span>
-        </div>
-        <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 14px; border-top: 1px dashed #000; padding-top: 4px; margin-top: 4px;">
-          <span>Grand Total:</span>
-          <span id="printGrandTotal">₹0.00</span>
-        </div>
-        <div style="margin-top: 4px; font-size: 10px;">
-          Payment Mode: <b id="printPaymentMode">Cash</b>
+      <!-- Received & Balance Row -->
+      <div style="display: flex; justify-content: flex-end; margin-bottom: 12px;">
+        <div style="border: 1px solid #cbd5e1; border-radius: 6px; font-size: 11px; width: 260px; background: #fafafa;">
+          <div style="display: flex; justify-content: space-between; padding: 4px 10px; border-bottom: 1px solid #e2e8f0;">
+            <span>Subtotal (कुल मूल्य):</span>
+            <b id="printSubtotal">₹0.00</b>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 4px 10px; border-bottom: 1px solid #e2e8f0;">
+            <span style="color: #059669; font-weight: bold;">RECEIVED AMOUNT (प्राप्त राशि):</span>
+            <b id="printReceivedAmount" style="color: #059669;">₹0.00</b>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 4px 10px;">
+            <span>BALANCE AMOUNT (बकाया):</span>
+            <b id="printBalanceAmount">₹0.00</b>
+          </div>
         </div>
       </div>
 
-      <div style="text-align: center; border-top: 1px dashed #000; margin-top: 10px; padding-top: 6px; font-size: 10px;">
-        *** Thank you! Visit Again! ***
+      <!-- Amount in Words -->
+      <div style="border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px 10px; font-size: 11px; background: #f8fafc; margin-bottom: 14px;">
+        <b>Invoice Amount (in words):</b> <span id="printAmountInWords" style="color: #0f172a; font-style: italic;">Rupees Only</span>
       </div>
+
+      <!-- Footer: UPI QR Code (Left) & Terms / Signature (Right) -->
+      <div style="display: flex; justify-content: space-between; align-items: flex-end; border-top: 1.5px solid #334155; padding-top: 12px;">
+        
+        <!-- Left: Payment QR Code -->
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <img id="printQrCodeImg" src="https://api.qrserver.com/v1/create-qr-code/?size=95x95&data=upi://pay?pa=8551904000@upi&pn=KiranaStore" alt="Payment QR" style="width: 85px; height: 85px; border: 1px solid #cbd5e1; padding: 2px; border-radius: 4px;">
+          <div style="font-size: 10px; color: #475569;">
+            <b style="font-size: 11px; color: #0f172a; display: block; margin-bottom: 2px;">PAYMENT QR CODE</b>
+            <span>Google Pay / PhonePe / Paytm</span>
+            <div style="margin-top: 3px; font-family: monospace; font-size: 11px; color: #0284c7;" id="printUpiId">UPI: 9876543210@upi</div>
+            <div style="margin-top: 4px; color: #059669; font-weight: 700;">Scan & Pay Any UPI App</div>
+          </div>
+        </div>
+
+        <!-- Right: Terms and Signature -->
+        <div style="text-align: right; font-size: 10px; color: #475569; max-width: 320px;">
+          <div style="text-align: left; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; padding: 4px 8px; margin-bottom: 10px;">
+            <b style="color: #0f172a; display: block;">Terms & Conditions:</b>
+            1. Goods once sold will not be taken back.<br>
+            2. Disputes subject to local jurisdiction only.
+          </div>
+          <div style="margin-top: 25px; border-top: 1px dashed #64748b; padding-top: 4px;">
+            <b style="font-size: 11px; color: #0f172a;" id="printSignStoreName">For, Grocery & Kirana Store</b>
+            <div style="font-size: 10px; color: #64748b;">Authorised Signatory</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Page / Powered note -->
+      <div style="text-align: center; border-top: 1px solid #e2e8f0; margin-top: 12px; padding-top: 6px; font-size: 9px; color: #94a3b8;">
+        *** Thank you for your business! Visit Again! *** | Powered by KiranaPro POS
+      </div>
+
     </div>
   </div>
 
@@ -2156,11 +2271,27 @@
     function populatePosItemDropdown() {
       renderQuickItemPills();
       const select = document.getElementById('posItemSelect');
+      const catSelect = document.getElementById('posCategorySelect');
+      const countEl = document.getElementById('posDropdownItemCount');
       if (!select) return;
-      select.innerHTML = '<option value="">-- लिस्ट से कोई भी सामान चुनें (क्लिक करते ही बिल में जुड़ेगा) --</option>' +
-        storeData.items.map(item => `
-          <option value="${item.id}">${item.name} (${item.stock} ${item.unit} - ₹${item.sellPrice}/${item.unit})</option>
+
+      const selectedCat = catSelect ? catSelect.value : 'ALL';
+      const itemsList = storeData.items || [];
+      const filtered = itemsList.filter(item => {
+        if (!selectedCat || selectedCat === 'ALL') return true;
+        return item.category === selectedCat;
+      });
+
+      if (countEl) countEl.innerText = `${filtered.length} सामान`;
+
+      select.innerHTML = '<option value="">-- ' + (selectedCat === 'ALL' ? 'सभी सामान' : selectedCat) + ' से चुनें (क्लिक करते ही बिल में जुड़ेगा) --</option>' +
+        filtered.map(item => `
+          <option value="${item.id}">${item.name} (स्टॉक: ${item.stock} ${item.unit} - ₹${Number(item.sellPrice).toFixed(2)}/${item.unit})</option>
         `).join('');
+    }
+
+    function onPosCategoryChange() {
+      populatePosItemDropdown();
     }
     function onPosItemSelected() {}
 
@@ -2738,34 +2869,80 @@
       renderCart();
     }
 
+    // Helper: Convert Number to Indian Words
+    function numberToIndianWords(num) {
+      const a = ['', 'One ', 'Two ', 'Three ', 'Four ', 'Five ', 'Six ', 'Seven ', 'Eight ', 'Nine ', 'Ten ', 'Eleven ', 'Twelve ', 'Thirteen ', 'Fourteen ', 'Fifteen ', 'Sixteen ', 'Seventeen ', 'Eighteen ', 'Nineteen '];
+      const b = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+
+      num = Math.round(num);
+      if (num === 0) return 'Zero Rupees Only';
+      if (num.toString().length > 9) return 'Rupees ' + num + ' Only';
+
+      const n = ('000000000' + num).substr(-9).match(/^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/);
+      if (!n) return 'Rupees ' + num + ' Only';
+
+      let str = '';
+      str += (n[1] != 0) ? (a[Number(n[1])] || b[n[1][0]] + ' ' + a[n[1][1]]) + 'Crore ' : '';
+      str += (n[2] != 0) ? (a[Number(n[2])] || b[n[2][0]] + ' ' + a[n[2][1]]) + 'Lakh ' : '';
+      str += (n[3] != 0) ? (a[Number(n[3])] || b[n[3][0]] + ' ' + a[n[3][1]]) + 'Thousand ' : '';
+      str += (n[4] != 0) ? (a[Number(n[4])] || b[n[4][0]] + ' ' + a[n[4][1]]) + 'Hundred ' : '';
+      str += (n[5] != 0) ? ((str != '') ? 'and ' : '') + (a[Number(n[5])] || b[n[5][0]] + ' ' + a[n[5][1]]) : '';
+      return str.trim() + ' Rupees Only';
+    }
     function printReceipt(bill) {
-      document.getElementById('printShopName').innerText = storeData.shopName || 'Grocery & Kirana Store';
-      document.getElementById('printShopPhone').innerText = 'Ph: ' + (storeData.phone || '');
-      document.getElementById('printShopAddress').innerText = storeData.address || '';
+      const shop = storeData.shopName || 'Grocery & Kirana Store';
+      const phone = storeData.phone || '9876543210';
+      const addr = storeData.address || 'Retail Market, Main Bazar';
+
+      document.getElementById('printShopName').innerText = shop;
+      document.getElementById('printSignStoreName').innerText = 'For, ' + shop;
+      document.getElementById('printShopPhone').innerText = phone;
+      document.getElementById('printShopAddress').innerText = addr;
       document.getElementById('printBillNo').innerText = bill.billNo;
       
       const d = new Date(bill.date);
-      document.getElementById('printBillDate').innerText = d.toLocaleDateString('en-US') + ' ' + d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-      document.getElementById('printCustomerName').innerText = bill.customerName + (bill.customerPhone ? ' (' + bill.customerPhone + ')' : '');
+      const day = String(d.getDate()).padStart(2, '0');
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const year = d.getFullYear();
+      document.getElementById('printBillDate').innerText = `${day}-${month}-${year}`;
 
+      document.getElementById('printCustomerName').innerText = bill.customerName || 'Cash Customer';
+      document.getElementById('printCustomerPhone').innerText = 'Mobile: ' + (bill.customerPhone || '-');
+      document.getElementById('printPaymentMode').innerText = (bill.paymentMode || 'CASH').toUpperCase();
+
+      let totalQtyCount = 0;
       const tableBody = document.getElementById('printBillItemsTable');
-      tableBody.innerHTML = bill.items.map(item => `
-        <tr>
-          <td style="padding: 3px 0;">${escapeHtml(item.name)}</td>
-          <td style="padding: 3px 0; text-align: center;">${item.qty} ${item.unit}</td>
-          <td style="padding: 3px 0; text-align: right;">₹${item.total.toFixed(2)}</td>
-        </tr>
-      `).join('');
+      tableBody.innerHTML = bill.items.map((item, idx) => {
+        totalQtyCount += Number(item.qty) || 1;
+        const ratePerUnit = Number(item.rate) || 0;
+        return `
+          <tr style="border-bottom: 1px solid #e2e8f0; ${idx % 2 === 1 ? 'background: #f8fafc;' : ''}">
+            <td style="padding: 6px 8px; border-right: 1px solid #cbd5e1; text-align: center;">${idx + 1}</td>
+            <td style="padding: 6px 8px; border-right: 1px solid #cbd5e1; font-weight: 700; color: #0f172a;">${escapeHtml(item.name)}</td>
+            <td style="padding: 6px 8px; border-right: 1px solid #cbd5e1; text-align: center; color: #64748b;">-</td>
+            <td style="padding: 6px 8px; border-right: 1px solid #cbd5e1; text-align: center; font-weight: 700;">${item.qty} ${item.unit}</td>
+            <td style="padding: 6px 8px; border-right: 1px solid #cbd5e1; text-align: right;">₹${ratePerUnit.toFixed(2)}</td>
+            <td style="padding: 6px 8px; border-right: 1px solid #cbd5e1; text-align: right; color: #64748b;">0.00</td>
+            <td style="padding: 6px 8px; text-align: right; font-weight: 800; color: #0f172a;">₹${Number(item.total).toFixed(2)}</td>
+          </tr>
+        `;
+      }).join('');
 
-      document.getElementById('printSubtotal').innerText = '₹' + Number(bill.subtotal).toFixed(2);
-      if (bill.discount > 0) {
-        document.getElementById('printDiscountRow').style.display = 'flex';
-        document.getElementById('printDiscount').innerText = '-₹' + Number(bill.discount).toFixed(2);
-      } else {
-        document.getElementById('printDiscountRow').style.display = 'none';
-      }
+      document.getElementById('printTotalQty').innerText = totalQtyCount;
+      document.getElementById('printSubtotal').innerText = '₹' + Number(bill.subtotal || bill.grandTotal).toFixed(2);
+      document.getElementById('printDiscount').innerText = bill.discount > 0 ? '-₹' + Number(bill.discount).toFixed(2) : '₹0.00';
       document.getElementById('printGrandTotal').innerText = '₹' + Number(bill.grandTotal).toFixed(2);
-      document.getElementById('printPaymentMode').innerText = bill.paymentMode;
+      document.getElementById('printReceivedAmount').innerText = '₹' + Number(bill.grandTotal).toFixed(2);
+      document.getElementById('printBalanceAmount').innerText = '₹0.00';
+
+      // Amount in words
+      document.getElementById('printAmountInWords').innerText = numberToIndianWords(Number(bill.grandTotal));
+
+      // UPI QR Code
+      const upiId = phone + '@upi';
+      document.getElementById('printUpiId').innerText = 'UPI: ' + upiId;
+      const upiUrl = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(shop)}&am=${bill.grandTotal}&cu=INR`;
+      document.getElementById('printQrCodeImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=95x95&data=${encodeURIComponent(upiUrl)}`;
 
       window.print();
     }
@@ -3161,6 +3338,49 @@
     // ==========================================
     // SALES RECORD & HISTORY (TAB 4)
     // ==========================================
+    // ==========================================
+    // DELETE / CANCEL SALE ENTRY (WITH STOCK ROLLBACK)
+    // ==========================================
+    function deleteSaleEntry(billNo) {
+      const saleIndex = storeData.sales.findIndex(s => s.billNo === billNo);
+      if (saleIndex === -1) {
+        alert("बिल नहीं मिला!");
+        return;
+      }
+
+      const sale = storeData.sales[saleIndex];
+      const confirmMsg = `⚠️ क्या आप बिल #${billNo} को सच में डिलीट / रद्द करना चाहते हैं?\n\nग्राहक: ${sale.customerName}\nरकम: ₹${Number(sale.grandTotal).toFixed(2)}\n\nनोट: इस बिल में बिका हुआ सारा सामान वापस स्टॉक (Inventory) में जोड़ दिया जाएगा!`;
+
+      if (!confirm(confirmMsg)) return;
+
+      // 1. Rollback deducted stock back to items
+      if (sale.items && Array.isArray(sale.items)) {
+        sale.items.forEach(it => {
+          const item = storeData.items.find(i => i.id === it.itemId);
+          if (item) {
+            const rollbackQty = it.baseDeduction !== undefined ? Number(it.baseDeduction) : Number(it.qty);
+            item.stock = parseFloat((Number(item.stock) + rollbackQty).toFixed(3));
+            item.updatedAt = Date.now();
+          }
+        });
+      }
+
+      // 2. Remove sale from sales history
+      storeData.sales.splice(saleIndex, 1);
+
+      // 3. Save to localStorage & sync with Supabase
+      saveToLocalStorage(true);
+
+      // 4. Update UI
+      renderSalesHistory();
+      renderStockTable();
+      populatePosItemDropdown();
+      updateTopStats();
+
+      showPosToast(`✅ बिल #${billNo} रद्द कर दिया गया और स्टॉक वापस जुड़ गया!`);
+      alert(`सफलतापूर्वक बिल #${billNo} रद्द कर दिया गया!\nसारा सामान वापस दुकान के स्टॉक में जुड़ गया है।`);
+    }
+
     function renderSalesHistory() {
       const dateFilter = document.getElementById('historyDateFilter').value;
       const filtered = storeData.sales.filter(s => {
@@ -3201,10 +3421,16 @@
               </span>
             </td>
             <td class="py-3 px-4 text-center">
-              <button onclick="reprintBill('${s.billNo}')" title="Print Receipt" class="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition inline-flex items-center gap-1 text-xs">
-                <i data-lucide="printer" class="w-3.5 h-3.5"></i>
-                <span>Receipt</span>
-              </button>
+              <div class="inline-flex items-center gap-1">
+                <button onclick="reprintBill('${s.billNo}')" title="Print Tax Invoice" class="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition inline-flex items-center gap-1 text-xs font-semibold">
+                  <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+                  <span>रसीद</span>
+                </button>
+                <button onclick="deleteSaleEntry('${s.billNo}')" title="गलती से हुई बिक्री रद्द / डिलीट करें (स्टॉक वापस जुड़ेगा)" class="p-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition inline-flex items-center gap-1 text-xs font-semibold">
+                  <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                  <span>डिलीट</span>
+                </button>
+              </div>
             </td>
           </tr>
         `;
