@@ -33,10 +33,12 @@
   </script>
   <style>
     @media print {
-      body {
+      html, body {
         background: #fff !important;
         padding: 0 !important;
         margin: 0 !important;
+        height: auto !important;
+        overflow: visible !important;
       }
       /* Hide all non-printable UI elements */
       #syncStatusBar, header, nav, main, footer, #mobileConnectModal, #itemModal, #bulkPriceModal, #posToast, .no-print {
@@ -51,6 +53,7 @@
         margin: 0 !important;
         width: 100% !important;
         height: auto !important;
+        max-height: none !important;
         overflow: visible !important;
         z-index: 999999 !important;
       }
@@ -61,6 +64,9 @@
         border: none !important;
         margin: 0 !important;
         padding: 0 !important;
+        max-height: none !important;
+        height: auto !important;
+        overflow: visible !important;
       }
       #printArea {
         padding: 0 !important;
@@ -68,14 +74,38 @@
         background: transparent !important;
         display: block !important;
         overflow: visible !important;
+        max-height: none !important;
+        height: auto !important;
       }
       #invoicePrintCard {
         box-shadow: none !important;
         border: 1.5px solid #000 !important;
         width: 100% !important;
         max-width: 100% !important;
-        padding: 12px !important;
+        padding: 10px 14px !important;
         margin: 0 !important;
+        max-height: none !important;
+        height: auto !important;
+        overflow: visible !important;
+      }
+      /* Multi-page support: allow table to break naturally across multiple pages */
+      table {
+        page-break-inside: auto !important;
+        width: 100% !important;
+      }
+      tr {
+        page-break-inside: avoid !important;
+        page-break-after: auto !important;
+      }
+      /* Automatically repeat table column headers on Page 2, Page 3, etc. */
+      thead {
+        display: table-header-group !important;
+      }
+      tfoot {
+        display: table-footer-group !important;
+      }
+      .invoice-keep-together {
+        page-break-inside: avoid !important;
       }
     }
     input::-webkit-outer-spin-button,
@@ -609,6 +639,18 @@
               </div>
             </div>
 
+            <!-- Live Profit & Margin Indicator for the Current Bill -->
+            <div class="p-2.5 bg-emerald-50 rounded-xl border border-emerald-300 flex justify-between items-center text-xs shadow-xs">
+              <div>
+                <span class="text-[10px] uppercase font-bold text-emerald-800 block">💰 इस बिल का संभावित मुनाफा:</span>
+                <b class="text-emerald-700 text-sm font-black" id="cartEstimatedProfit">₹0.00</b>
+              </div>
+              <div class="text-right">
+                <span class="text-[10px] uppercase font-bold text-emerald-800 block">मार्जिन (Margin %):</span>
+                <span class="bg-emerald-600 text-white font-black text-xs px-2.5 py-0.5 rounded-full inline-block shadow-xs" id="cartEstimatedMargin">0.0%</span>
+              </div>
+            </div>
+
             <!-- Payment Mode Selection -->
             <div>
               <label class="block text-[11px] font-bold text-slate-700 mb-1">भुगतान का तरीका (Payment Mode):</label>
@@ -743,13 +785,14 @@
           <table class="w-full text-left text-sm">
             <thead class="bg-slate-50 text-slate-600 uppercase text-xs border-b">
               <tr>
-                <th class="py-3 px-4">Bill No.</th>
-                <th class="py-3 px-4">Date & Time</th>
-                <th class="py-3 px-4">Customer</th>
-                <th class="py-3 px-4">Items Breakdown</th>
-                <th class="py-3 px-4 text-right">Total Bill</th>
-                <th class="py-3 px-4 text-center">Payment Mode</th>
-                <th class="py-3 px-4 text-center">Actions (एक्शन)</th>
+                <th class="py-3 px-3">Bill No.</th>
+                <th class="py-3 px-3">Date & Time</th>
+                <th class="py-3 px-3">Customer</th>
+                <th class="py-3 px-3">Items Breakdown</th>
+                <th class="py-3 px-3 text-right">Total Bill</th>
+                <th class="py-3 px-3 text-right bg-emerald-50 text-emerald-900 font-bold">मुनाफा (Profit / Margin)</th>
+                <th class="py-3 px-3 text-center">Payment</th>
+                <th class="py-3 px-3 text-center">Actions</th>
               </tr>
             </thead>
             <tbody id="salesHistoryBody" class="divide-y divide-slate-100">
@@ -1650,6 +1693,7 @@
             </tfoot>
           </table>
 
+          <div class="invoice-keep-together">
           <!-- Received & Balance Row -->
           <div style="display: flex; justify-content: flex-end; margin-bottom: 12px;">
             <div style="border: 1px solid #cbd5e1; border-radius: 6px; font-size: 11px; width: 260px; background: #fafafa;">
@@ -1707,6 +1751,7 @@
             *** Thank you for your business! Visit Again! *** | Powered by KiranaPro POS
           </div>
 
+          </div><!-- end invoice-keep-together -->
         </div>
       </div>
 
@@ -1971,8 +2016,15 @@
     // DASHBOARD STATS
     // ==========================================
     function updateDashboardStats() {
-      const todayStr = new Date().toISOString().split('T')[0];
-      const todaySalesList = storeData.sales.filter(s => s.date && s.date.startsWith(todayStr));
+      // Support both local date and UTC ISO date
+      const now = new Date();
+      const localTodayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      const utcTodayStr = now.toISOString().split('T')[0];
+
+      const todaySalesList = (storeData.sales || []).filter(s => {
+        if (!s.date) return false;
+        return s.date.startsWith(localTodayStr) || s.date.startsWith(utcTodayStr);
+      });
 
       let todaySales = 0;
       let todayProfit = 0;
@@ -1981,36 +2033,46 @@
         const total = Number(sale.grandTotal) || 0;
         todaySales += total;
 
-        // Calculate cost of items sold in this bill
-        let billCost = 0;
-        if (Array.isArray(sale.items)) {
-          sale.items.forEach(it => {
-            const buy = Number(it.buyRate) || 0;
-            const deduction = Number(it.baseDeduction) || Number(it.qty) || 1;
-            billCost += (buy * deduction);
-          });
+        if (sale.profit !== undefined && Number(sale.profit) >= 0) {
+          todayProfit += Number(sale.profit);
+        } else {
+          let billCost = 0;
+          if (Array.isArray(sale.items)) {
+            sale.items.forEach(it => {
+              let buy = Number(it.buyRate) || 0;
+              if (!buy) {
+                const matched = (storeData.items || []).find(i => String(i.id) === String(it.itemId) || i.name === it.name);
+                if (matched && Number(matched.buyPrice) > 0) buy = Number(matched.buyPrice);
+              }
+              const deduction = Number(it.baseDeduction) || Number(it.qty) || 1;
+              billCost += (buy * deduction);
+            });
+          }
+          const profit = Math.max(0, total - billCost);
+          todayProfit += profit;
         }
-        const profit = Math.max(0, total - billCost);
-        todayProfit += profit;
       });
 
       const marginPct = todaySales > 0 ? ((todayProfit / todaySales) * 100).toFixed(1) : '0.0';
 
-      document.getElementById('statTodaySale').innerText = '₹' + todaySales.toFixed(2);
+      const saleEl = document.getElementById('statTodaySale');
       const profitEl = document.getElementById('statTodayProfit');
       const marginEl = document.getElementById('statTodayMargin');
+      if (saleEl) saleEl.innerText = '₹' + todaySales.toFixed(2);
       if (profitEl) profitEl.innerText = '₹' + todayProfit.toFixed(2);
+      if (marginEl) marginEl.innerText = marginPct + '% Margin';
+
       const saleStrip = document.getElementById('statTodaySaleStrip');
       const profitStrip = document.getElementById('statTodayProfitStrip');
       const marginStrip = document.getElementById('statTodayMarginStrip');
       if (saleStrip) saleStrip.innerText = '₹' + todaySales.toFixed(2);
       if (profitStrip) profitStrip.innerText = '₹' + todayProfit.toFixed(2);
       if (marginStrip) marginStrip.innerText = marginPct + '% Margin';
-      if (marginEl) marginEl.innerText = marginPct + '% Margin';
 
-      document.getElementById('statTotalItems').innerText = storeData.items.length;
+      const totalItemsEl = document.getElementById('statTotalItems');
+      if (totalItemsEl) totalItemsEl.innerText = (storeData.items || []).length;
 
-      const lowStockCount = storeData.items.filter(i => Number(i.stock) <= Number(i.minStock || 5)).length;
+      const lowStockCount = (storeData.items || []).filter(i => Number(i.stock) <= Number(i.minStock || 5)).length;
       const lowBadge = document.getElementById('lowStockBadge');
       const lowSpan = document.getElementById('lowStockCountSpan');
       if (lowBadge) {
@@ -2869,6 +2931,26 @@
       const discount = parseFloat(document.getElementById('cartDiscount').value) || 0;
       const grandTotal = Math.max(0, subtotal - discount);
       document.getElementById('cartGrandTotal').innerText = '₹' + grandTotal.toFixed(2);
+
+      // Live calculate cost & profit of this current cart!
+      let billCost = 0;
+      cart.forEach(it => {
+        let buy = Number(it.buyRate) || 0;
+        if (!buy) {
+          const m = (storeData.items || []).find(i => String(i.id) === String(it.itemId) || i.name === it.name);
+          if (m && Number(m.buyPrice) > 0) buy = Number(m.buyPrice);
+        }
+        const ded = Number(it.baseDeduction) || Number(it.qty) || 1;
+        billCost += (buy * ded);
+      });
+
+      const estimatedProfit = Math.max(0, grandTotal - billCost);
+      const estimatedMargin = grandTotal > 0 ? ((estimatedProfit / grandTotal) * 100).toFixed(1) : '0.0';
+
+      const profitEl = document.getElementById('cartEstimatedProfit');
+      const marginEl = document.getElementById('cartEstimatedMargin');
+      if (profitEl) profitEl.innerText = '₹' + estimatedProfit.toFixed(2);
+      if (marginEl) marginEl.innerText = estimatedMargin + '%';
     }
 
     function checkoutBill(shouldPrint) {
@@ -2901,6 +2983,20 @@
       });
       const nextBillNo = 'BILL-' + (maxNum + 1);
 
+      // Compute profit & margin for this bill
+      let billCost = 0;
+      cart.forEach(it => {
+        let buy = Number(it.buyRate) || 0;
+        if (!buy) {
+          const m = (storeData.items || []).find(i => String(i.id) === String(it.itemId) || i.name === it.name);
+          if (m && Number(m.buyPrice) > 0) buy = Number(m.buyPrice);
+        }
+        const ded = Number(it.baseDeduction) || Number(it.qty) || 1;
+        billCost += (buy * ded);
+      });
+      const billProfit = Math.max(0, grandTotal - billCost);
+      const billMargin = grandTotal > 0 ? parseFloat(((billProfit / grandTotal) * 100).toFixed(1)) : 0;
+
       const billRecord = {
         billNo: nextBillNo,
         date: new Date().toISOString(),
@@ -2910,7 +3006,10 @@
         items: [...cart],
         subtotal: subtotal,
         discount: discount,
-        grandTotal: grandTotal
+        grandTotal: grandTotal,
+        cost: billCost,
+        profit: billProfit,
+        margin: billMargin
       };
 
       storeData.sales.unshift(billRecord);
@@ -2995,14 +3094,14 @@
         const ratePerUnit = Number(item.rate || item.price || (Number(item.total) / q)) || 0;
         const itemTot = Number(item.total) || (q * ratePerUnit);
         return `
-          <tr style="border-bottom: 1px solid #e2e8f0; ${idx % 2 === 1 ? 'background: #f8fafc;' : ''}">
-            <td style="padding: 6px 8px; border-right: 1px solid #cbd5e1; text-align: center;">${idx + 1}</td>
-            <td style="padding: 6px 8px; border-right: 1px solid #cbd5e1; font-weight: 700; color: #0f172a;">${escapeHtml(item.name || '')}</td>
-            <td style="padding: 6px 8px; border-right: 1px solid #cbd5e1; text-align: center; color: #64748b;">-</td>
-            <td style="padding: 6px 8px; border-right: 1px solid #cbd5e1; text-align: center; font-weight: 700;">${item.qty} ${item.unit || 'pcs'}</td>
-            <td style="padding: 6px 8px; border-right: 1px solid #cbd5e1; text-align: right;">₹${ratePerUnit.toFixed(2)}</td>
-            <td style="padding: 6px 8px; border-right: 1px solid #cbd5e1; text-align: right; color: #64748b;">0.00</td>
-            <td style="padding: 6px 8px; text-align: right; font-weight: 800; color: #0f172a;">₹${itemTot.toFixed(2)}</td>
+          <tr style="border-bottom: 1px solid #cbd5e1; ${idx % 2 === 1 ? 'background: #f8fafc;' : ''}; page-break-inside: avoid;">
+            <td style="padding: 4px 6px; border-right: 1px solid #cbd5e1; text-align: center; font-size: 10px;">${idx + 1}</td>
+            <td style="padding: 4px 6px; border-right: 1px solid #cbd5e1; font-weight: 700; color: #0f172a; font-size: 11px;">${escapeHtml(item.name || '')}</td>
+            <td style="padding: 4px 6px; border-right: 1px solid #cbd5e1; text-align: center; color: #64748b; font-size: 10px;">-</td>
+            <td style="padding: 4px 6px; border-right: 1px solid #cbd5e1; text-align: center; font-weight: 700; font-size: 10.5px;">${item.qty} ${item.unit || 'pcs'}</td>
+            <td style="padding: 4px 6px; border-right: 1px solid #cbd5e1; text-align: right; font-size: 10.5px;">₹${ratePerUnit.toFixed(2)}</td>
+            <td style="padding: 4px 6px; border-right: 1px solid #cbd5e1; text-align: right; color: #64748b; font-size: 10px;">0.00</td>
+            <td style="padding: 4px 6px; text-align: right; font-weight: 800; color: #0f172a; font-size: 11px;">₹${itemTot.toFixed(2)}</td>
           </tr>
         `;
       }).join('');
@@ -3536,24 +3635,45 @@
         const dateStr = d.toLocaleDateString('en-US') + ' ' + d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
         const itemsSummary = s.items.map(it => `${it.name} (${it.qty} ${it.unit})`).join(', ');
 
+        // Calculate bill profit and margin
+        let billCost = 0;
+        if (Array.isArray(s.items)) {
+          s.items.forEach(it => {
+            let buy = Number(it.buyRate) || 0;
+            if (!buy) {
+              const matched = (storeData.items || []).find(i => String(i.id) === String(it.itemId) || i.name === it.name);
+              if (matched && Number(matched.buyPrice) > 0) buy = Number(matched.buyPrice);
+            }
+            const deduction = Number(it.baseDeduction) || Number(it.qty) || 1;
+            billCost += (buy * deduction);
+          });
+        }
+        const grandTotalVal = Number(s.grandTotal) || 0;
+        const profitVal = s.profit !== undefined ? Number(s.profit) : Math.max(0, grandTotalVal - billCost);
+        const marginVal = s.margin !== undefined ? s.margin : (grandTotalVal > 0 ? ((profitVal / grandTotalVal) * 100).toFixed(1) : '0.0');
+
         return `
           <tr class="hover:bg-slate-50 transition">
-            <td class="py-3 px-4 font-mono font-bold text-slate-700 text-xs">${s.billNo}</td>
-            <td class="py-3 px-4 text-xs text-slate-500">${dateStr}</td>
-            <td class="py-3 px-4 font-semibold text-slate-800 text-xs">
+            <td class="py-3 px-3 font-mono font-bold text-slate-700 text-xs">${s.billNo}</td>
+            <td class="py-3 px-3 text-xs text-slate-500">${dateStr}</td>
+            <td class="py-3 px-3 font-semibold text-slate-800 text-xs">
               ${escapeHtml(s.customerName)}
               ${s.customerPhone ? `<span class="block text-[10px] text-slate-400">${s.customerPhone}</span>` : ''}
             </td>
-            <td class="py-3 px-4 text-xs text-slate-600 max-w-xs truncate" title="${escapeHtml(itemsSummary)}">
+            <td class="py-3 px-3 text-xs text-slate-600 max-w-xs truncate" title="${escapeHtml(itemsSummary)}">
               ${escapeHtml(itemsSummary)}
             </td>
-            <td class="py-3 px-4 text-right font-black text-emerald-700 text-sm">₹${Number(s.grandTotal).toFixed(2)}</td>
-            <td class="py-3 px-4 text-center">
+            <td class="py-3 px-3 text-right font-black text-slate-900 text-xs md:text-sm">₹${grandTotalVal.toFixed(2)}</td>
+            <td class="py-3 px-3 text-right bg-emerald-50/50">
+              <span class="font-extrabold text-emerald-700 text-xs block">₹${profitVal.toFixed(2)}</span>
+              <span class="text-[10px] font-bold text-emerald-600 block">${marginVal}% मार्जिन</span>
+            </td>
+            <td class="py-3 px-3 text-center">
               <span class="text-[11px] font-bold px-2 py-0.5 rounded-full ${s.paymentMode === 'Credit' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}">
                 ${s.paymentMode}
               </span>
             </td>
-            <td class="py-3 px-4 text-center">
+            <td class="py-3 px-3 text-center">
               <div class="inline-flex items-center gap-1">
                 <button onclick="reprintBill('${s.billNo}')" title="Print Tax Invoice" class="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition inline-flex items-center gap-1 text-xs font-semibold">
                   <i data-lucide="printer" class="w-3.5 h-3.5"></i>
