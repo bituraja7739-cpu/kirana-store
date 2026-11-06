@@ -136,12 +136,17 @@ def fetch_from_supabase():
                     "grandTotal": float(s.get("grand_total", 0))
                 })
 
+        local_db = load_db()
+        local_del = set(local_db.get("deletedBills", []))
+        sales = [s for s in sales if s.get("billNo") not in local_del]
+
         return {
-            "shopName": "किराना स्टोर (Kirana Store)",
-            "phone": "9876543210",
-            "address": "मेन मार्केट",
+            "shopName": local_db.get("shopName") or "किराना स्टोर (Kirana Store)",
+            "phone": local_db.get("phone") or "9876543210",
+            "address": local_db.get("address") or "मेन मार्केट",
             "items": items,
             "sales": sales,
+            "deletedBills": list(local_del),
             "lastUpdated": ""
         }
     except Exception as e:
@@ -157,7 +162,24 @@ def push_to_supabase(db_data):
             "Content-Type": "application/json",
             "Prefer": "resolution=merge-duplicates"
         }
-        # Push items
+
+        # 1. Delete cancelled / deleted sales from Supabase
+        deleted_bills = db_data.get("deletedBills", [])
+        if deleted_bills:
+            import urllib.parse
+            for b_no in deleted_bills:
+                try:
+                    del_url = f"{SUPABASE_URL}/rest/v1/sales?bill_no=eq.{urllib.parse.quote(str(b_no))}"
+                    req_del = urllib.request.Request(del_url, headers={
+                        "apikey": SUPABASE_KEY,
+                        "Authorization": f"Bearer {SUPABASE_KEY}"
+                    }, method="DELETE")
+                    with urllib.request.urlopen(req_del, timeout=4) as resp:
+                        pass
+                except Exception:
+                    pass
+
+        # 2. Push items
         items = db_data.get("items", [])
         if items:
             rows = [{
@@ -275,13 +297,26 @@ class KiranaRequestHandler(http.server.SimpleHTTPRequestHandler):
                 import time
                 current_db['lastUpdated'] = int(time.time() * 1000)
 
-                # Merge sales: add non-duplicate sales by billNo
+                # 1. Process deleted bills first
+                deleted_bills = incoming_data.get('deletedBills', [])
+                if deleted_bills:
+                    if 'deletedBills' not in current_db:
+                        current_db['deletedBills'] = []
+                    for b in deleted_bills:
+                        if b not in current_db['deletedBills']:
+                            current_db['deletedBills'].append(b)
+                    del_set = set(current_db['deletedBills'])
+                    current_db['sales'] = [s for s in current_db.get('sales', []) if s.get('billNo') not in del_set]
+
+                # 2. Merge sales: add non-duplicate sales by billNo (skip deleted ones)
+                all_deleted = set(current_db.get('deletedBills', []))
                 existing_bills = {s.get('billNo') for s in current_db.get('sales', [])}
                 mobile_sales = incoming_data.get('sales', [])
                 for m_sale in mobile_sales:
-                    if m_sale.get('billNo') not in existing_bills:
+                    b_no = m_sale.get('billNo')
+                    if b_no and (b_no not in existing_bills) and (b_no not in all_deleted):
                         current_db['sales'].insert(0, m_sale)
-                        existing_bills.add(m_sale.get('billNo'))
+                        existing_bills.add(b_no)
 
                 # Update shop profile if provided
                 if incoming_data.get('shopName'):

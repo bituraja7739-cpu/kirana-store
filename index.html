@@ -33,20 +33,49 @@
   </script>
   <style>
     @media print {
-      body * {
-        visibility: hidden;
+      body {
+        background: #fff !important;
+        padding: 0 !important;
+        margin: 0 !important;
       }
-      #printArea, #printArea * {
-        visibility: visible;
+      /* Hide all non-printable UI elements */
+      #syncStatusBar, header, nav, main, footer, #mobileConnectModal, #itemModal, #bulkPriceModal, #posToast, .no-print {
+        display: none !important;
+      }
+      /* Display the invoice modal and container */
+      #invoiceModal {
+        display: block !important;
+        position: static !important;
+        background: transparent !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+        height: auto !important;
+        overflow: visible !important;
+        z-index: 999999 !important;
+      }
+      #invoiceModal > div {
+        max-width: 100% !important;
+        width: 100% !important;
+        box-shadow: none !important;
+        border: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
       }
       #printArea {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100%;
+        padding: 0 !important;
+        margin: 0 !important;
+        background: transparent !important;
+        display: block !important;
+        overflow: visible !important;
       }
-      .no-print {
-        display: none !important;
+      #invoicePrintCard {
+        box-shadow: none !important;
+        border: 1.5px solid #000 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 12px !important;
+        margin: 0 !important;
       }
     }
     input::-webkit-outer-spin-button,
@@ -1507,154 +1536,184 @@
   </div>
 
 
+    <!-- ========================================== -->
+  <!-- PROFESSIONAL TAX INVOICE MODAL & PRINT (MYBILLBOOK / VYAPAR STYLE) -->
   <!-- ========================================== -->
-  <!-- PROFESSIONAL TAX INVOICE PRINT TEMPLATE (MYBILLBOOK / VYAPAR STYLE) -->
-  <!-- ========================================== -->
-  <div id="printArea" class="hidden">
-    <div style="max-width: 800px; margin: 0 auto; padding: 20px; font-family: 'Segoe UI', Arial, sans-serif; color: #1e293b; background: #fff; border: 1.5px solid #334155;">
+  <div id="invoiceModal" class="fixed inset-0 bg-slate-900/75 backdrop-blur-sm z-50 hidden flex items-center justify-center p-2 sm:p-4 overflow-y-auto">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full my-auto flex flex-col max-h-[95vh] overflow-hidden border border-slate-200">
       
-      <!-- Top Title Bar -->
-      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1.5px solid #334155; padding-bottom: 8px; margin-bottom: 12px;">
-        <div style="font-size: 18px; font-weight: 900; letter-spacing: 1px; color: #0f172a;">TAX INVOICE</div>
-        <div style="font-size: 11px; font-weight: 700; border: 1px solid #64748b; padding: 2px 8px; border-radius: 4px; color: #475569;">ORIGINAL FOR RECIPIENT</div>
+      <!-- Modal Top Action Bar (Screen Only - Hidden in Print) -->
+      <div class="no-print bg-slate-900 text-white px-4 sm:px-6 py-3.5 flex flex-wrap items-center justify-between gap-3 border-b border-slate-700">
+        <div class="flex items-center gap-2">
+          <span class="w-3 h-3 rounded-full bg-emerald-400 animate-pulse"></span>
+          <h3 class="font-black text-sm sm:text-base flex items-center gap-1.5">
+            <span>🧾 टैक्स इनवॉइस बिल (Tax Invoice)</span>
+          </h3>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="window.print()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg font-bold text-xs flex items-center gap-1.5 shadow transition">
+            <i data-lucide="printer" class="w-4 h-4"></i>
+            <span>🖨️ प्रिंट / PDF</span>
+          </button>
+          <button onclick="shareInvoiceViaWhatsApp()" class="bg-green-600 hover:bg-green-500 text-white px-3.5 py-2 rounded-lg font-bold text-xs flex items-center gap-1.5 shadow transition">
+            <i data-lucide="share-2" class="w-4 h-4"></i>
+            <span>📲 WhatsApp</span>
+          </button>
+          <button onclick="closeInvoiceModal()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-2 rounded-lg font-bold text-xs flex items-center gap-1 transition">
+            <i data-lucide="x" class="w-4 h-4"></i>
+            <span>बंद करें</span>
+          </button>
+        </div>
       </div>
 
-      <!-- Header: Store Info (Left) & Invoice Meta (Right) -->
-      <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1.5px solid #334155; padding-bottom: 12px; margin-bottom: 12px;">
-        <div style="flex: 1; padding-right: 20px;">
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <div style="width: 42px; height: 42px; background: #059669; color: #fff; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 900;">🛍️</div>
-            <div>
-              <h1 id="printShopName" style="font-size: 20px; font-weight: 900; margin: 0; color: #065f46; text-transform: uppercase;">Grocery & Kirana Store</h1>
-              <div id="printShopAddress" style="font-size: 11px; color: #475569; margin-top: 2px;">Main Road, Market Area</div>
+      <!-- Printable Card Content -->
+      <div id="printArea" class="p-2 sm:p-5 overflow-y-auto bg-slate-100 flex-1">
+        <div id="invoicePrintCard" style="max-width: 800px; margin: 0 auto; padding: 18px; font-family: 'Segoe UI', Arial, sans-serif; color: #1e293b; background: #fff; border: 1.5px solid #334155; border-radius: 4px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+          
+          <!-- Top Title Bar -->
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1.5px solid #334155; padding-bottom: 8px; margin-bottom: 12px;">
+            <div style="font-size: 18px; font-weight: 900; letter-spacing: 1px; color: #0f172a;">TAX INVOICE</div>
+            <div style="font-size: 11px; font-weight: 700; border: 1px solid #64748b; padding: 2px 8px; border-radius: 4px; color: #475569;">ORIGINAL FOR RECIPIENT</div>
+          </div>
+
+          <!-- Header: Store Info (Left) & Invoice Meta (Right) -->
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1.5px solid #334155; padding-bottom: 12px; margin-bottom: 12px;">
+            <div style="flex: 1; padding-right: 20px;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="width: 42px; height: 42px; background: #059669; color: #fff; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 900;">🛍️</div>
+                <div>
+                  <h1 id="printShopName" style="font-size: 20px; font-weight: 900; margin: 0; color: #065f46; text-transform: uppercase;">Grocery & Kirana Store</h1>
+                  <div id="printShopAddress" style="font-size: 11px; color: #475569; margin-top: 2px;">Main Road, Market Area</div>
+                </div>
+              </div>
+              <div style="font-size: 11px; color: #334155; margin-top: 6px;">
+                <span><b>Mobile:</b> <span id="printShopPhone">9876543210</span></span>
+                <span style="margin-left: 12px;"><b>GSTIN:</b> 27AUPRA5842C1Z2</span>
+              </div>
+            </div>
+
+            <!-- Right Side: Invoice Meta Box -->
+            <div style="border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px 12px; font-size: 11px; min-width: 220px; background: #f8fafc;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                <span style="color: #64748b;">Invoice No:</span>
+                <b id="printBillNo" style="font-size: 13px; color: #0f172a;">BILL-1001</b>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                <span style="color: #64748b;">Invoice Date:</span>
+                <b id="printBillDate">06-11-2026</b>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: #64748b;">Payment Mode:</span>
+                <b id="printPaymentMode" style="color: #047857;">CASH</b>
+              </div>
             </div>
           </div>
-          <div style="font-size: 11px; color: #334155; margin-top: 6px;">
-            <span><b>Mobile:</b> <span id="printShopPhone">9876543210</span></span>
-            <span style="margin-left: 12px;"><b>GSTIN:</b> 27AUPRA5842C1Z2</span>
+
+          <!-- Bill To & Ship To Row -->
+          <div style="display: flex; border: 1px solid #cbd5e1; border-radius: 6px; margin-bottom: 14px; font-size: 11px; background: #fafafa;">
+            <div style="flex: 1; padding: 8px 12px; border-right: 1px solid #cbd5e1;">
+              <div style="font-size: 10px; font-weight: 800; color: #64748b; text-transform: uppercase;">BILL TO:</div>
+              <div id="printCustomerName" style="font-size: 13px; font-weight: 800; color: #0f172a; margin-top: 2px;">Cash Customer</div>
+              <div id="printCustomerPhone" style="color: #475569; margin-top: 2px;">Mobile: -</div>
+            </div>
+            <div style="flex: 1; padding: 8px 12px;">
+              <div style="font-size: 10px; font-weight: 800; color: #64748b; text-transform: uppercase;">SHIP TO:</div>
+              <div style="font-size: 12px; font-weight: 700; color: #0f172a; margin-top: 2px;">Same as billing address</div>
+              <div style="color: #64748b; margin-top: 2px;">Counter Delivery (दुकान से प्राप्त)</div>
+            </div>
           </div>
+
+          <!-- Items Grid Table (Bordered & Striped) -->
+          <table style="width: 100%; border-collapse: collapse; font-size: 11px; border: 1.5px solid #334155; margin-bottom: 12px;">
+            <thead style="background: #e2e8f0; color: #0f172a; border-bottom: 1.5px solid #334155; font-weight: 800; text-transform: uppercase;">
+              <tr>
+                <th style="padding: 6px 8px; border-right: 1px solid #cbd5e1; width: 35px; text-align: center;">S.No.</th>
+                <th style="padding: 6px 8px; border-right: 1px solid #cbd5e1; text-align: left;">ITEMS (सामान)</th>
+                <th style="padding: 6px 8px; border-right: 1px solid #cbd5e1; width: 60px; text-align: center;">HSN</th>
+                <th style="padding: 6px 8px; border-right: 1px solid #cbd5e1; width: 85px; text-align: center;">QTY (मात्रा)</th>
+                <th style="padding: 6px 8px; border-right: 1px solid #cbd5e1; width: 75px; text-align: right;">RATE (₹)</th>
+                <th style="padding: 6px 8px; border-right: 1px solid #cbd5e1; width: 65px; text-align: right;">DISC. (₹)</th>
+                <th style="padding: 6px 8px; width: 95px; text-align: right;">AMOUNT (₹)</th>
+              </tr>
+            </thead>
+            <tbody id="printBillItemsTable">
+              <!-- Dynamically filled with invoice rows -->
+            </tbody>
+            <tfoot style="border-top: 1.5px solid #334155; font-weight: 900; background: #f1f5f9; font-size: 12px;">
+              <tr>
+                <td colspan="3" style="padding: 8px; border-right: 1px solid #cbd5e1; text-align: right;">TOTAL:</td>
+                <td id="printTotalQty" style="padding: 8px; border-right: 1px solid #cbd5e1; text-align: center;">0</td>
+                <td style="padding: 8px; border-right: 1px solid #cbd5e1;"></td>
+                <td id="printDiscount" style="padding: 8px; border-right: 1px solid #cbd5e1; text-align: right; color: #dc2626;">₹0.00</td>
+                <td id="printGrandTotal" style="padding: 8px; text-align: right; font-size: 14px; color: #065f46;">₹0.00</td>
+              </tr>
+            </tfoot>
+          </table>
+
+          <!-- Received & Balance Row -->
+          <div style="display: flex; justify-content: flex-end; margin-bottom: 12px;">
+            <div style="border: 1px solid #cbd5e1; border-radius: 6px; font-size: 11px; width: 260px; background: #fafafa;">
+              <div style="display: flex; justify-content: space-between; padding: 4px 10px; border-bottom: 1px solid #e2e8f0;">
+                <span>Subtotal (कुल मूल्य):</span>
+                <b id="printSubtotal">₹0.00</b>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 4px 10px; border-bottom: 1px solid #e2e8f0;">
+                <span style="color: #059669; font-weight: bold;">RECEIVED AMOUNT (प्राप्त):</span>
+                <b id="printReceivedAmount" style="color: #059669;">₹0.00</b>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 4px 10px;">
+                <span>BALANCE AMOUNT (बकाया):</span>
+                <b id="printBalanceAmount">₹0.00</b>
+              </div>
+            </div>
+          </div>
+
+          <!-- Amount in Words -->
+          <div style="border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px 10px; font-size: 11px; background: #f8fafc; margin-bottom: 14px;">
+            <b>Invoice Amount (in words):</b> <span id="printAmountInWords" style="color: #0f172a; font-style: italic;">Rupees Only</span>
+          </div>
+
+          <!-- Footer: UPI QR Code (Left) & Terms / Signature (Right) -->
+          <div style="display: flex; justify-content: space-between; align-items: flex-end; border-top: 1.5px solid #334155; padding-top: 12px;">
+            
+            <!-- Left: Payment QR Code -->
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <img id="printQrCodeImg" src="https://api.qrserver.com/v1/create-qr-code/?size=95x95&data=upi://pay?pa=9876543210@upi&pn=KiranaStore" alt="Payment QR" style="width: 85px; height: 85px; border: 1px solid #cbd5e1; padding: 2px; border-radius: 4px;">
+              <div style="font-size: 10px; color: #475569;">
+                <b style="font-size: 11px; color: #0f172a; display: block; margin-bottom: 2px;">PAYMENT QR CODE</b>
+                <span>Google Pay / PhonePe / Paytm</span>
+                <div style="margin-top: 3px; font-family: monospace; font-size: 11px; color: #0284c7;" id="printUpiId">UPI: 9876543210@upi</div>
+                <div style="margin-top: 4px; color: #059669; font-weight: 700;">Scan & Pay Any UPI App</div>
+              </div>
+            </div>
+
+            <!-- Right: Terms and Signature -->
+            <div style="text-align: right; font-size: 10px; color: #475569; max-width: 320px;">
+              <div style="text-align: left; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; padding: 4px 8px; margin-bottom: 10px;">
+                <b style="color: #0f172a; display: block;">Terms & Conditions:</b>
+                1. Goods once sold will not be taken back.<br>
+                2. Disputes subject to local jurisdiction only.
+              </div>
+              <div style="margin-top: 25px; border-top: 1px dashed #64748b; padding-top: 4px;">
+                <b style="font-size: 11px; color: #0f172a;" id="printSignStoreName">For, Grocery & Kirana Store</b>
+                <div style="font-size: 10px; color: #64748b;">Authorised Signatory</div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Page / Powered note -->
+          <div style="text-align: center; border-top: 1px solid #e2e8f0; margin-top: 12px; padding-top: 6px; font-size: 9px; color: #94a3b8;">
+            *** Thank you for your business! Visit Again! *** | Powered by KiranaPro POS
+          </div>
+
         </div>
-
-        <!-- Right Side: Invoice Meta Box -->
-        <div style="border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px 12px; font-size: 11px; min-width: 220px; background: #f8fafc;">
-          <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-            <span style="color: #64748b;">Invoice No:</span>
-            <b id="printBillNo" style="font-size: 13px; color: #0f172a;">BILL-1001</b>
-          </div>
-          <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-            <span style="color: #64748b;">Invoice Date:</span>
-            <b id="printBillDate">06-11-2026</b>
-          </div>
-          <div style="display: flex; justify-content: space-between;">
-            <span style="color: #64748b;">Payment Mode:</span>
-            <b id="printPaymentMode" style="color: #047857;">CASH</b>
-          </div>
-        </div>
-      </div>
-
-      <!-- Bill To & Ship To Row -->
-      <div style="display: flex; border: 1px solid #cbd5e1; border-radius: 6px; margin-bottom: 14px; font-size: 11px; background: #fafafa;">
-        <div style="flex: 1; padding: 8px 12px; border-right: 1px solid #cbd5e1;">
-          <div style="font-size: 10px; font-weight: 800; color: #64748b; text-transform: uppercase;">BILL TO:</div>
-          <div id="printCustomerName" style="font-size: 13px; font-weight: 800; color: #0f172a; margin-top: 2px;">Cash Customer</div>
-          <div id="printCustomerPhone" style="color: #475569; margin-top: 2px;">Mobile: -</div>
-        </div>
-        <div style="flex: 1; padding: 8px 12px;">
-          <div style="font-size: 10px; font-weight: 800; color: #64748b; text-transform: uppercase;">SHIP TO:</div>
-          <div style="font-size: 12px; font-weight: 700; color: #0f172a; margin-top: 2px;">Same as billing address</div>
-          <div style="color: #64748b; margin-top: 2px;">Counter Delivery (दुकान से प्राप्त)</div>
-        </div>
-      </div>
-
-      <!-- Items Grid Table (Bordered & Striped) -->
-      <table style="width: 100%; border-collapse: collapse; font-size: 11px; border: 1.5px solid #334155; margin-bottom: 12px;">
-        <thead style="background: #e2e8f0; color: #0f172a; border-bottom: 1.5px solid #334155; font-weight: 800; text-transform: uppercase;">
-          <tr>
-            <th style="padding: 6px 8px; border-right: 1px solid #cbd5e1; width: 35px; text-align: center;">S.No.</th>
-            <th style="padding: 6px 8px; border-right: 1px solid #cbd5e1; text-align: left;">ITEMS (सामान)</th>
-            <th style="padding: 6px 8px; border-right: 1px solid #cbd5e1; width: 60px; text-align: center;">HSN</th>
-            <th style="padding: 6px 8px; border-right: 1px solid #cbd5e1; width: 85px; text-align: center;">QTY (मात्रा)</th>
-            <th style="padding: 6px 8px; border-right: 1px solid #cbd5e1; width: 75px; text-align: right;">RATE (₹)</th>
-            <th style="padding: 6px 8px; border-right: 1px solid #cbd5e1; width: 65px; text-align: right;">DISC. (₹)</th>
-            <th style="padding: 6px 8px; width: 95px; text-align: right;">AMOUNT (₹)</th>
-          </tr>
-        </thead>
-        <tbody id="printBillItemsTable">
-          <!-- Dynamically filled with invoice rows -->
-        </tbody>
-        <tfoot style="border-top: 1.5px solid #334155; font-weight: 900; background: #f1f5f9; font-size: 12px;">
-          <tr>
-            <td colspan="3" style="padding: 8px; border-right: 1px solid #cbd5e1; text-align: right;">TOTAL:</td>
-            <td id="printTotalQty" style="padding: 8px; border-right: 1px solid #cbd5e1; text-align: center;">0</td>
-            <td style="padding: 8px; border-right: 1px solid #cbd5e1;"></td>
-            <td id="printDiscount" style="padding: 8px; border-right: 1px solid #cbd5e1; text-align: right; color: #dc2626;">₹0.00</td>
-            <td id="printGrandTotal" style="padding: 8px; text-align: right; font-size: 14px; color: #065f46;">₹0.00</td>
-          </tr>
-        </tfoot>
-      </table>
-
-      <!-- Received & Balance Row -->
-      <div style="display: flex; justify-content: flex-end; margin-bottom: 12px;">
-        <div style="border: 1px solid #cbd5e1; border-radius: 6px; font-size: 11px; width: 260px; background: #fafafa;">
-          <div style="display: flex; justify-content: space-between; padding: 4px 10px; border-bottom: 1px solid #e2e8f0;">
-            <span>Subtotal (कुल मूल्य):</span>
-            <b id="printSubtotal">₹0.00</b>
-          </div>
-          <div style="display: flex; justify-content: space-between; padding: 4px 10px; border-bottom: 1px solid #e2e8f0;">
-            <span style="color: #059669; font-weight: bold;">RECEIVED AMOUNT (प्राप्त राशि):</span>
-            <b id="printReceivedAmount" style="color: #059669;">₹0.00</b>
-          </div>
-          <div style="display: flex; justify-content: space-between; padding: 4px 10px;">
-            <span>BALANCE AMOUNT (बकाया):</span>
-            <b id="printBalanceAmount">₹0.00</b>
-          </div>
-        </div>
-      </div>
-
-      <!-- Amount in Words -->
-      <div style="border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px 10px; font-size: 11px; background: #f8fafc; margin-bottom: 14px;">
-        <b>Invoice Amount (in words):</b> <span id="printAmountInWords" style="color: #0f172a; font-style: italic;">Rupees Only</span>
-      </div>
-
-      <!-- Footer: UPI QR Code (Left) & Terms / Signature (Right) -->
-      <div style="display: flex; justify-content: space-between; align-items: flex-end; border-top: 1.5px solid #334155; padding-top: 12px;">
-        
-        <!-- Left: Payment QR Code -->
-        <div style="display: flex; align-items: center; gap: 12px;">
-          <img id="printQrCodeImg" src="https://api.qrserver.com/v1/create-qr-code/?size=95x95&data=upi://pay?pa=8551904000@upi&pn=KiranaStore" alt="Payment QR" style="width: 85px; height: 85px; border: 1px solid #cbd5e1; padding: 2px; border-radius: 4px;">
-          <div style="font-size: 10px; color: #475569;">
-            <b style="font-size: 11px; color: #0f172a; display: block; margin-bottom: 2px;">PAYMENT QR CODE</b>
-            <span>Google Pay / PhonePe / Paytm</span>
-            <div style="margin-top: 3px; font-family: monospace; font-size: 11px; color: #0284c7;" id="printUpiId">UPI: 9876543210@upi</div>
-            <div style="margin-top: 4px; color: #059669; font-weight: 700;">Scan & Pay Any UPI App</div>
-          </div>
-        </div>
-
-        <!-- Right: Terms and Signature -->
-        <div style="text-align: right; font-size: 10px; color: #475569; max-width: 320px;">
-          <div style="text-align: left; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; padding: 4px 8px; margin-bottom: 10px;">
-            <b style="color: #0f172a; display: block;">Terms & Conditions:</b>
-            1. Goods once sold will not be taken back.<br>
-            2. Disputes subject to local jurisdiction only.
-          </div>
-          <div style="margin-top: 25px; border-top: 1px dashed #64748b; padding-top: 4px;">
-            <b style="font-size: 11px; color: #0f172a;" id="printSignStoreName">For, Grocery & Kirana Store</b>
-            <div style="font-size: 10px; color: #64748b;">Authorised Signatory</div>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- Page / Powered note -->
-      <div style="text-align: center; border-top: 1px solid #e2e8f0; margin-top: 12px; padding-top: 6px; font-size: 9px; color: #94a3b8;">
-        *** Thank you for your business! Visit Again! *** | Powered by KiranaPro POS
       </div>
 
     </div>
   </div>
 
-
-  <!-- Application Scripts -->
+<!-- Application Scripts -->
   <script>
     // Register PWA Service Worker for 100% Offline Support
     if ('serviceWorker' in navigator) {
@@ -1815,11 +1874,12 @@
             });
           }
 
-          // Merge sales from server
+          // Merge sales from server (exclude deleted bills)
           if (Array.isArray(serverDb.sales)) {
+            const deletedSet = new Set(storeData.deletedBills || []);
             const localBillNos = new Set((storeData.sales || []).map(s => s.billNo));
             serverDb.sales.forEach(srvSale => {
-              if (!localBillNos.has(srvSale.billNo)) {
+              if (!deletedSet.has(srvSale.billNo) && !localBillNos.has(srvSale.billNo)) {
                 storeData.sales.unshift(srvSale);
                 localBillNos.add(srvSale.billNo);
                 hasLocalUpdates = true;
@@ -2889,7 +2949,11 @@
       str += (n[5] != 0) ? ((str != '') ? 'and ' : '') + (a[Number(n[5])] || b[n[5][0]] + ' ' + a[n[5][1]]) : '';
       return str.trim() + ' Rupees Only';
     }
+    let currentActiveBill = null;
+
     function printReceipt(bill) {
+      if (!bill) return;
+      currentActiveBill = bill;
       const shop = storeData.shopName || 'Grocery & Kirana Store';
       const phone = storeData.phone || '9876543210';
       const addr = storeData.address || 'Retail Market, Main Bazar';
@@ -2912,25 +2976,28 @@
 
       let totalQtyCount = 0;
       const tableBody = document.getElementById('printBillItemsTable');
-      tableBody.innerHTML = bill.items.map((item, idx) => {
-        totalQtyCount += Number(item.qty) || 1;
-        const ratePerUnit = Number(item.rate) || 0;
+      const items = Array.isArray(bill.items) ? bill.items : [];
+      tableBody.innerHTML = items.map((item, idx) => {
+        const q = Number(item.qty) || 1;
+        totalQtyCount += q;
+        const ratePerUnit = Number(item.rate || item.price || (Number(item.total) / q)) || 0;
+        const itemTot = Number(item.total) || (q * ratePerUnit);
         return `
           <tr style="border-bottom: 1px solid #e2e8f0; ${idx % 2 === 1 ? 'background: #f8fafc;' : ''}">
             <td style="padding: 6px 8px; border-right: 1px solid #cbd5e1; text-align: center;">${idx + 1}</td>
-            <td style="padding: 6px 8px; border-right: 1px solid #cbd5e1; font-weight: 700; color: #0f172a;">${escapeHtml(item.name)}</td>
+            <td style="padding: 6px 8px; border-right: 1px solid #cbd5e1; font-weight: 700; color: #0f172a;">${escapeHtml(item.name || '')}</td>
             <td style="padding: 6px 8px; border-right: 1px solid #cbd5e1; text-align: center; color: #64748b;">-</td>
-            <td style="padding: 6px 8px; border-right: 1px solid #cbd5e1; text-align: center; font-weight: 700;">${item.qty} ${item.unit}</td>
+            <td style="padding: 6px 8px; border-right: 1px solid #cbd5e1; text-align: center; font-weight: 700;">${item.qty} ${item.unit || 'pcs'}</td>
             <td style="padding: 6px 8px; border-right: 1px solid #cbd5e1; text-align: right;">₹${ratePerUnit.toFixed(2)}</td>
             <td style="padding: 6px 8px; border-right: 1px solid #cbd5e1; text-align: right; color: #64748b;">0.00</td>
-            <td style="padding: 6px 8px; text-align: right; font-weight: 800; color: #0f172a;">₹${Number(item.total).toFixed(2)}</td>
+            <td style="padding: 6px 8px; text-align: right; font-weight: 800; color: #0f172a;">₹${itemTot.toFixed(2)}</td>
           </tr>
         `;
       }).join('');
 
       document.getElementById('printTotalQty').innerText = totalQtyCount;
       document.getElementById('printSubtotal').innerText = '₹' + Number(bill.subtotal || bill.grandTotal).toFixed(2);
-      document.getElementById('printDiscount').innerText = bill.discount > 0 ? '-₹' + Number(bill.discount).toFixed(2) : '₹0.00';
+      document.getElementById('printDiscount').innerText = (bill.discount && bill.discount > 0) ? '-₹' + Number(bill.discount).toFixed(2) : '₹0.00';
       document.getElementById('printGrandTotal').innerText = '₹' + Number(bill.grandTotal).toFixed(2);
       document.getElementById('printReceivedAmount').innerText = '₹' + Number(bill.grandTotal).toFixed(2);
       document.getElementById('printBalanceAmount').innerText = '₹0.00';
@@ -2944,7 +3011,41 @@
       const upiUrl = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(shop)}&am=${bill.grandTotal}&cu=INR`;
       document.getElementById('printQrCodeImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=95x95&data=${encodeURIComponent(upiUrl)}`;
 
-      window.print();
+      // Open interactive Modal so user sees the bill clearly
+      const invModal = document.getElementById('invoiceModal');
+      if (invModal) {
+        invModal.classList.remove('hidden');
+        if (window.lucide) lucide.createIcons();
+      }
+    }
+
+    function closeInvoiceModal() {
+      const invModal = document.getElementById('invoiceModal');
+      if (invModal) invModal.classList.add('hidden');
+    }
+
+    function shareInvoiceViaWhatsApp() {
+      if (!currentActiveBill) return;
+      const b = currentActiveBill;
+      const shop = storeData.shopName || 'Kirana Store';
+      let text = `🧾 *TAX INVOICE - ${shop}*\n`;
+      text += `बिल नं: *${b.billNo}* | दिनांक: ${new Date(b.date).toLocaleDateString('en-IN')}\n`;
+      text += `ग्राहक: *${b.customerName || 'Cash'}* (${b.customerPhone || '-'})
+`;
+      text += `---------------------------------\n`;
+      (b.items || []).forEach((it, idx) => {
+        text += `${idx + 1}. ${it.name} - ${it.qty} ${it.unit} = ₹${Number(it.total).toFixed(2)}\n`;
+      });
+      text += `---------------------------------\n`;
+      text += `कुल राशि (Total): *₹${Number(b.grandTotal).toFixed(2)}*\n`;
+      text += `भुगतान (Payment): *${b.paymentMode || 'Cash'}*\n`;
+      text += `धन्यवाद! फिर पधारें 🙏`;
+
+      const phone = (b.customerPhone || '').replace(/[^0-9]/g, '');
+      const waUrl = phone.length >= 10 
+        ? `https://api.whatsapp.com/send?phone=91${phone.slice(-10)}&text=${encodeURIComponent(text)}`
+        : `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+      window.open(waUrl, '_blank');
     }
 
     // ==========================================
@@ -3356,7 +3457,7 @@
       // 1. Rollback deducted stock back to items
       if (sale.items && Array.isArray(sale.items)) {
         sale.items.forEach(it => {
-          const item = storeData.items.find(i => i.id === it.itemId);
+          const item = storeData.items.find(i => i.id === it.itemId || i.name === it.name);
           if (item) {
             const rollbackQty = it.baseDeduction !== undefined ? Number(it.baseDeduction) : Number(it.qty);
             item.stock = parseFloat((Number(item.stock) + rollbackQty).toFixed(3));
@@ -3365,19 +3466,29 @@
         });
       }
 
-      // 2. Remove sale from sales history
+      // 2. Add to deletedBills tombstone list so it NEVER resurrects from server
+      if (!storeData.deletedBills) storeData.deletedBills = [];
+      if (!storeData.deletedBills.includes(billNo)) {
+        storeData.deletedBills.push(billNo);
+      }
+
+      // 3. Remove sale from sales array
       storeData.sales.splice(saleIndex, 1);
 
-      // 3. Save to localStorage & sync with Supabase
-      saveToLocalStorage(true);
+      // 4. Immediately persist to localStorage
+      localStorage.setItem('kirana_store_data', JSON.stringify(storeData));
 
-      // 4. Update UI
+      // 5. Update UI immediately
       renderSalesHistory();
       renderStockTable();
-      populatePosItemDropdown();
+      if (typeof populatePosItemDropdown === 'function') populatePosItemDropdown();
+      if (typeof populateLiveQuickDropdown === 'function') populateLiveQuickDropdown();
       updateTopStats();
 
-      showPosToast(`✅ बिल #${billNo} रद्द कर दिया गया और स्टॉक वापस जुड़ गया!`);
+      // 6. Sync deletion to server & Supabase
+      saveToLocalStorage(true);
+
+      showPosToast(`✅ बिल #${billNo} रद्द कर दिया गया और सारा सामान वापस स्टॉक में जुड़ गया!`);
       alert(`सफलतापूर्वक बिल #${billNo} रद्द कर दिया गया!\nसारा सामान वापस दुकान के स्टॉक में जुड़ गया है।`);
     }
 
