@@ -340,351 +340,238 @@
           + Add New Item
         </button>
       </div>
-    </section>
+            <!-- Compatibility Fallbacks -->
+        <select id="posItemSelect" class="hidden"></select>
+        <select id="posUnitSelect" class="hidden"><option value="kg">kg</option></select>
+        <input type="hidden" id="posQtyInput" value="1">
+</section>
 
 
     <!-- ========================================== -->
     <!-- TAB 2: BILLING / POS / SELL ENTRY -->
     <!-- ========================================== -->
     <section id="tab-billing" class="tab-content hidden">
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      
+      <!-- ========================================== -->
+      <!-- TOP: SMART POINT CASHIER SCAN & SEARCH BAR -->
+      <!-- ========================================== -->
+      <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 mb-4 space-y-3">
         
-        <!-- Left: Item Selector & Rate Calculator for Selling -->
-        <div class="lg:col-span-7 space-y-4">
-          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-            <h2 class="text-lg font-bold text-slate-800 flex items-center justify-between mb-3">
-              <span class="flex items-center gap-2">
-                <i data-lucide="tag" class="w-5 h-5 text-emerald-600"></i>
-                Select Item & Enter Quantity
-              </span>
-              <span class="text-xs font-normal text-slate-500">Step 1: Add Items</span>
-            </h2>
-
-            <div class="space-y-4">
-              <!-- 1. LIVE FAST SEARCH & ITEM PICKER -->
-              <div>
-                <div class="flex items-center justify-between mb-1">
-                  <label class="block text-xs font-bold text-slate-700 flex items-center gap-1">
-                    <i data-lucide="search" class="w-3.5 h-3.5 text-emerald-600"></i>
-                    <span>सामान खोजें या चुनें (Search / Select Item):</span>
-                  </label>
-                  <span id="posItemsFoundCount" class="text-[11px] text-emerald-700 font-semibold"></span>
-                </div>
-
-                <!-- Instant Search Input Box -->
-                <div class="relative">
-                  <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-emerald-700">
-                    <i data-lucide="search" class="w-4 h-4"></i>
-                  </div>
-                  <input 
-                    type="text" 
-                    id="posSearchInput" 
-                    oninput="onPosSearchInput(this.value)" 
-                    onfocus="onPosSearchFocus()" 
-                    placeholder="🔍 नाम लिखें (जैसे: धनिया, cheeni, dal, lux, mustard oil...)" 
-                    class="w-full pl-9 pr-9 p-2.5 bg-slate-50 border-2 border-emerald-400 rounded-xl font-bold text-sm text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-emerald-500 focus:bg-white transition"
-                    autocomplete="off"
-                  >
-                  <button 
-                    type="button" 
-                    id="posClearSearchBtn" 
-                    onclick="clearPosSearch()" 
-                    class="hidden absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-red-500"
-                    title="Clear Search"
-                  >
-                    <i data-lucide="x" class="w-4 h-4"></i>
-                  </button>
-
-                  <!-- Live Filtered Search Results Dropdown -->
-                  <div 
-                    id="posSearchResults" 
-                    class="hidden absolute z-30 left-0 right-0 mt-1 max-h-64 overflow-y-auto bg-white border-2 border-emerald-500 rounded-xl shadow-2xl divide-y divide-slate-100"
-                  >
-                    <!-- Populated dynamically via JS -->
-                  </div>
-                </div>
-
-                <!-- Standard Dropdown (Alternative / Fallback) -->
-                <div class="mt-2 flex items-center gap-2">
-                  <span class="text-[11px] text-slate-400 whitespace-nowrap">या लिस्ट से:</span>
-                  <select id="posItemSelect" onchange="onPosItemSelected()" class="w-full p-2 bg-slate-50 border border-slate-300 rounded-xl font-medium text-xs text-slate-700 focus:ring-2 focus:ring-emerald-500">
-                    <option value="">-- Choose Item from List --</option>
-                  </select>
-                </div>
-              </div>
-
-              <!-- Selected Item Details Pill -->
-              <div id="posSelectedItemCard" class="hidden p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl text-sm">
-                <div class="flex justify-between items-start mb-2">
-                  <div>
-                    <h4 id="posCardName" class="font-bold text-emerald-950 text-base">Sugar</h4>
-                    <span id="posCardCategory" class="text-xs bg-emerald-200 text-emerald-800 px-2 py-0.5 rounded-full">Grains & Pulses</span>
-                  </div>
-                  <div class="text-right">
-                    <div class="text-xs text-slate-500">Available Stock:</div>
-                    <span id="posCardStock" class="font-bold text-emerald-700 text-base">45 kg</span>
-                  </div>
-                </div>
-
-                <!-- Rates info with instant edit button -->
-                <div class="grid grid-cols-2 gap-2 text-xs bg-white p-2.5 rounded-lg border border-emerald-100">
-                  <div class="flex items-center justify-between">
-                    <div>
-                      <span class="text-slate-500 block">Selling Rate:</span>
-                      <span id="posCardSellRate" class="font-bold text-slate-800 text-sm">₹44.00 / kg</span>
-                    </div>
-                  </div>
-                  <div class="flex items-center justify-between border-l pl-2">
-                    <div>
-                      <span class="text-slate-500 block">Purchase Rate:</span>
-                      <span id="posCardBuyRate" class="font-medium text-slate-600 text-sm">₹40.00 / kg</span>
-                    </div>
-                    <button onclick="openQuickRateEditModal(document.getElementById('posItemSelect').value)" class="text-xs text-emerald-700 hover:text-emerald-900 font-bold underline ml-1">
-                      Edit
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Quantity Input & Unit Selector -->
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
-                <div>
-                  <label class="block text-xs font-semibold text-slate-600 mb-1">Select Unit (इकाई):</label>
-                  <select id="posUnitSelect" onchange="recalcPosPrice()" class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-bold focus:ring-2 focus:ring-emerald-500 text-sm">
-                    <option value="kg">Kilogram (kg)</option>
-                    <option value="gm">Gram (gm)</option>
-                    <option value="pcs">Pieces / Packets (Pcs / Pkt)</option>
-                    <option value="litre">Litre (L)</option>
-                    <option value="ml">MilliLitre (ml)</option>
-                  </select>
-                </div>
-                <div>
-                  <label class="block text-xs font-semibold text-slate-600 mb-1">Quantity (मात्रा):</label>
-                  <div class="relative">
-                    <input 
-                      type="number" 
-                      id="posQtyInput" 
-                      step="any" 
-                      value="1" 
-                      min="0.001" 
-                      oninput="recalcPosPrice()" 
-                      class="w-full p-2.5 pr-14 bg-slate-50 border border-slate-300 rounded-xl font-bold text-base focus:ring-2 focus:ring-emerald-500"
-                    >
-                    <span id="posQtyUnitLabel" class="absolute inset-y-0 right-0 pr-3 flex items-center font-semibold text-slate-500 text-xs pointer-events-none">kg</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- 2. QUICK SELECT: CHIPS + CUSTOM INPUT (e.g. 12 gm or 1 kg) -->
-              <div id="posQuickShortcuts" class="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2.5">
-                <div class="flex items-center justify-between">
-                  <span class="text-xs font-bold text-slate-700 flex items-center gap-1">
-                    <span>⚡ Quick Select (जल्दी वजन चुनें):</span>
-                  </span>
-                  <span class="text-[10px] text-slate-400">क्लिक करते ही सेट होगा</span>
-                </div>
-
-                <!-- Common Fast Weight Chips -->
-                <div class="flex flex-wrap gap-1.5">
-                  <button type="button" onclick="setQuickQty(10, 'gm')" class="px-2 py-1 bg-white hover:bg-emerald-100 hover:text-emerald-900 border border-slate-200 rounded-lg text-xs font-bold transition active:scale-95 shadow-2xs">10g</button>
-                  <button type="button" onclick="setQuickQty(20, 'gm')" class="px-2 py-1 bg-white hover:bg-emerald-100 hover:text-emerald-900 border border-slate-200 rounded-lg text-xs font-bold transition active:scale-95 shadow-2xs">20g</button>
-                  <button type="button" onclick="setQuickQty(50, 'gm')" class="px-2 py-1 bg-white hover:bg-emerald-100 hover:text-emerald-900 border border-slate-200 rounded-lg text-xs font-bold transition active:scale-95 shadow-2xs">50g</button>
-                  <button type="button" onclick="setQuickQty(100, 'gm')" class="px-2 py-1 bg-white hover:bg-emerald-100 hover:text-emerald-900 border border-slate-200 rounded-lg text-xs font-bold transition active:scale-95 shadow-2xs">100g</button>
-                  <button type="button" onclick="setQuickQty(250, 'gm')" class="px-2 py-1 bg-white hover:bg-emerald-100 hover:text-emerald-900 border border-slate-200 rounded-lg text-xs font-bold transition active:scale-95 shadow-2xs">250g (पाव)</button>
-                  <button type="button" onclick="setQuickQty(500, 'gm')" class="px-2 py-1 bg-white hover:bg-emerald-100 hover:text-emerald-900 border border-slate-200 rounded-lg text-xs font-bold transition active:scale-95 shadow-2xs">500g (आधा kg)</button>
-                  <button type="button" onclick="setQuickQty(1, 'kg')" class="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-200 text-emerald-900 border border-emerald-300 rounded-lg text-xs font-black transition active:scale-95 shadow-2xs">1 kg</button>
-                  <button type="button" onclick="setQuickQty(2, 'kg')" class="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-200 text-emerald-900 border border-emerald-300 rounded-lg text-xs font-black transition active:scale-95 shadow-2xs">2 kg</button>
-                  <button type="button" onclick="setQuickQty(5, 'kg')" class="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-200 text-emerald-900 border border-emerald-300 rounded-lg text-xs font-black transition active:scale-95 shadow-2xs">5 kg</button>
-                </div>
-
-                <!-- Custom Weight Input Inside Quick Select (Requested: e.g. 12 gm ya 1 kg) -->
-                <div class="flex items-center gap-2 pt-1 border-t border-slate-200">
-                  <span class="text-xs font-bold text-slate-600 whitespace-nowrap">मनचाहा वजन (Custom):</span>
-                  <div class="flex-1 flex items-center gap-1.5">
-                    <input 
-                      type="number" 
-                      id="customQuickQtyInput" 
-                      placeholder="जैसे: 12" 
-                      step="any" 
-                      class="w-24 p-1.5 bg-white border border-slate-300 rounded-lg text-xs font-black text-center focus:ring-2 focus:ring-emerald-500"
-                      onkeydown="if(event.key==='Enter'){event.preventDefault(); applyCustomQuickQty();}"
-                    >
-                    <select id="customQuickUnitSelect" class="p-1.5 bg-white border border-slate-300 rounded-lg text-xs font-bold text-slate-700">
-                      <option value="gm">gm (ग्राम)</option>
-                      <option value="kg">kg (किलो)</option>
-                      <option value="pcs">pcs (पीस)</option>
-                      <option value="ml">ml (मिली)</option>
-                      <option value="litre">L (लीटर)</option>
-                    </select>
-                    <button 
-                      type="button" 
-                      onclick="applyCustomQuickQty()" 
-                      class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-3 py-1.5 rounded-lg text-xs shadow-xs active:scale-95 transition"
-                    >
-                      सेट करें
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <!-- 3. REVERSE RUPEE ENTRY (e.g. ₹20 KA DHANIYA) WITH AUTO BILL ADD -->
-              <div class="bg-amber-50 border-2 border-amber-300 p-3.5 rounded-2xl space-y-2.5 shadow-sm">
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-1.5">
-                    <span class="text-lg">🪙</span>
-                    <div>
-                      <span class="font-extrabold text-amber-950 text-xs block">रुपये का खुला सामान (₹ Reverse Entry):</span>
-                      <span class="text-[10px] text-amber-800">जैसे ग्राहक कहे: "₹20 का धनिया दे दो"</span>
-                    </div>
-                  </div>
-                  
-                  <!-- Auto-Add on Select Toggle Checkbox -->
-                  <label class="flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-lg border border-amber-300 cursor-pointer shadow-2xs hover:bg-amber-100/50 transition">
-                    <input type="checkbox" id="autoAddOnRupeeSelect" checked class="w-4 h-4 text-emerald-600 rounded cursor-pointer">
-                    <span class="text-[11px] font-extrabold text-amber-950 select-none">⚡ ऑटो बिल में जोड़ें</span>
-                  </label>
-                </div>
-
-                <!-- Quick Rupee Buttons -->
-                <div class="flex flex-wrap items-center gap-1.5">
-                  <span class="text-[11px] font-bold text-amber-900">क्विक ₹:</span>
-                  <button type="button" onclick="setRupeeAmount(5)" class="px-2.5 py-1 bg-white hover:bg-amber-200 text-amber-950 border border-amber-300 rounded-lg text-xs font-black shadow-2xs active:scale-95 transition">₹5</button>
-                  <button type="button" onclick="setRupeeAmount(10)" class="px-2.5 py-1 bg-white hover:bg-amber-200 text-amber-950 border border-amber-300 rounded-lg text-xs font-black shadow-2xs active:scale-95 transition">₹10</button>
-                  <button type="button" onclick="setRupeeAmount(20)" class="px-2.5 py-1 bg-amber-400 hover:bg-amber-300 text-slate-900 border border-amber-500 rounded-lg text-xs font-black shadow-2xs active:scale-95 transition ring-1 ring-amber-400">₹20</button>
-                  <button type="button" onclick="setRupeeAmount(30)" class="px-2.5 py-1 bg-white hover:bg-amber-200 text-amber-950 border border-amber-300 rounded-lg text-xs font-black shadow-2xs active:scale-95 transition">₹30</button>
-                  <button type="button" onclick="setRupeeAmount(50)" class="px-2.5 py-1 bg-white hover:bg-amber-200 text-amber-950 border border-amber-300 rounded-lg text-xs font-black shadow-2xs active:scale-95 transition">₹50</button>
-                  <button type="button" onclick="setRupeeAmount(100)" class="px-2.5 py-1 bg-white hover:bg-amber-200 text-amber-950 border border-amber-300 rounded-lg text-xs font-black shadow-2xs active:scale-95 transition">₹100</button>
-                </div>
-
-                <!-- Custom ₹ Input & Direct Instant Add Button -->
-                <div class="flex items-center gap-2 pt-1">
-                  <div class="relative flex-1">
-                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center font-black text-amber-700 text-sm pointer-events-none">₹</span>
-                    <input 
-                      type="number" 
-                      id="reverseAmountInput" 
-                      placeholder="रुपये डालें (जैसे: 20)" 
-                      class="w-full pl-7 pr-3 p-2 bg-white border border-amber-300 rounded-xl text-sm font-black text-slate-900 focus:ring-2 focus:ring-amber-500" 
-                      oninput="calcReverseQty(this.value)"
-                      onkeydown="if(event.key==='Enter'){event.preventDefault(); quickRupeeAddNow();}"
-                    >
-                  </div>
-                  
-                  <button 
-                    type="button" 
-                    id="btnQuickRupeeAdd" 
-                    onclick="quickRupeeAddNow()" 
-                    class="bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold px-3.5 py-2 rounded-xl text-xs shadow flex items-center gap-1.5 transition active:scale-95 whitespace-nowrap"
-                  >
-                    <i data-lucide="plus-circle" class="w-4 h-4"></i>
-                    <span>सीधा बिल में जोड़ें</span>
-                  </button>
-                </div>
-
-                <!-- Calculation Live Summary Badge -->
-                <div id="rupeeCalcPreview" class="hidden text-xs font-bold text-emerald-950 bg-white p-2.5 rounded-xl border border-emerald-300 flex justify-between items-center shadow-2xs">
-                  <span id="rupeeCalcDetail">👉 ₹20 में 125 gm धनिया</span>
-                  <span id="rupeeCalcBadgePrice" class="text-emerald-700 font-black text-sm">₹20.00</span>
-                </div>
-              </div>
-
-              <!-- Computed Total Box -->
-              <div class="bg-slate-900 text-white p-4 rounded-xl flex items-center justify-between">
-                <div>
-                  <span class="text-xs text-slate-400 block">Item Total:</span>
-                  <div class="text-2xl font-black text-amber-400" id="posComputedPrice">₹0.00</div>
-                  <span class="text-[11px] text-slate-400" id="posComputedBreakup">0 kg × ₹0</span>
-                </div>
-                <button 
-                  onclick="addItemToCart()" 
-                  id="btnAddToCart"
-                  disabled
-                  class="bg-emerald-500 hover:bg-emerald-400 disabled:opacity-40 disabled:cursor-not-allowed text-slate-900 font-bold px-5 py-2.5 rounded-xl shadow flex items-center gap-2 transition"
-                >
-                  <i data-lucide="plus" class="w-5 h-5"></i>
-                  <span>Add to Bill</span>
-                </button>
-              </div>
-
+        <div class="flex flex-col md:flex-row gap-3 items-stretch md:items-center">
+          
+          <!-- Big Smart Point Search Box -->
+          <div class="relative flex-1">
+            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-emerald-600">
+              <i data-lucide="scan" class="w-5 h-5"></i>
             </div>
+            <input 
+              type="text" 
+              id="posSearchInput" 
+              oninput="onPosSearchInput(this.value)" 
+              onfocus="onPosSearchFocus()" 
+              placeholder="🔍 सामान का नाम लिखें (धनिया, चीनी, आटा, तेल, साबुन... टच करते ही बिल में जुड़ेगा)" 
+              class="w-full pl-11 pr-10 py-3 bg-slate-50 border-2 border-emerald-400 rounded-xl font-bold text-sm text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-emerald-500 focus:bg-white shadow-xs transition"
+              autocomplete="off"
+            >
+            <button 
+              type="button" 
+              id="posClearSearchBtn" 
+              onclick="clearPosSearch()" 
+              class="hidden absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-red-500"
+            >
+              <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <!-- Live Floating Search Results Dropdown (Clicking directly adds to bill) -->
+            <div 
+              id="posSearchResults" 
+              class="hidden absolute z-30 left-0 right-0 mt-1 max-h-72 overflow-y-auto bg-white border-2 border-emerald-500 rounded-2xl shadow-2xl divide-y divide-slate-100"
+            >
+              <!-- Filled via JS -->
+            </div>
+          </div>
+
+          <!-- Quick Loose ₹ Rupee Bar (e.g. ₹20 ka Dhaniya) -->
+          <div class="flex items-center gap-1.5 bg-amber-50 border-2 border-amber-300 p-2 rounded-xl">
+            <span class="text-xs font-black text-amber-950 pl-1 whitespace-nowrap">🪙 खुला ₹:</span>
+            <button type="button" onclick="setRupeeAmount(10)" class="px-2.5 py-1.5 bg-white hover:bg-amber-200 text-amber-950 border border-amber-300 rounded-lg text-xs font-black shadow-2xs active:scale-95 transition">₹10</button>
+            <button type="button" onclick="setRupeeAmount(20)" class="px-2.5 py-1.5 bg-amber-400 hover:bg-amber-300 text-slate-900 border border-amber-500 rounded-lg text-xs font-black shadow-2xs active:scale-95 transition ring-1 ring-amber-400">₹20</button>
+            <button type="button" onclick="setRupeeAmount(50)" class="px-2.5 py-1.5 bg-white hover:bg-amber-200 text-amber-950 border border-amber-300 rounded-lg text-xs font-black shadow-2xs active:scale-95 transition">₹50</button>
+            <button type="button" onclick="setRupeeAmount(100)" class="px-2.5 py-1.5 bg-white hover:bg-amber-200 text-amber-950 border border-amber-300 rounded-lg text-xs font-black shadow-2xs active:scale-95 transition">₹100</button>
+            <input 
+              type="number" 
+              id="reverseAmountInput" 
+              placeholder="रुपये" 
+              class="w-16 p-1.5 bg-white border border-amber-300 rounded-lg text-xs font-black text-center" 
+              oninput="calcReverseQty(this.value)"
+            >
+          </div>
+
+        </div>
+
+        <!-- Speed Dial Hotkeys (1-Tap Fast Staple Items) -->
+        <div class="flex items-center gap-2 overflow-x-auto pb-1 text-xs no-scrollbar">
+          <span class="text-slate-400 font-bold whitespace-nowrap flex items-center gap-1">
+            <i data-lucide="zap" class="w-3.5 h-3.5 text-amber-500"></i>
+            <span>हॉटकीज़ (1-टच में जोड़ें):</span>
+          </span>
+          <div id="posQuickItemPills" class="flex items-center gap-1.5">
+            <!-- Populated via JS -->
           </div>
         </div>
 
-        <!-- Right: Current Cart / Bill Preview -->
-        <div class="lg:col-span-5 space-y-4">
-          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col h-full">
-            <div class="flex items-center justify-between border-b pb-3 mb-3">
-              <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
-                <i data-lucide="receipt" class="w-5 h-5 text-emerald-600"></i>
-                <span>Customer Bill Slip</span>
-              </h2>
-              <button onclick="clearCart()" class="text-xs text-red-500 hover:text-red-700 font-medium">
-                Clear Cart
-              </button>
-            </div>
+      </div>
 
-            <!-- Customer details input -->
-            <div class="grid grid-cols-2 gap-2 mb-3">
-              <input type="text" id="cartCustomerName" placeholder="Customer Name (Optional)" class="p-2 border border-slate-300 rounded-lg text-xs">
-              <input type="text" id="cartCustomerPhone" placeholder="Mobile No. (Optional)" class="p-2 border border-slate-300 rounded-lg text-xs">
-            </div>
-
-            <!-- Cart Items List Table -->
-            <div class="flex-1 overflow-y-auto max-h-[300px] border rounded-xl divide-y mb-3" id="cartItemsContainer">
-              <div class="p-6 text-center text-slate-400 text-sm" id="emptyCartNotice">
-                🛒 No items in cart yet.<br>Select items from the left to add.
+      <!-- ========================================== -->
+      <!-- MAIN POS BILLING WORKSPACE -->
+      <!-- ========================================== -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        
+        <!-- Left: Smart Point Cashier Bill Table (8 Cols) -->
+        <div class="lg:col-span-8 bg-white p-4 md:p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col min-h-[460px]">
+          
+          <div class="flex items-center justify-between border-b pb-3 mb-3">
+            <div class="flex items-center gap-2">
+              <span class="p-2 bg-emerald-100 text-emerald-800 rounded-xl">
+                <i data-lucide="receipt" class="w-5 h-5"></i>
+              </span>
+              <div>
+                <h2 class="text-base font-black text-slate-800">स्मार्ट बिलिंग काउंटर (Live Bill Slip)</h2>
+                <p class="text-[11px] text-slate-500">सामान चुनते ही बिल में आ जाएगा — मात्रा यही से सीधे बदलें</p>
               </div>
             </div>
 
-            <!-- Bill Totals & Discount -->
-            <div class="space-y-2 text-sm bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+            <button 
+              type="button" 
+              onclick="clearCart()" 
+              class="text-xs text-red-600 hover:text-red-700 hover:bg-red-50 font-bold px-3 py-1.5 rounded-xl border border-red-200 transition flex items-center gap-1 active:scale-95"
+            >
+              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              <span>नया बिल (Clear)</span>
+            </button>
+          </div>
+
+          <!-- The Live POS Bill Table -->
+          <div class="flex-1 overflow-x-auto overflow-y-auto max-h-[520px]">
+            <table class="w-full text-left text-xs md:text-sm">
+              <thead class="bg-slate-100 text-slate-600 uppercase text-[10px] md:text-xs font-bold sticky top-0 z-10 border-b">
+                <tr>
+                  <th class="py-2.5 px-3">#</th>
+                  <th class="py-2.5 px-3">सामान का नाम (Item)</th>
+                  <th class="py-2.5 px-3 text-center">मात्रा / वजन (Quantity)</th>
+                  <th class="py-2.5 px-3 text-right">भाव (Rate)</th>
+                  <th class="py-2.5 px-3 text-right">कुल (Total)</th>
+                  <th class="py-2.5 px-2 text-center"></th>
+                </tr>
+              </thead>
+              <tbody id="cartTableBody" class="divide-y divide-slate-100">
+                <!-- Dynamically rendered rows -->
+              </tbody>
+            </table>
+
+            <!-- Empty Bill Banner -->
+            <div id="emptyCartNotice" class="py-16 text-center text-slate-400">
+              <div class="w-16 h-16 mx-auto mb-3 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center">
+                <i data-lucide="shopping-cart" class="w-8 h-8"></i>
+              </div>
+              <h4 class="font-bold text-slate-700 text-base mb-1">बिल खाली है (No Items in Bill)</h4>
+              <p class="text-xs text-slate-400 max-w-sm mx-auto">
+                ऊपर सर्च बॉक्स में सामान का नाम लिखें या हॉटकीज़ को दबाएं, सामान तुरंत बिल में जुड़ जाएगा!
+              </p>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right: Checkout / Total Panel (4 Cols) -->
+        <div class="lg:col-span-4 space-y-4">
+          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+            
+            <h3 class="font-bold text-slate-800 text-sm border-b pb-2 flex items-center gap-1.5">
+              <i data-lucide="wallet" class="w-4 h-4 text-emerald-600"></i>
+              <span>पेमेंट और बिल पूरा करें</span>
+            </h3>
+
+            <!-- Customer details (Optional) -->
+            <div class="space-y-2">
+              <div>
+                <label class="block text-[11px] font-semibold text-slate-600 mb-0.5">ग्राहक का नाम (Customer):</label>
+                <input 
+                  type="text" 
+                  id="cartCustomerName" 
+                  placeholder="Cash Customer (या नाम लिखें)" 
+                  class="w-full p-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-emerald-500"
+                >
+              </div>
+              <div>
+                <label class="block text-[11px] font-semibold text-slate-600 mb-0.5">मोबाइल नंबर (Optional):</label>
+                <input 
+                  type="text" 
+                  id="cartCustomerPhone" 
+                  placeholder="98XXXXXXXX" 
+                  class="w-full p-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-emerald-500"
+                >
+              </div>
+            </div>
+
+            <!-- Totals Breakup Box -->
+            <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-2 text-xs">
               <div class="flex justify-between text-slate-600">
-                <span>Total Items:</span>
-                <span class="font-bold" id="cartTotalItemsCount">0</span>
+                <span>कुल सामान (Total Items):</span>
+                <span class="font-bold text-slate-900" id="cartTotalItemsCount">0</span>
               </div>
               <div class="flex justify-between text-slate-600">
-                <span>Subtotal:</span>
-                <span class="font-semibold" id="cartSubtotal">₹0.00</span>
+                <span>सामान का कुल मूल्य (Subtotal):</span>
+                <span class="font-bold text-slate-900" id="cartSubtotal">₹0.00</span>
               </div>
               <div class="flex justify-between items-center text-slate-600">
-                <span>Discount (₹):</span>
-                <input type="number" id="cartDiscount" value="0" min="0" oninput="recalcCartGrandTotal()" class="w-20 p-1 bg-white border border-slate-300 rounded text-right font-bold text-xs">
-              </div>
-              <div class="border-t pt-2 flex justify-between items-center font-black text-lg text-slate-900">
-                <span>Grand Total:</span>
-                <span class="text-emerald-700 text-xl" id="cartGrandTotal">₹0.00</span>
+                <span>छूट (Discount ₹):</span>
+                <input 
+                  type="number" 
+                  id="cartDiscount" 
+                  value="0" 
+                  min="0" 
+                  oninput="recalcCartGrandTotal()" 
+                  class="w-20 p-1 bg-white border border-slate-300 rounded-lg text-right font-black text-xs text-red-600"
+                >
               </div>
               
-              <!-- Payment mode -->
-              <div class="pt-2 flex items-center justify-between text-xs">
-                <span class="font-semibold text-slate-700">Payment Mode:</span>
-                <select id="cartPaymentMode" class="p-1.5 border border-slate-300 rounded-lg font-semibold bg-white text-xs">
-                  <option value="Cash">💵 Cash</option>
-                  <option value="UPI">📱 Online / UPI (GPay/PhonePe)</option>
-                  <option value="Credit">📝 Credit / Khata</option>
-                </select>
+              <div class="border-t border-slate-300 pt-2.5 flex justify-between items-center">
+                <span class="font-black text-slate-900 text-sm">कुल रकम (GRAND TOTAL):</span>
+                <span class="text-2xl font-black text-emerald-700" id="cartGrandTotal">₹0.00</span>
               </div>
             </div>
 
-            <!-- Final Checkout Buttons -->
-            <div class="pt-4 flex gap-2">
+            <!-- Payment Mode Selection -->
+            <div>
+              <label class="block text-[11px] font-bold text-slate-700 mb-1">भुगतान का तरीका (Payment Mode):</label>
+              <select id="cartPaymentMode" class="w-full p-2.5 border border-slate-300 rounded-xl font-bold bg-white text-xs">
+                <option value="Cash">💵 कैश (Cash)</option>
+                <option value="UPI">📱 ऑनलाइन / UPI (GPay/PhonePe)</option>
+                <option value="Credit">📝 उधारी / खाता (Credit)</option>
+              </select>
+            </div>
+
+            <!-- Big Mall-Style Checkout Buttons -->
+            <div class="space-y-2 pt-2">
               <button 
                 onclick="checkoutBill(true)" 
                 id="btnCheckoutPrint"
                 disabled
-                class="flex-1 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-xl shadow flex items-center justify-center gap-2 transition"
+                class="w-full bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-black py-3.5 px-4 rounded-xl shadow-lg flex items-center justify-center gap-2 text-sm transition active:scale-95"
               >
                 <i data-lucide="printer" class="w-5 h-5"></i>
-                <span>Save & Print Bill</span>
+                <span>🖨️ बिल प्रिंट करें और कैश लें (Print Bill)</span>
               </button>
+
               <button 
                 onclick="checkoutBill(false)" 
                 id="btnCheckoutOnly"
                 disabled
-                class="bg-slate-800 hover:bg-slate-900 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-xl shadow flex items-center justify-center transition"
-                title="Deduct stock and save without printing"
+                class="w-full bg-slate-800 hover:bg-slate-900 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold py-2.5 px-4 rounded-xl shadow text-xs flex items-center justify-center gap-1.5 transition active:scale-95"
               >
-                <span>Save Only</span>
+                <i data-lucide="save" class="w-4 h-4"></i>
+                <span>💾 सिर्फ बिल सेव करें (Save Only)</span>
               </button>
             </div>
 
@@ -1701,6 +1588,7 @@
       populateLiveQuickDropdown();
       handleQuickSearch('');
       renderStockTable();
+      renderQuickItemPills();
       renderSalesHistory();
       lucide.createIcons();
 
@@ -2154,7 +2042,7 @@
       if (selectedRateItem && selectedRateItem.id === item.id) {
         openRateModal(item.id);
       }
-      if (document.getElementById('posItemSelect').value === item.id) {
+      if (document.getElementById('posItemSelect') && document.getElementById('posItemSelect').value === item.id) {
         onPosItemSelected();
       }
     }
@@ -2246,23 +2134,16 @@
 
       closeRateModal();
       switchTab('billing');
-      
-      const select = document.getElementById('posItemSelect');
-      select.value = itemId;
-      onPosItemSelected();
-      
-      if (document.getElementById('calcModalQty').value) {
-        document.getElementById('posUnitSelect').value = unit;
-        document.getElementById('posQtyInput').value = qty;
-        recalcPosPrice();
-      }
+      addPosItemToCart(itemId, qty, unit);
     }
 
+    function populatePosItemDropdown() {
+      renderQuickItemPills();
+    }
+    function onPosItemSelected() {}
+
     // ==========================================
-    // POS BILLING (TAB 2)
-    // ==========================================
-    // ==========================================
-    // POS LIVE SEARCH, CUSTOM QUICK QTY & AUTO RUPEE ENTRY
+    // SMART POINT / MALL STYLE POS BILLING
     // ==========================================
     let posToastTimeout = null;
     function showPosToast(msg) {
@@ -2274,7 +2155,7 @@
       if (posToastTimeout) clearTimeout(posToastTimeout);
       posToastTimeout = setTimeout(() => {
         toast.classList.add('hidden');
-      }, 2500);
+      }, 2000);
       if (window.lucide) lucide.createIcons();
     }
 
@@ -2287,7 +2168,6 @@
       const q = (query || '').toLowerCase().trim();
       const resultsDiv = document.getElementById('posSearchResults');
       const clearBtn = document.getElementById('posClearSearchBtn');
-      const countEl = document.getElementById('posItemsFoundCount');
 
       if (q.length > 0) {
         if (clearBtn) clearBtn.classList.remove('hidden');
@@ -2297,15 +2177,12 @@
 
       if (!q) {
         resultsDiv.classList.add('hidden');
-        if (countEl) countEl.innerText = '';
         return;
       }
 
       const matches = storeData.items.filter(item => {
         return item.name.toLowerCase().includes(q) || item.category.toLowerCase().includes(q);
       });
-
-      if (countEl) countEl.innerText = `${matches.length} सामान मिले`;
 
       if (matches.length === 0) {
         resultsDiv.innerHTML = `
@@ -2322,11 +2199,11 @@
 
       resultsDiv.innerHTML = matches.slice(0, 15).map(item => `
         <div 
-          onclick="selectPosSearchItem('${item.id}')" 
-          class="p-2.5 hover:bg-emerald-50 cursor-pointer flex justify-between items-center transition border-b last:border-b-0"
+          onclick="addPosItemToCart('${item.id}')" 
+          class="p-2.5 hover:bg-emerald-50 cursor-pointer flex justify-between items-center transition border-b last:border-b-0 group"
         >
           <div>
-            <div class="font-bold text-slate-800 text-sm flex items-center gap-1.5">
+            <div class="font-bold text-slate-800 text-xs md:text-sm group-hover:text-emerald-800 flex items-center gap-1.5">
               <span>${escapeHtml(item.name)}</span>
               <span class="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-normal">${escapeHtml(item.category)}</span>
             </div>
@@ -2334,28 +2211,20 @@
               स्टॉक: <b class="text-emerald-700">${item.stock} ${item.unit}</b>
             </div>
           </div>
-          <div class="text-right">
-            <span class="font-black text-emerald-800 text-sm">₹${Number(item.sellPrice).toFixed(2)}</span>
-            <span class="text-[10px] text-slate-400 font-normal block">/${item.unit}</span>
+          <div class="text-right flex items-center gap-2.5">
+            <div>
+              <span class="font-black text-emerald-800 text-sm">₹${Number(item.sellPrice).toFixed(2)}</span>
+              <span class="text-[10px] text-slate-400 font-normal block">/${item.unit}</span>
+            </div>
+            <span class="px-2 py-1 bg-emerald-600 text-white font-bold rounded-lg text-xs group-hover:bg-emerald-700 shadow-2xs">
+              + जोड़ें
+            </span>
           </div>
         </div>
       `).join('');
 
       resultsDiv.classList.remove('hidden');
       if (window.lucide) lucide.createIcons();
-    }
-
-    function selectPosSearchItem(itemId) {
-      const item = storeData.items.find(i => i.id === itemId);
-      if (!item) return;
-
-      document.getElementById('posItemSelect').value = itemId;
-      document.getElementById('posSearchInput').value = item.name;
-      document.getElementById('posSearchResults').classList.add('hidden');
-      const clearBtn = document.getElementById('posClearSearchBtn');
-      if (clearBtn) clearBtn.classList.remove('hidden');
-
-      onPosItemSelected();
     }
 
     function clearPosSearch() {
@@ -2365,8 +2234,6 @@
       if (clearBtn) clearBtn.classList.add('hidden');
       const resultsDiv = document.getElementById('posSearchResults');
       if (resultsDiv) resultsDiv.classList.add('hidden');
-      const countEl = document.getElementById('posItemsFoundCount');
-      if (countEl) countEl.innerText = '';
     }
 
     // Close search dropdown on outside click
@@ -2378,285 +2245,114 @@
       }
     });
 
-    // Custom Quantity Apply (e.g. 12 gm or 1 kg)
-    function applyCustomQuickQty() {
-      const qty = parseFloat(document.getElementById('customQuickQtyInput').value);
-      const unit = document.getElementById('customQuickUnitSelect').value;
+    // Speed Dial Hotkeys (1-Tap Fast Staple Items)
+    function renderQuickItemPills() {
+      const container = document.getElementById('posQuickItemPills');
+      if (!container) return;
 
-      if (!qty || qty <= 0) {
-        alert("कृपया सही मात्रा (Quantity) डालें (जैसे: 12)!");
-        return;
+      const keywords = ['dhaniya', 'धनिया', 'sugar', 'चीनी', 'aata', 'आटा', 'dal', 'दाल', 'oil', 'तेल', 'salt', 'नमक', 'lux', 'साबुन', 'tea', 'चाय'];
+      const stapleItems = [];
+      
+      keywords.forEach(kw => {
+        const found = storeData.items.find(i => i.name.toLowerCase().includes(kw) && !stapleItems.some(s => s.id === i.id));
+        if (found && stapleItems.length < 8) stapleItems.push(found);
+      });
+
+      if (stapleItems.length < 6) {
+        storeData.items.slice(0, 8).forEach(i => {
+          if (!stapleItems.some(s => s.id === i.id) && stapleItems.length < 8) stapleItems.push(i);
+        });
       }
 
-      setQuickQty(qty, unit);
-      showPosToast(`✅ मात्रा सेट: ${qty} ${unit}`);
+      container.innerHTML = stapleItems.map(item => `
+        <button 
+          type="button" 
+          onclick="addPosItemToCart('${item.id}')" 
+          class="px-2.5 py-1.5 bg-slate-100 hover:bg-emerald-100 hover:text-emerald-900 border border-slate-200 rounded-xl font-bold text-xs whitespace-nowrap active:scale-95 transition shadow-2xs flex items-center gap-1.5"
+          title="टच करते ही बिल में जुड़ेगा"
+        >
+          <span>${escapeHtml(item.name.split('(')[0].trim())}</span>
+          <span class="text-[10px] text-emerald-700 font-black">₹${item.sellPrice}</span>
+        </button>
+      `).join('');
     }
 
-    // Quick Rupee Select (e.g. ₹20 ka khula dhaniya)
+    // Quick Rupee Loose Button (e.g. ₹20 dhaniya)
     function setRupeeAmount(amt) {
       document.getElementById('reverseAmountInput').value = amt;
-      const itemId = document.getElementById('posItemSelect').value;
-      const autoAdd = document.getElementById('autoAddOnRupeeSelect').checked;
-
-      if (itemId) {
-        calcReverseQty(amt);
-        if (autoAdd) {
-          setTimeout(() => {
-            const item = storeData.items.find(i => i.id === itemId);
-            addItemToCart();
-            document.getElementById('reverseAmountInput').value = '';
-            const preview = document.getElementById('rupeeCalcPreview');
-            if (preview) preview.classList.add('hidden');
-            showPosToast(`✅ ₹${amt} का ${item ? item.name : 'सामान'} बिल में जुड़ गया!`);
-          }, 60);
-        }
-      } else {
-        showPosToast(`🪙 ₹${amt} सेट किया गया! अब ऊपर से सामान खोजें/चुनें, वो अपने आप बिल में जुड़ जाएगा।`);
-      }
+      showPosToast(`🪙 ₹${amt} सेट! अब सामान खोजें या नीचे टच करें, वो ₹${amt} का बिल में जुड़ जाएगा।`);
     }
 
-    // Direct Instant Button: Add ₹ Amount to Bill
-    function quickRupeeAddNow() {
-      const amt = parseFloat(document.getElementById('reverseAmountInput').value);
-      const itemId = document.getElementById('posItemSelect').value;
-
-      if (!amt || amt <= 0) {
-        alert("कृपया रुपये डालें (जैसे: 20)!");
-        return;
-      }
-      if (!itemId) {
-        alert("कृपया पहले कोई सामान चुनें (जैसे: धनिया)!");
-        document.getElementById('posSearchInput').focus();
-        return;
-      }
-
-      calcReverseQty(amt);
-      const item = storeData.items.find(i => i.id === itemId);
-      addItemToCart();
-      document.getElementById('reverseAmountInput').value = '';
-      const preview = document.getElementById('rupeeCalcPreview');
-      if (preview) preview.classList.add('hidden');
-      showPosToast(`✅ ₹${amt} का ${item ? item.name : 'सामान'} बिल में जुड़ गया!`);
-    }
-
-    function populatePosItemDropdown() {
-      const select = document.getElementById('posItemSelect');
-      const currentVal = select.value;
-      select.innerHTML = '<option value="">-- Choose Item from List --</option>' + 
-        storeData.items.map(item => `
-          <option value="${item.id}">${item.name} (${item.stock} ${item.unit} in stock - ₹${item.sellPrice}/${item.unit})</option>
-        `).join('');
-      select.value = currentVal;
-    }
-
-    function quickSellItem(itemId) {
-      switchTab('billing');
-      const select = document.getElementById('posItemSelect');
-      select.value = itemId;
-      onPosItemSelected();
-    }
-
-    function onPosItemSelected() {
-      const itemId = document.getElementById('posItemSelect').value;
-      const card = document.getElementById('posSelectedItemCard');
-      const addBtn = document.getElementById('btnAddToCart');
-
-      if (!itemId) {
-        card.classList.add('hidden');
-        addBtn.disabled = true;
-        document.getElementById('posComputedPrice').innerText = '₹0.00';
-        document.getElementById('posComputedBreakup').innerText = '0 × ₹0';
-        return;
-      }
-
+    // MAIN ADD TO BILL FUNCTION (MALL / SMART POINT STYLE)
+    function addPosItemToCart(itemId, qty = 1, unit = null, customTotal = null) {
       const item = storeData.items.find(i => i.id === itemId);
       if (!item) return;
 
-      card.classList.remove('hidden');
-      document.getElementById('posCardName').innerText = item.name;
-      document.getElementById('posCardCategory').innerText = item.category;
-      document.getElementById('posCardStock').innerText = `${item.stock} ${item.unit}`;
-      document.getElementById('posCardSellRate').innerText = `₹${Number(item.sellPrice).toFixed(2)} / ${item.unit}`;
-      document.getElementById('posCardBuyRate').innerText = `₹${Number(item.buyPrice).toFixed(2)} / ${item.unit}`;
+      const revAmt = parseFloat(document.getElementById('reverseAmountInput').value);
 
-      const unitSelect = document.getElementById('posUnitSelect');
-      if (item.unit === 'kg') {
-        unitSelect.innerHTML = `
-          <option value="kg" selected>Kilogram (kg)</option>
-          <option value="gm">Gram (gm)</option>
-        `;
-        document.getElementById('posQuickShortcuts').classList.remove('hidden');
-      } else if (item.unit === 'gm') {
-        unitSelect.innerHTML = `
-          <option value="gm" selected>Gram (gm)</option>
-          <option value="kg">Kilogram (kg)</option>
-        `;
-        document.getElementById('posQuickShortcuts').classList.remove('hidden');
-      } else if (item.unit === 'litre') {
-        unitSelect.innerHTML = `
-          <option value="litre" selected>Litre (L)</option>
-          <option value="ml">MilliLitre (ml)</option>
-        `;
-        document.getElementById('posQuickShortcuts').classList.add('hidden');
-      } else if (item.unit === 'ml') {
-        unitSelect.innerHTML = `
-          <option value="ml" selected>MilliLitre (ml)</option>
-          <option value="litre">Litre (L)</option>
-        `;
-        document.getElementById('posQuickShortcuts').classList.add('hidden');
-      } else {
-        unitSelect.innerHTML = `
-          <option value="pcs" selected>Pieces / Packets (Pcs / Pkt)</option>
-        `;
-        document.getElementById('posQuickShortcuts').classList.add('hidden');
-      }
+      // If user entered a loose Rupee amount (e.g. ₹20 dhaniya)
+      if (revAmt && revAmt > 0) {
+        let calculatedQty = 0;
+        let selectedUnit = item.unit;
+        const sellPrice = Number(item.sellPrice);
 
-      addBtn.disabled = false;
-
-      // Check if user already typed Rupee amount (e.g. ₹20 dhaniya)
-      const preAmt = parseFloat(document.getElementById('reverseAmountInput').value);
-      const autoAdd = document.getElementById('autoAddOnRupeeSelect') ? document.getElementById('autoAddOnRupeeSelect').checked : false;
-
-      if (preAmt && preAmt > 0) {
-        calcReverseQty(preAmt);
-        if (autoAdd) {
-          setTimeout(() => {
-            addItemToCart();
-            document.getElementById('reverseAmountInput').value = '';
-            const preview = document.getElementById('rupeeCalcPreview');
-            if (preview) preview.classList.add('hidden');
-            const searchInput = document.getElementById('posSearchInput');
-            if (searchInput) searchInput.value = '';
-            showPosToast(`✅ ₹${preAmt} का ${item.name} सीधा बिल में जुड़ गया!`);
-          }, 80);
-          return;
-        }
-      } else {
-        document.getElementById('posQtyInput').value = '1';
-        recalcPosPrice();
-      }
-    }
-
-    function recalcPosPrice() {
-      const itemId = document.getElementById('posItemSelect').value;
-      const item = storeData.items.find(i => i.id === itemId);
-      if (!item) return;
-
-      const qty = parseFloat(document.getElementById('posQtyInput').value) || 0;
-      const selectedUnit = document.getElementById('posUnitSelect').value;
-      document.getElementById('posQtyUnitLabel').innerText = selectedUnit;
-
-      const sellPrice = Number(item.sellPrice);
-      let calculatedPrice = 0;
-      let displayBreakup = '';
-
-      if (item.unit === 'kg') {
-        if (selectedUnit === 'gm') {
-          calculatedPrice = (sellPrice / 1000) * qty;
-          displayBreakup = `${qty} gm × ₹${(sellPrice/1000).toFixed(3)}/gm (₹${sellPrice}/kg)`;
+        if (item.unit === 'kg') {
+          const totalKg = revAmt / sellPrice;
+          if (totalKg < 1) {
+            calculatedQty = Math.round(totalKg * 1000);
+            selectedUnit = 'gm';
+          } else {
+            calculatedQty = parseFloat(totalKg.toFixed(3));
+            selectedUnit = 'kg';
+          }
+        } else if (item.unit === 'gm') {
+          calculatedQty = Math.round(revAmt / sellPrice);
+          selectedUnit = 'gm';
+        } else if (item.unit === 'litre') {
+          const totalL = revAmt / sellPrice;
+          if (totalL < 1) {
+            calculatedQty = Math.round(totalL * 1000);
+            selectedUnit = 'ml';
+          } else {
+            calculatedQty = parseFloat(totalL.toFixed(3));
+            selectedUnit = 'litre';
+          }
         } else {
-          calculatedPrice = sellPrice * qty;
-          displayBreakup = `${qty} kg × ₹${sellPrice}/kg`;
+          calculatedQty = parseFloat((revAmt / sellPrice).toFixed(1));
+          selectedUnit = item.unit;
         }
-      } else if (item.unit === 'litre') {
-        if (selectedUnit === 'ml') {
-          calculatedPrice = (sellPrice / 1000) * qty;
-          displayBreakup = `${qty} ml × (₹${sellPrice}/L)`;
-        } else {
-          calculatedPrice = sellPrice * qty;
-          displayBreakup = `${qty} L × ₹${sellPrice}/L`;
-        }
-      } else {
-        calculatedPrice = sellPrice * qty;
-        displayBreakup = `${qty} pcs × ₹${sellPrice}/pcs`;
-      }
 
-      document.getElementById('posComputedPrice').innerText = '₹' + calculatedPrice.toFixed(2);
-      document.getElementById('posComputedBreakup').innerText = displayBreakup;
-    }
+        const baseQtyDeduction = (selectedUnit === 'gm' || selectedUnit === 'ml') ? calculatedQty / 1000 : calculatedQty;
 
-    function setQuickQty(qty, unit) {
-      document.getElementById('posUnitSelect').value = unit;
-      document.getElementById('posQtyInput').value = qty;
-      document.getElementById('reverseAmountInput').value = '';
-      recalcPosPrice();
-    }
+        cart.push({
+          id: Date.now().toString(),
+          itemId: item.id,
+          name: item.name,
+          category: item.category,
+          qty: calculatedQty,
+          unit: selectedUnit,
+          baseDeduction: baseQtyDeduction,
+          rate: sellPrice,
+          buyRate: Number(item.buyPrice),
+          total: revAmt
+        });
 
-    function calcReverseQty(rupees) {
-      const amt = parseFloat(rupees);
-      const preview = document.getElementById('rupeeCalcPreview');
-      const detail = document.getElementById('rupeeCalcDetail');
-      const badgePrice = document.getElementById('rupeeCalcBadgePrice');
-      const itemId = document.getElementById('posItemSelect').value;
-      const item = storeData.items.find(i => i.id === itemId);
-
-      if (!amt || amt <= 0) {
-        if (preview) preview.classList.add('hidden');
+        document.getElementById('reverseAmountInput').value = '';
+        clearPosSearch();
+        renderCart();
+        showPosToast(`✅ ₹${revAmt} का ${item.name} (${calculatedQty} ${selectedUnit}) बिल में जुड़ा!`);
         return;
       }
 
-      if (!item) {
-        if (preview) {
-          preview.classList.remove('hidden');
-          detail.innerText = `🪙 ₹${amt} का माल (ऊपर से सामान चुनें)`;
-          badgePrice.innerText = `₹${amt.toFixed(2)}`;
-        }
+      // If already in cart, increment quantity!
+      const existingIndex = cart.findIndex(c => c.itemId === item.id && c.unit === (unit || item.unit));
+      if (existingIndex !== -1) {
+        incrementCartItem(existingIndex);
+        clearPosSearch();
         return;
       }
 
-      const sellPrice = Number(item.sellPrice);
-      let calculatedUnit = item.unit;
-      let calculatedQty = 0;
-
-      if (item.unit === 'kg') {
-        const totalKg = amt / sellPrice;
-        if (totalKg < 1) {
-          calculatedQty = Math.round(totalKg * 1000);
-          calculatedUnit = 'gm';
-        } else {
-          calculatedQty = parseFloat(totalKg.toFixed(3));
-          calculatedUnit = 'kg';
-        }
-      } else if (item.unit === 'gm') {
-        calculatedQty = Math.round(amt / sellPrice);
-        calculatedUnit = 'gm';
-      } else if (item.unit === 'litre') {
-        const totalL = amt / sellPrice;
-        if (totalL < 1) {
-          calculatedQty = Math.round(totalL * 1000);
-          calculatedUnit = 'ml';
-        } else {
-          calculatedQty = parseFloat(totalL.toFixed(3));
-          calculatedUnit = 'litre';
-        }
-      } else {
-        calculatedQty = parseFloat((amt / sellPrice).toFixed(1));
-        calculatedUnit = item.unit;
-      }
-
-      document.getElementById('posUnitSelect').value = calculatedUnit;
-      document.getElementById('posQtyInput').value = calculatedQty;
-      recalcPosPrice();
-
-      if (preview) {
-        preview.classList.remove('hidden');
-        detail.innerText = `👉 ₹${amt} में ${calculatedQty} ${calculatedUnit} ${item.name}`;
-        badgePrice.innerText = `₹${amt.toFixed(2)}`;
-      }
-    }
-
-    function addItemToCart() {
-      const itemId = document.getElementById('posItemSelect').value;
-      const item = storeData.items.find(i => i.id === itemId);
-      if (!item) return;
-
-      const qty = parseFloat(document.getElementById('posQtyInput').value);
-      if (!qty || qty <= 0) {
-        alert("Please enter a valid quantity!");
-        return;
-      }
-
-      const selectedUnit = document.getElementById('posUnitSelect').value;
+      const selectedUnit = unit || item.unit;
       const sellPrice = Number(item.sellPrice);
       const buyPrice = Number(item.buyPrice);
 
@@ -2687,94 +2383,203 @@
           itemTotal = sellPrice * qty;
           baseQtyDeduction = qty;
         }
-      } else if (item.unit === 'ml') {
-        if (selectedUnit === 'litre') {
-          itemTotal = (sellPrice * 1000) * qty;
-          baseQtyDeduction = qty * 1000;
-        } else {
-          itemTotal = sellPrice * qty;
-          baseQtyDeduction = qty;
-        }
       } else {
         itemTotal = sellPrice * qty;
         baseQtyDeduction = qty;
-      }
-
-      if (baseQtyDeduction > Number(item.stock)) {
-        if (!confirm(`Warning: Only ${item.stock} ${item.unit} available in stock, but you are billing ${baseQtyDeduction} ${item.unit}. Do you still want to proceed?`)) {
-          return;
-        }
       }
 
       cart.push({
         id: Date.now().toString(),
         itemId: item.id,
         name: item.name,
+        category: item.category,
         qty: qty,
         unit: selectedUnit,
         baseDeduction: baseQtyDeduction,
         rate: sellPrice,
         buyRate: buyPrice,
-        total: itemTotal
+        total: customTotal !== null ? customTotal : itemTotal
       });
 
+      clearPosSearch();
       renderCart();
-      document.getElementById('posQtyInput').value = '1';
-      document.getElementById('reverseAmountInput').value = '';
-      recalcPosPrice();
+      showPosToast(`✅ ${item.name} बिल में जुड़ा!`);
     }
 
+    // Direct Quick Sell from other tabs
+    function quickSellItem(itemId) {
+      switchTab('billing');
+      addPosItemToCart(itemId);
+    }
+
+    // RENDER SMART POINT LIVE BILL TABLE
     function renderCart() {
-      const container = document.getElementById('cartItemsContainer');
+      const tbody = document.getElementById('cartTableBody');
+      const empty = document.getElementById('emptyCartNotice');
       const badge = document.getElementById('cartCountBadge');
       const checkPrint = document.getElementById('btnCheckoutPrint');
       const checkOnly = document.getElementById('btnCheckoutOnly');
 
+      if (!tbody) return;
+
       if (cart.length === 0) {
-        container.innerHTML = `
-          <div class="p-6 text-center text-slate-400 text-sm" id="emptyCartNotice">
-            🛒 No items in cart yet.<br>Select items from the left to add.
-          </div>
-        `;
-        badge.classList.add('hidden');
-        checkPrint.disabled = true;
-        checkOnly.disabled = true;
+        tbody.innerHTML = '';
+        if (empty) empty.classList.remove('hidden');
+        if (badge) badge.classList.add('hidden');
+        if (checkPrint) checkPrint.disabled = true;
+        if (checkOnly) checkOnly.disabled = true;
         document.getElementById('cartTotalItemsCount').innerText = '0';
         document.getElementById('cartSubtotal').innerText = '₹0.00';
         document.getElementById('cartGrandTotal').innerText = '₹0.00';
         return;
       }
 
-      badge.innerText = cart.length;
-      badge.classList.remove('hidden');
-      checkPrint.disabled = false;
-      checkOnly.disabled = false;
+      if (empty) empty.classList.add('hidden');
+      if (badge) {
+        badge.innerText = cart.length;
+        badge.classList.remove('hidden');
+      }
+      if (checkPrint) checkPrint.disabled = false;
+      if (checkOnly) checkOnly.disabled = false;
 
       let subtotal = 0;
-      container.innerHTML = cart.map((c, index) => {
+      tbody.innerHTML = cart.map((c, index) => {
         subtotal += c.total;
+        const item = storeData.items.find(i => i.id === c.itemId);
+        const itemStock = item ? item.stock : '';
+        const itemUnit = item ? item.unit : '';
+
         return `
-          <div class="p-3 flex items-center justify-between hover:bg-slate-50 transition">
-            <div class="flex-1 pr-2">
-              <div class="font-bold text-slate-800 text-xs md:text-sm">${escapeHtml(c.name)}</div>
-              <div class="text-[11px] text-slate-500">
-                ${c.qty} ${c.unit} × ₹${c.rate}/${c.unit === 'gm' ? '1000g' : c.unit}
+          <tr class="hover:bg-emerald-50/40 transition border-b last:border-b-0">
+            <td class="py-3 px-3 font-bold text-slate-400 text-xs">${index + 1}</td>
+            <td class="py-3 px-3">
+              <div class="font-bold text-slate-900 text-xs md:text-sm">${escapeHtml(c.name)}</div>
+              <div class="text-[10px] text-slate-500 font-medium">
+                ${escapeHtml(c.category || '')} • उपलब्ध स्टॉक: <b class="text-emerald-700">${itemStock} ${itemUnit}</b>
               </div>
-            </div>
-            <div class="text-right flex items-center gap-3">
-              <span class="font-bold text-slate-900 text-sm">₹${c.total.toFixed(2)}</span>
-              <button onclick="removeCartItem(${index})" class="text-slate-300 hover:text-red-500 transition p-1">
+              
+              <!-- Quick Weight / Rupee Chips for fast modification -->
+              ${c.unit === 'kg' || c.unit === 'gm' ? `
+                <div class="flex flex-wrap gap-1 mt-1.5">
+                  <button type="button" onclick="setCartRowWeight(${index}, 100, 'gm')" class="px-1.5 py-0.5 bg-slate-100 hover:bg-emerald-100 text-slate-700 rounded text-[10px] font-bold transition shadow-2xs">100g</button>
+                  <button type="button" onclick="setCartRowWeight(${index}, 250, 'gm')" class="px-1.5 py-0.5 bg-slate-100 hover:bg-emerald-100 text-slate-700 rounded text-[10px] font-bold transition shadow-2xs">250g</button>
+                  <button type="button" onclick="setCartRowWeight(${index}, 500, 'gm')" class="px-1.5 py-0.5 bg-slate-100 hover:bg-emerald-100 text-slate-700 rounded text-[10px] font-bold transition shadow-2xs">500g</button>
+                  <button type="button" onclick="setCartRowWeight(${index}, 1, 'kg')" class="px-1.5 py-0.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-900 rounded text-[10px] font-black transition shadow-2xs">1kg</button>
+                  <button type="button" onclick="setCartRowRupee(${index}, 10)" class="px-1.5 py-0.5 bg-amber-100 hover:bg-amber-200 text-amber-950 rounded text-[10px] font-black transition shadow-2xs">🪙₹10</button>
+                  <button type="button" onclick="setCartRowRupee(${index}, 20)" class="px-1.5 py-0.5 bg-amber-200 hover:bg-amber-300 text-amber-950 rounded text-[10px] font-black transition shadow-2xs">🪙₹20</button>
+                  <button type="button" onclick="setCartRowRupee(${index}, 50)" class="px-1.5 py-0.5 bg-amber-100 hover:bg-amber-200 text-amber-950 rounded text-[10px] font-black transition shadow-2xs">🪙₹50</button>
+                </div>
+              ` : ''}
+            </td>
+            <td class="py-3 px-3 text-center">
+              <div class="inline-flex items-center gap-1 bg-slate-50 border border-slate-300 p-1 rounded-xl shadow-2xs">
+                <button type="button" onclick="decrementCartItem(${index})" class="w-6 h-6 bg-white hover:bg-slate-200 text-slate-800 font-black rounded-lg border flex items-center justify-center text-xs active:scale-90 transition">-</button>
+                <input 
+                  type="number" 
+                  step="any" 
+                  min="0.001" 
+                  value="${c.qty}" 
+                  onchange="onCartRowQtyChange(${index}, this.value)" 
+                  class="w-16 p-1 text-center font-black text-xs md:text-sm bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                >
+                <button type="button" onclick="incrementCartItem(${index})" class="w-6 h-6 bg-white hover:bg-slate-200 text-slate-800 font-black rounded-lg border flex items-center justify-center text-xs active:scale-90 transition">+</button>
+                <span class="text-xs font-bold text-slate-600 px-1">${c.unit}</span>
+              </div>
+            </td>
+            <td class="py-3 px-3 text-right font-semibold text-slate-600 text-xs md:text-sm">
+              ₹${c.rate.toFixed(2)}
+            </td>
+            <td class="py-3 px-3 text-right font-black text-emerald-700 text-sm md:text-base">
+              ₹${c.total.toFixed(2)}
+            </td>
+            <td class="py-3 px-2 text-center">
+              <button type="button" onclick="removeCartItem(${index})" class="p-1.5 text-slate-300 hover:text-red-600 hover:bg-red-50 rounded-lg transition" title="हटाएं">
                 <i data-lucide="trash-2" class="w-4 h-4"></i>
               </button>
-            </div>
-          </div>
+            </td>
+          </tr>
         `;
       }).join('');
 
       document.getElementById('cartTotalItemsCount').innerText = cart.length;
       document.getElementById('cartSubtotal').innerText = '₹' + subtotal.toFixed(2);
       recalcCartGrandTotal();
-      lucide.createIcons();
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function onCartRowQtyChange(index, newQty) {
+      const q = parseFloat(newQty);
+      if (isNaN(q) || q <= 0) {
+        removeCartItem(index);
+        return;
+      }
+      const c = cart[index];
+      c.qty = q;
+
+      const sellPrice = Number(c.rate);
+      if (c.unit === 'gm') {
+        c.total = (sellPrice / 1000) * q;
+        c.baseDeduction = q / 1000;
+      } else if (c.unit === 'ml') {
+        c.total = (sellPrice / 1000) * q;
+        c.baseDeduction = q / 1000;
+      } else {
+        c.total = sellPrice * q;
+        c.baseDeduction = q;
+      }
+
+      renderCart();
+    }
+
+    function incrementCartItem(index) {
+      const c = cart[index];
+      let step = 1;
+      if (c.unit === 'kg' && c.qty < 1) step = 0.25;
+      else if (c.unit === 'gm') step = 50;
+
+      onCartRowQtyChange(index, parseFloat((c.qty + step).toFixed(3)));
+    }
+
+    function decrementCartItem(index) {
+      const c = cart[index];
+      let step = 1;
+      if (c.unit === 'kg' && c.qty <= 1 && c.qty > 0.25) step = 0.25;
+      else if (c.unit === 'gm') step = 50;
+
+      if (c.qty - step <= 0.001) {
+        removeCartItem(index);
+        return;
+      }
+      onCartRowQtyChange(index, parseFloat((c.qty - step).toFixed(3)));
+    }
+
+    function setCartRowWeight(index, qty, unit) {
+      const c = cart[index];
+      c.unit = unit;
+      onCartRowQtyChange(index, qty);
+    }
+
+    function setCartRowRupee(index, rupees) {
+      const c = cart[index];
+      const sellPrice = Number(c.rate);
+      let q = 0;
+      let u = c.unit;
+
+      const totalKg = rupees / sellPrice;
+      if (totalKg < 1) {
+        q = Math.round(totalKg * 1000);
+        u = 'gm';
+      } else {
+        q = parseFloat(totalKg.toFixed(3));
+        u = 'kg';
+      }
+
+      c.unit = u;
+      c.qty = q;
+      c.total = rupees;
+      c.baseDeduction = (u === 'gm') ? q / 1000 : q;
+      renderCart();
+      showPosToast(`✅ ₹${rupees} का ${c.name} (${q} ${u}) सेट हुआ!`);
     }
 
     function removeCartItem(index) {
@@ -2783,9 +2588,11 @@
     }
 
     function clearCart() {
-      if (cart.length > 0 && confirm("Do you want to clear all items in the cart?")) {
+      if (cart.length === 0) return;
+      if (confirm("क्या आप पूरे बिल को खाली करना चाहते हैं?")) {
         cart = [];
         renderCart();
+        showPosToast("🧹 बिल खाली कर दिया गया!");
       }
     }
 
