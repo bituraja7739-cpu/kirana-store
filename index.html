@@ -2889,8 +2889,20 @@
         }
       });
 
+      // Calculate unique incremental Bill No
+      let maxNum = 1000;
+      (storeData.sales || []).forEach(s => {
+        const num = parseInt((s.billNo || '').replace(/\D/g, '')) || 0;
+        if (num > maxNum) maxNum = num;
+      });
+      (storeData.deletedBills || []).forEach(b => {
+        const num = parseInt(String(b).replace(/\D/g, '')) || 0;
+        if (num > maxNum) maxNum = num;
+      });
+      const nextBillNo = 'BILL-' + (maxNum + 1);
+
       const billRecord = {
-        billNo: 'BILL-' + (storeData.sales.length + 1001),
+        billNo: nextBillNo,
         date: new Date().toISOString(),
         customerName: customerName,
         customerPhone: customerPhone,
@@ -3442,54 +3454,64 @@
     // ==========================================
     // DELETE / CANCEL SALE ENTRY (WITH STOCK ROLLBACK)
     // ==========================================
+    function updateTopStats() {
+      updateDashboardStats();
+    }
+
     function deleteSaleEntry(billNo) {
-      const saleIndex = storeData.sales.findIndex(s => s.billNo === billNo);
-      if (saleIndex === -1) {
-        alert("बिल नहीं मिला!");
-        return;
+      try {
+        const saleIndex = storeData.sales.findIndex(s => String(s.billNo) === String(billNo));
+        if (saleIndex === -1) {
+          alert("बिल नहीं मिला या पहले ही डिलीट हो चुका है!");
+          renderSalesHistory();
+          return;
+        }
+
+        const sale = storeData.sales[saleIndex];
+        const confirmMsg = `⚠️ क्या आप बिल #${billNo} को सच में डिलीट / रद्द करना चाहते हैं?\n\nग्राहक: ${sale.customerName || 'Cash'}\nभुगतान मोड: ${sale.paymentMode || 'Credit'}\nरकम: ₹${Number(sale.grandTotal || 0).toFixed(2)}\n\nनोट: इस बिल में बिका हुआ सारा सामान वापस दुकान के स्टॉक (Inventory) में जोड़ दिया जाएगा!`;
+
+        if (!confirm(confirmMsg)) return;
+
+        // 1. Rollback deducted stock back to items
+        if (sale.items && Array.isArray(sale.items)) {
+          sale.items.forEach(it => {
+            const item = storeData.items.find(i => String(i.id) === String(it.itemId) || i.name === it.name);
+            if (item) {
+              const rollbackQty = it.baseDeduction !== undefined ? Number(it.baseDeduction) : (Number(it.qty) || 1);
+              item.stock = parseFloat((Number(item.stock || 0) + rollbackQty).toFixed(3));
+              item.updatedAt = Date.now();
+            }
+          });
+        }
+
+        // 2. Add to deletedBills tombstone list so it NEVER resurrects from server
+        if (!storeData.deletedBills) storeData.deletedBills = [];
+        if (!storeData.deletedBills.includes(billNo)) {
+          storeData.deletedBills.push(billNo);
+        }
+
+        // 3. Remove sale from sales array
+        storeData.sales.splice(saleIndex, 1);
+
+        // 4. Immediately persist to localStorage using correct store key
+        localStorage.setItem('kiranapro_store_v3', JSON.stringify(storeData));
+
+        // 5. Update UI immediately
+        renderSalesHistory();
+        renderStockTable();
+        if (typeof populatePosItemDropdown === 'function') populatePosItemDropdown();
+        if (typeof populateLiveQuickDropdown === 'function') populateLiveQuickDropdown();
+        updateDashboardStats();
+
+        // 6. Sync deletion to server & Supabase
+        saveToLocalStorage(true);
+
+        showPosToast(`✅ बिल #${billNo} रद्द कर दिया गया और सारा सामान वापस स्टॉक में जुड़ गया!`);
+        alert(`सफलतापूर्वक बिल #${billNo} रद्द कर दिया गया!\nसारा सामान वापस दुकान के स्टॉक में जुड़ गया है।`);
+      } catch (err) {
+        console.error("Error deleting sale:", err);
+        alert("डिलीट करने में त्रुटि: " + err.message);
       }
-
-      const sale = storeData.sales[saleIndex];
-      const confirmMsg = `⚠️ क्या आप बिल #${billNo} को सच में डिलीट / रद्द करना चाहते हैं?\n\nग्राहक: ${sale.customerName}\nरकम: ₹${Number(sale.grandTotal).toFixed(2)}\n\nनोट: इस बिल में बिका हुआ सारा सामान वापस स्टॉक (Inventory) में जोड़ दिया जाएगा!`;
-
-      if (!confirm(confirmMsg)) return;
-
-      // 1. Rollback deducted stock back to items
-      if (sale.items && Array.isArray(sale.items)) {
-        sale.items.forEach(it => {
-          const item = storeData.items.find(i => i.id === it.itemId || i.name === it.name);
-          if (item) {
-            const rollbackQty = it.baseDeduction !== undefined ? Number(it.baseDeduction) : Number(it.qty);
-            item.stock = parseFloat((Number(item.stock) + rollbackQty).toFixed(3));
-            item.updatedAt = Date.now();
-          }
-        });
-      }
-
-      // 2. Add to deletedBills tombstone list so it NEVER resurrects from server
-      if (!storeData.deletedBills) storeData.deletedBills = [];
-      if (!storeData.deletedBills.includes(billNo)) {
-        storeData.deletedBills.push(billNo);
-      }
-
-      // 3. Remove sale from sales array
-      storeData.sales.splice(saleIndex, 1);
-
-      // 4. Immediately persist to localStorage
-      localStorage.setItem('kirana_store_data', JSON.stringify(storeData));
-
-      // 5. Update UI immediately
-      renderSalesHistory();
-      renderStockTable();
-      if (typeof populatePosItemDropdown === 'function') populatePosItemDropdown();
-      if (typeof populateLiveQuickDropdown === 'function') populateLiveQuickDropdown();
-      updateTopStats();
-
-      // 6. Sync deletion to server & Supabase
-      saveToLocalStorage(true);
-
-      showPosToast(`✅ बिल #${billNo} रद्द कर दिया गया और सारा सामान वापस स्टॉक में जुड़ गया!`);
-      alert(`सफलतापूर्वक बिल #${billNo} रद्द कर दिया गया!\nसारा सामान वापस दुकान के स्टॉक में जुड़ गया है।`);
     }
 
     function renderSalesHistory() {
