@@ -359,7 +359,7 @@
         
         <div class="flex flex-col md:flex-row gap-3 items-stretch md:items-center">
           
-          <!-- Big Smart Point Search Box -->
+          <!-- Big Smart Point Search Box with Enter Key Auto-Add -->
           <div class="relative flex-1">
             <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-emerald-600">
               <i data-lucide="scan" class="w-5 h-5"></i>
@@ -369,8 +369,9 @@
               id="posSearchInput" 
               oninput="onPosSearchInput(this.value)" 
               onfocus="onPosSearchFocus()" 
-              placeholder="🔍 सामान का नाम लिखें (धनिया, चीनी, आटा, तेल, साबुन... टच करते ही बिल में जुड़ेगा)" 
-              class="w-full pl-11 pr-10 py-3 bg-slate-50 border-2 border-emerald-400 rounded-xl font-bold text-sm text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-emerald-500 focus:bg-white shadow-xs transition"
+              onkeydown="handlePosSearchKeydown(event)"
+              placeholder="🔍 नाम लिखें और Enter दबाएं (जैसे: धनिया, cheeni, oil... Enter दबाते ही बिल में जुड़ेगा)" 
+              class="w-full pl-11 pr-10 py-3 bg-slate-50 border-2 border-emerald-500 rounded-xl font-bold text-sm text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-emerald-500 focus:bg-white shadow-xs transition"
               autocomplete="off"
             >
             <button 
@@ -382,7 +383,7 @@
               <i data-lucide="x" class="w-5 h-5"></i>
             </button>
 
-            <!-- Live Floating Search Results Dropdown (Clicking directly adds to bill) -->
+            <!-- Live Floating Search Results Dropdown -->
             <div 
               id="posSearchResults" 
               class="hidden absolute z-30 left-0 right-0 mt-1 max-h-72 overflow-y-auto bg-white border-2 border-emerald-500 rounded-2xl shadow-2xl divide-y divide-slate-100"
@@ -407,6 +408,21 @@
             >
           </div>
 
+        </div>
+
+        <!-- Select Dropdown (In case item not in search or browsing list) -->
+        <div class="flex items-center gap-2 pt-1 border-t border-slate-100">
+          <label for="posItemSelect" class="text-xs font-bold text-slate-700 whitespace-nowrap flex items-center gap-1.5">
+            <i data-lucide="list-filter" class="w-4 h-4 text-emerald-600"></i>
+            <span>या लिस्ट से चुनें (Select List):</span>
+          </label>
+          <select 
+            id="posItemSelect" 
+            onchange="onPosDropdownSelect(this.value)" 
+            class="flex-1 p-2 bg-slate-50 border border-slate-300 rounded-xl font-semibold text-xs text-slate-800 focus:ring-2 focus:ring-emerald-500 focus:bg-white transition cursor-pointer"
+          >
+            <option value="">-- लिस्ट से कोई भी सामान चुनें (क्लिक करते ही बिल में जुड़ेगा) --</option>
+          </select>
         </div>
 
         <!-- Speed Dial Hotkeys (1-Tap Fast Staple Items) -->
@@ -2139,6 +2155,12 @@
 
     function populatePosItemDropdown() {
       renderQuickItemPills();
+      const select = document.getElementById('posItemSelect');
+      if (!select) return;
+      select.innerHTML = '<option value="">-- लिस्ट से कोई भी सामान चुनें (क्लिक करते ही बिल में जुड़ेगा) --</option>' +
+        storeData.items.map(item => `
+          <option value="${item.id}">${item.name} (${item.stock} ${item.unit} - ₹${item.sellPrice}/${item.unit})</option>
+        `).join('');
     }
     function onPosItemSelected() {}
 
@@ -2159,6 +2181,9 @@
       if (window.lucide) lucide.createIcons();
     }
 
+    let currentSearchMatches = [];
+    let selectedSearchIndex = 0;
+
     function onPosSearchFocus() {
       const q = (document.getElementById('posSearchInput').value || '').trim();
       onPosSearchInput(q);
@@ -2176,15 +2201,18 @@
       }
 
       if (!q) {
+        currentSearchMatches = [];
+        selectedSearchIndex = 0;
         resultsDiv.classList.add('hidden');
         return;
       }
 
-      const matches = storeData.items.filter(item => {
+      currentSearchMatches = storeData.items.filter(item => {
         return item.name.toLowerCase().includes(q) || item.category.toLowerCase().includes(q);
       });
+      selectedSearchIndex = 0;
 
-      if (matches.length === 0) {
+      if (currentSearchMatches.length === 0) {
         resultsDiv.innerHTML = `
           <div class="p-3 text-center text-xs text-slate-500 font-semibold">
             ❌ कोई सामान नहीं मिला ("${escapeHtml(q)}")<br>
@@ -2197,34 +2225,83 @@
         return;
       }
 
-      resultsDiv.innerHTML = matches.slice(0, 15).map(item => `
-        <div 
-          onclick="addPosItemToCart('${item.id}')" 
-          class="p-2.5 hover:bg-emerald-50 cursor-pointer flex justify-between items-center transition border-b last:border-b-0 group"
-        >
-          <div>
-            <div class="font-bold text-slate-800 text-xs md:text-sm group-hover:text-emerald-800 flex items-center gap-1.5">
-              <span>${escapeHtml(item.name)}</span>
-              <span class="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-normal">${escapeHtml(item.category)}</span>
-            </div>
-            <div class="text-[11px] text-slate-500">
-              स्टॉक: <b class="text-emerald-700">${item.stock} ${item.unit}</b>
-            </div>
-          </div>
-          <div class="text-right flex items-center gap-2.5">
-            <div>
-              <span class="font-black text-emerald-800 text-sm">₹${Number(item.sellPrice).toFixed(2)}</span>
-              <span class="text-[10px] text-slate-400 font-normal block">/${item.unit}</span>
-            </div>
-            <span class="px-2 py-1 bg-emerald-600 text-white font-bold rounded-lg text-xs group-hover:bg-emerald-700 shadow-2xs">
-              + जोड़ें
-            </span>
-          </div>
-        </div>
-      `).join('');
-
+      renderSearchResultsList();
       resultsDiv.classList.remove('hidden');
+    }
+
+    function renderSearchResultsList() {
+      const resultsDiv = document.getElementById('posSearchResults');
+      if (!resultsDiv) return;
+
+      resultsDiv.innerHTML = currentSearchMatches.slice(0, 15).map((item, idx) => {
+        const isHighlighted = idx === selectedSearchIndex;
+        return `
+          <div 
+            id="searchResultItem_${idx}"
+            onclick="addPosItemToCart('${item.id}')" 
+            class="p-2.5 hover:bg-emerald-50 cursor-pointer flex justify-between items-center transition border-b last:border-b-0 group ${isHighlighted ? 'bg-emerald-100/70 border-emerald-300' : ''}"
+          >
+            <div>
+              <div class="font-bold text-slate-800 text-xs md:text-sm group-hover:text-emerald-800 flex items-center gap-1.5">
+                <span>${escapeHtml(item.name)}</span>
+                <span class="text-[10px] bg-white border border-slate-200 text-slate-600 px-1.5 py-0.5 rounded font-normal">${escapeHtml(item.category)}</span>
+                ${isHighlighted ? '<span class="text-[10px] bg-emerald-700 text-white font-black px-1.5 py-0.5 rounded shadow-2xs">↵ Enter दबाएं</span>' : ''}
+              </div>
+              <div class="text-[11px] text-slate-500">
+                स्टॉक: <b class="text-emerald-700">${item.stock} ${item.unit}</b>
+              </div>
+            </div>
+            <div class="text-right flex items-center gap-2.5">
+              <div>
+                <span class="font-black text-emerald-800 text-sm">₹${Number(item.sellPrice).toFixed(2)}</span>
+                <span class="text-[10px] text-slate-400 font-normal block">/${item.unit}</span>
+              </div>
+              <span class="px-2 py-1 ${isHighlighted ? 'bg-emerald-700 text-white' : 'bg-emerald-600 text-white'} font-bold rounded-lg text-xs group-hover:bg-emerald-700 shadow-2xs">
+                + जोड़ें
+              </span>
+            </div>
+          </div>
+        `;
+      }).join('');
+
       if (window.lucide) lucide.createIcons();
+    }
+
+    // ENTER KEY & ARROW KEYS INSTANT ADD HANDLER
+    function handlePosSearchKeydown(e) {
+      if (!currentSearchMatches || currentSearchMatches.length === 0) return;
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        selectedSearchIndex = Math.min(selectedSearchIndex + 1, Math.min(currentSearchMatches.length - 1, 14));
+        renderSearchResultsList();
+        const el = document.getElementById(`searchResultItem_${selectedSearchIndex}`);
+        if (el) el.scrollIntoView({ block: 'nearest' });
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        selectedSearchIndex = Math.max(selectedSearchIndex - 1, 0);
+        renderSearchResultsList();
+        const el = document.getElementById(`searchResultItem_${selectedSearchIndex}`);
+        if (el) el.scrollIntoView({ block: 'nearest' });
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        const chosen = currentSearchMatches[selectedSearchIndex] || currentSearchMatches[0];
+        if (chosen) {
+          addPosItemToCart(chosen.id);
+          clearPosSearch();
+          // Keep focus on input for ultra-fast multi-item cashier entry
+          const input = document.getElementById('posSearchInput');
+          if (input) input.focus();
+        }
+      }
+    }
+
+    // Select Dropdown Handler (Alternative to Search)
+    function onPosDropdownSelect(itemId) {
+      if (!itemId) return;
+      addPosItemToCart(itemId);
+      const select = document.getElementById('posItemSelect');
+      if (select) select.value = '';
     }
 
     function clearPosSearch() {
