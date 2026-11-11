@@ -2,16 +2,16 @@
 <html lang="hi">
 <head>
 <meta charset="UTF-8">
-<title>Pending Products Checklist Sheet</title>
+<title>Pending Products Fillable Sheet</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Hind:wght@400;600;700&display=swap');
   
   @page {
     size: A4 portrait;
-    margin: 12mm 10mm 14mm 10mm;
+    margin: 10mm 8mm 12mm 8mm;
     @bottom-center {
       content: "Page " counter(page) " of " counter(pages);
-      font-size: 9pt;
+      font-size: 8.5pt;
       color: #64748b;
     }
   }
@@ -23,19 +23,19 @@
   }
   
   body {
-    font-family: 'Hind', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Hind', 'Segoe UI', Arial, sans-serif;
     color: #0f172a;
     background: #fff;
     margin: 0;
     padding: 0;
-    font-size: 10pt;
-    line-height: 1.35;
+    font-size: 9pt;
+    line-height: 1.3;
   }
   
   .header {
-    border-bottom: 2px solid #047857;
-    padding-bottom: 8px;
-    margin-bottom: 12px;
+    border-bottom: 2.5px solid #0f172a;
+    padding-bottom: 6px;
+    margin-bottom: 8px;
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
@@ -43,14 +43,15 @@
   
   .title-area h1 {
     margin: 0;
-    font-size: 18pt;
+    font-size: 16pt;
     font-weight: 700;
-    color: #065f46;
+    color: #0f172a;
+    letter-spacing: -0.3px;
   }
   
   .title-area p {
     margin: 2px 0 0 0;
-    font-size: 9.5pt;
+    font-size: 9pt;
     color: #475569;
   }
   
@@ -62,67 +63,37 @@
   
   .meta-badge {
     display: inline-block;
-    background: #ecfdf5;
-    color: #047857;
-    border: 1px solid #a7f3d0;
+    background: #f1f5f9;
+    color: #0f172a;
+    border: 1.5px solid #0f172a;
     padding: 2px 8px;
     border-radius: 4px;
     font-weight: 700;
-    margin-bottom: 4px;
+    margin-bottom: 3px;
     font-size: 9pt;
   }
   
-  .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 8px;
-    margin-bottom: 12px;
-  }
-  
-  .stat-card {
+  .notice-banner {
     background: #f8fafc;
-    border: 1px solid #e2e8f0;
+    border: 1.5px solid #cbd5e1;
     border-radius: 6px;
     padding: 6px 10px;
-    text-align: center;
-  }
-  
-  .stat-card.alert {
-    background: #fff1f2;
-    border-color: #fecdd3;
-  }
-  
-  .stat-num {
-    font-size: 14pt;
-    font-weight: 700;
-    color: #0f172a;
-    line-height: 1.1;
-  }
-  
-  .stat-card.alert .stat-num {
-    color: #e11d48;
-  }
-  
-  .stat-label {
-    font-size: 8pt;
-    color: #64748b;
-    font-weight: 600;
-  }
-  
-  .instructions {
-    background: #fffbeb;
-    border-left: 4px solid #f59e0b;
-    padding: 6px 10px;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
     font-size: 8.5pt;
-    color: #92400e;
-    border-radius: 0 4px 4px 0;
+    color: #334155;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .notice-banner b {
+    color: #0f172a;
   }
   
   table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 9pt;
+    font-size: 8.5pt;
     page-break-inside: auto;
   }
   
@@ -133,67 +104,72 @@
   tr {
     page-break-inside: avoid;
     page-break-after: auto;
+    height: 30px;
   }
   
   th {
-    background: #0f172a;
+    background: #1e293b;
     color: #ffffff;
-    padding: 6px 6px;
+    padding: 6px 5px;
     text-align: left;
     font-weight: 700;
     font-size: 8.5pt;
-    border: 1px solid #0f172a;
+    border: 1px solid #1e293b;
   }
   
   th.text-center { text-align: center; }
   th.text-right { text-align: right; }
   
   td {
-    padding: 5px 6px;
+    padding: 4px 6px;
     border: 1px solid #cbd5e1;
     vertical-align: middle;
   }
   
   tr:nth-child(even) {
-    background-color: #f8fafc;
+    background-color: #fafafa;
   }
   
-  .missing-pill {
-    display: inline-block;
-    padding: 1px 5px;
+  /* Write-in blank box for pen entry */
+  .write-box {
+    display: block;
+    width: 100%;
+    min-height: 22px;
+    background: #ffffff;
+    border: 1.5px dashed #64748b;
     border-radius: 3px;
+    text-align: right;
+    padding-right: 4px;
+    color: #94a3b8;
     font-size: 7.5pt;
-    font-weight: 700;
-    background: #fee2e2;
-    color: #dc2626;
-    border: 1px solid #fca5a5;
+    line-height: 20px;
   }
   
-  .ok-pill {
+  .value-filled {
+    font-weight: 700;
+    color: #047857;
+    font-size: 9.5pt;
+  }
+  
+  .req-badge {
     display: inline-block;
-    padding: 1px 5px;
+    padding: 1px 4px;
     border-radius: 3px;
-    font-size: 7.5pt;
+    font-size: 7pt;
     font-weight: 700;
-    background: #ecfdf5;
-    color: #059669;
-  }
-  
-  .fill-line {
-    display: inline-block;
-    border-bottom: 1.5px dashed #94a3b8;
-    min-width: 55px;
-    height: 14px;
-    margin-left: 2px;
+    background: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+    margin-right: 2px;
   }
   
   .footer {
-    margin-top: 15px;
+    margin-top: 10px;
     text-align: center;
     font-size: 8pt;
     color: #94a3b8;
     border-top: 1px solid #e2e8f0;
-    padding-top: 6px;
+    padding-top: 4px;
   }
 </style>
 </head>
@@ -202,39 +178,23 @@
   <!-- Header -->
   <div class="header">
     <div class="title-area">
-      <h1>📋 किराना स्टोर - अधूरी जानकारी वाले प्रोडक्ट्स की लिस्ट</h1>
-      <p>Pending Products Checklist Sheet (खरीद भाव, बिक्री भाव या स्टॉक दर्ज करने हेतु)</p>
+      <h1>📋 किराना स्टोर - प्रॉडक्ट रेट व स्टॉक एंट्री शीट</h1>
+      <p>Store Product Price & Stock Blank Entry Sheet (पेन से भरने हेतु चेकलिस्ट)</p>
     </div>
     <div class="meta-area">
       <div class="meta-badge">कुल बाकी: 59 सामान</div>
-      <div>दिनांक: <b>11-11-2026 05:54 PM</b></div>
-      <div>किराना स्टोर इन्वेंट्री सिस्टम</div>
+      <div>दिनांक: <b>11-11-2026 06:02 PM</b></div>
     </div>
   </div>
 
-  <!-- Summary Cards -->
-  <div class="stats-grid">
-    <div class="stat-card">
-      <div class="stat-num">89</div>
-      <div class="stat-label">दुकान में कुल सामान</div>
+  <!-- Instruction Banner -->
+  <div class="notice-banner">
+    <div>
+      ✍️ <b>निर्देश:</b> जो-जो भाव या स्टॉक खाली <b>(Dashed Box)</b> है, उसमें दुकान का सही भाव पेन से भरें। जो भाव पहले से भरा है वह हरा दिखेगा।
     </div>
-    <div class="stat-card alert">
-      <div class="stat-num">59</div>
-      <div class="stat-label">अपूर्ण सामान (Pending)</div>
+    <div style="font-weight: 700; color: #b91c1c;">
+      बाकी: खरीद भाव (45) | बिक्री भाव (54) | स्टॉक (4)
     </div>
-    <div class="stat-card alert">
-      <div class="stat-num">45</div>
-      <div class="stat-label">खरीद भाव बाकी (Buy Rate 0)</div>
-    </div>
-    <div class="stat-card alert">
-      <div class="stat-num">54</div>
-      <div class="stat-label">बिक्री भाव बाकी (Sell Rate 0)</div>
-    </div>
-  </div>
-
-  <!-- Instruction Note -->
-  <div class="instructions">
-    💡 <b>निर्देश (Note):</b> इस शीट में वही सभी सामान हैं जिनमें खरीद भाव, बिक्री भाव या स्टॉक डालना बाकी है। आप इस शीट का प्रिंट निकालकर पेन से खाली जगह में सही भाव लिख सकते हैं, और फिर मोबाइल/लैपटॉप में एक साथ अपडेट कर सकते हैं।
   </div>
 
   <!-- Checklist Table -->
@@ -242,788 +202,788 @@
     <thead>
       <tr>
         <th style="width: 25px;" class="text-center">#</th>
-        <th style="width: 200px;">सामान का नाम (Product Name)</th>
-        <th style="width: 50px;" class="text-center">इकाई</th>
-        <th style="width: 80px;" class="text-right">खरीद भाव (Buy ₹)</th>
-        <th style="width: 80px;" class="text-right">बिक्री भाव (Sell ₹)</th>
-        <th style="width: 55px;" class="text-center">स्टॉक</th>
-        <th style="width: 140px;">क्या बाकी है?</th>
-        <th style="width: 100px;">नया भाव लिखें (पेन से)</th>
+        <th style="width: 220px;">सामान का नाम (Product Name)</th>
+        <th style="width: 45px;" class="text-center">इकाई</th>
+        <th style="width: 85px;" class="text-center">खरीद भाव (Buy ₹)</th>
+        <th style="width: 85px;" class="text-center">बिक्री भाव (Sell ₹)</th>
+        <th style="width: 65px;" class="text-center">स्टॉक Qty</th>
+        <th style="width: 140px;">क्या-क्या भरना है?</th>
+        <th style="width: 85px;">नोट्स / थोक बोरा</th>
       </tr>
     </thead>
     <tbody>
       <tr>
         <td class="text-center" style="font-weight: 700; color: #64748b;">1</td>
         <td>
-          <b style="color: #0f172a;">लहसुन (Lahsun Garlic)</b>
+          <b style="color: #0f172a; font-size: 9pt;">लहसुन (Lahsun Garlic)</b>
           <span style="font-size: 7.5pt; color: #64748b; display: block;">कैटेगरी: General</span>
         </td>
-        <td class="text-center" style="font-weight: 700;">kg</td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-center" style="font-weight: 700;"><span class="missing-pill">0</span></td>
-        <td><span class="missing-pill">खरीद और बिक्री दोनों भाव बाकी</span> <span class="missing-pill">स्टॉक 0 (आउट ऑफ स्टॉक)</span></td>
-        <td><span class="fill-line"></span> ₹</td>
+        <td class="text-center" style="font-weight: 700; color: #334155;">kg</td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div class="write-box" style="text-align: center;">&nbsp;</div></td>
+        <td><span class="req-badge">☐ खरीद भाव</span> <span class="req-badge">☐ बिक्री भाव</span> <span class="req-badge">☐ स्टॉक 0</span></td>
+        <td><div style="border-bottom: 1px dashed #cbd5e1; height: 18px;"></div></td>
       </tr>
       <tr>
         <td class="text-center" style="font-weight: 700; color: #64748b;">2</td>
         <td>
-          <b style="color: #0f172a;">Suji</b>
+          <b style="color: #0f172a; font-size: 9pt;">Suji</b>
           <span style="font-size: 7.5pt; color: #64748b; display: block;">कैटेगरी: General</span>
         </td>
-        <td class="text-center" style="font-weight: 700;">kg</td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-right" style="font-weight: 700;">₹40.00</td>
-        <td class="text-center" style="font-weight: 700;"><span class="missing-pill">0</span></td>
-        <td><span class="missing-pill">खरीद भाव बाकी</span> <span class="missing-pill">स्टॉक 0 (आउट ऑफ स्टॉक)</span></td>
-        <td><span class="fill-line"></span> ₹</td>
+        <td class="text-center" style="font-weight: 700; color: #334155;">kg</td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div class="value-filled text-right">₹40.00</div></td>
+        <td><div class="write-box" style="text-align: center;">&nbsp;</div></td>
+        <td><span class="req-badge">☐ खरीद भाव</span> <span class="req-badge">☐ स्टॉक 0</span></td>
+        <td><div style="border-bottom: 1px dashed #cbd5e1; height: 18px;"></div></td>
       </tr>
       <tr>
         <td class="text-center" style="font-weight: 700; color: #64748b;">3</td>
         <td>
-          <b style="color: #0f172a;">Alhar Daal (अलहर दाल)</b>
+          <b style="color: #0f172a; font-size: 9pt;">Alhar Daal (अलहर दाल)</b>
           <span style="font-size: 7.5pt; color: #64748b; display: block;">कैटेगरी: Grains & Pulses</span>
         </td>
-        <td class="text-center" style="font-weight: 700;">kg</td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-right" style="font-weight: 700;">₹140.00</td>
-        <td class="text-center" style="font-weight: 700;"><span class="missing-pill">0</span></td>
-        <td><span class="missing-pill">खरीद भाव बाकी</span> <span class="missing-pill">स्टॉक 0 (आउट ऑफ स्टॉक)</span></td>
-        <td><span class="fill-line"></span> ₹</td>
+        <td class="text-center" style="font-weight: 700; color: #334155;">kg</td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div class="value-filled text-right">₹140.00</div></td>
+        <td><div class="write-box" style="text-align: center;">&nbsp;</div></td>
+        <td><span class="req-badge">☐ खरीद भाव</span> <span class="req-badge">☐ स्टॉक 0</span></td>
+        <td><div style="border-bottom: 1px dashed #cbd5e1; height: 18px;"></div></td>
       </tr>
       <tr>
         <td class="text-center" style="font-weight: 700; color: #64748b;">4</td>
         <td>
-          <b style="color: #0f172a;">खावा सोडा / मीठा सोडा (Baking Soda)</b>
+          <b style="color: #0f172a; font-size: 9pt;">खावा सोडा / मीठा सोडा (Baking Soda)</b>
           <span style="font-size: 7.5pt; color: #64748b; display: block;">कैटेगरी: General</span>
         </td>
-        <td class="text-center" style="font-weight: 700;">pcs</td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-center" style="font-weight: 700;">25</td>
-        <td><span class="missing-pill">खरीद और बिक्री दोनों भाव बाकी</span></td>
-        <td><span class="fill-line"></span> ₹</td>
+        <td class="text-center" style="font-weight: 700; color: #334155;">pcs</td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div style="font-weight: 700; text-align: center; color: #0f172a;">25</div></td>
+        <td><span class="req-badge">☐ खरीद भाव</span> <span class="req-badge">☐ बिक्री भाव</span></td>
+        <td><div style="border-bottom: 1px dashed #cbd5e1; height: 18px;"></div></td>
       </tr>
       <tr>
         <td class="text-center" style="font-weight: 700; color: #64748b;">5</td>
         <td>
-          <b style="color: #0f172a;">मोमबत्ती (Mombatti / Candles)</b>
+          <b style="color: #0f172a; font-size: 9pt;">मोमबत्ती (Mombatti / Candles)</b>
           <span style="font-size: 7.5pt; color: #64748b; display: block;">कैटेगरी: General</span>
         </td>
-        <td class="text-center" style="font-weight: 700;">pcs</td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-center" style="font-weight: 700;">40</td>
-        <td><span class="missing-pill">खरीद और बिक्री दोनों भाव बाकी</span></td>
-        <td><span class="fill-line"></span> ₹</td>
+        <td class="text-center" style="font-weight: 700; color: #334155;">pcs</td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div style="font-weight: 700; text-align: center; color: #0f172a;">40</div></td>
+        <td><span class="req-badge">☐ खरीद भाव</span> <span class="req-badge">☐ बिक्री भाव</span></td>
+        <td><div style="border-bottom: 1px dashed #cbd5e1; height: 18px;"></div></td>
       </tr>
       <tr>
         <td class="text-center" style="font-weight: 700; color: #64748b;">6</td>
         <td>
-          <b style="color: #0f172a;">जलजीरा 50g (Jaljeera 50g)</b>
+          <b style="color: #0f172a; font-size: 9pt;">जलजीरा 50g (Jaljeera 50g)</b>
           <span style="font-size: 7.5pt; color: #64748b; display: block;">कैटेगरी: Spices</span>
         </td>
-        <td class="text-center" style="font-weight: 700;">pcs</td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-center" style="font-weight: 700;">30</td>
-        <td><span class="missing-pill">खरीद और बिक्री दोनों भाव बाकी</span></td>
-        <td><span class="fill-line"></span> ₹</td>
+        <td class="text-center" style="font-weight: 700; color: #334155;">pcs</td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div style="font-weight: 700; text-align: center; color: #0f172a;">30</div></td>
+        <td><span class="req-badge">☐ खरीद भाव</span> <span class="req-badge">☐ बिक्री भाव</span></td>
+        <td><div style="border-bottom: 1px dashed #cbd5e1; height: 18px;"></div></td>
       </tr>
       <tr>
         <td class="text-center" style="font-weight: 700; color: #64748b;">7</td>
         <td>
-          <b style="color: #0f172a;">चाट मसाला 50g (Chaat Masala 50g)</b>
+          <b style="color: #0f172a; font-size: 9pt;">चाट मसाला 50g (Chaat Masala 50g)</b>
           <span style="font-size: 7.5pt; color: #64748b; display: block;">कैटेगरी: Spices</span>
         </td>
-        <td class="text-center" style="font-weight: 700;">pcs</td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-center" style="font-weight: 700;">25</td>
-        <td><span class="missing-pill">खरीद और बिक्री दोनों भाव बाकी</span></td>
-        <td><span class="fill-line"></span> ₹</td>
+        <td class="text-center" style="font-weight: 700; color: #334155;">pcs</td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div style="font-weight: 700; text-align: center; color: #0f172a;">25</div></td>
+        <td><span class="req-badge">☐ खरीद भाव</span> <span class="req-badge">☐ बिक्री भाव</span></td>
+        <td><div style="border-bottom: 1px dashed #cbd5e1; height: 18px;"></div></td>
       </tr>
       <tr>
         <td class="text-center" style="font-weight: 700; color: #64748b;">8</td>
         <td>
-          <b style="color: #0f172a;">सोयाबीन बरी (Soyabean Bari)</b>
+          <b style="color: #0f172a; font-size: 9pt;">सोयाबीन बरी (Soyabean Bari)</b>
           <span style="font-size: 7.5pt; color: #64748b; display: block;">कैटेगरी: Grains & Pulses</span>
         </td>
-        <td class="text-center" style="font-weight: 700;">kg</td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-center" style="font-weight: 700;">25</td>
-        <td><span class="missing-pill">खरीद और बिक्री दोनों भाव बाकी</span></td>
-        <td><span class="fill-line"></span> ₹</td>
+        <td class="text-center" style="font-weight: 700; color: #334155;">kg</td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div style="font-weight: 700; text-align: center; color: #0f172a;">25</div></td>
+        <td><span class="req-badge">☐ खरीद भाव</span> <span class="req-badge">☐ बिक्री भाव</span></td>
+        <td><div style="border-bottom: 1px dashed #cbd5e1; height: 18px;"></div></td>
       </tr>
       <tr>
         <td class="text-center" style="font-weight: 700; color: #64748b;">9</td>
         <td>
-          <b style="color: #0f172a;">मसूर दाल (Masoor Dal)</b>
+          <b style="color: #0f172a; font-size: 9pt;">मसूर दाल (Masoor Dal)</b>
           <span style="font-size: 7.5pt; color: #64748b; display: block;">कैटेगरी: Grains & Pulses</span>
         </td>
-        <td class="text-center" style="font-weight: 700;">kg</td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-center" style="font-weight: 700;">50</td>
-        <td><span class="missing-pill">खरीद और बिक्री दोनों भाव बाकी</span></td>
-        <td><span class="fill-line"></span> ₹</td>
+        <td class="text-center" style="font-weight: 700; color: #334155;">kg</td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div style="font-weight: 700; text-align: center; color: #0f172a;">50</div></td>
+        <td><span class="req-badge">☐ खरीद भाव</span> <span class="req-badge">☐ बिक्री भाव</span></td>
+        <td><div style="border-bottom: 1px dashed #cbd5e1; height: 18px;"></div></td>
       </tr>
       <tr>
         <td class="text-center" style="font-weight: 700; color: #64748b;">10</td>
         <td>
-          <b style="color: #0f172a;">मैदा (Maida)</b>
+          <b style="color: #0f172a; font-size: 9pt;">मैदा (Maida)</b>
           <span style="font-size: 7.5pt; color: #64748b; display: block;">कैटेगरी: Grains & Pulses</span>
         </td>
-        <td class="text-center" style="font-weight: 700;">kg</td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-center" style="font-weight: 700;">40</td>
-        <td><span class="missing-pill">खरीद और बिक्री दोनों भाव बाकी</span></td>
-        <td><span class="fill-line"></span> ₹</td>
+        <td class="text-center" style="font-weight: 700; color: #334155;">kg</td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div style="font-weight: 700; text-align: center; color: #0f172a;">40</div></td>
+        <td><span class="req-badge">☐ खरीद भाव</span> <span class="req-badge">☐ बिक्री भाव</span></td>
+        <td><div style="border-bottom: 1px dashed #cbd5e1; height: 18px;"></div></td>
       </tr>
       <tr>
         <td class="text-center" style="font-weight: 700; color: #64748b;">11</td>
         <td>
-          <b style="color: #0f172a;">चना दाल (Chana Dal)</b>
+          <b style="color: #0f172a; font-size: 9pt;">चना दाल (Chana Dal)</b>
           <span style="font-size: 7.5pt; color: #64748b; display: block;">कैटेगरी: Grains & Pulses</span>
         </td>
-        <td class="text-center" style="font-weight: 700;">kg</td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-center" style="font-weight: 700;">50</td>
-        <td><span class="missing-pill">खरीद और बिक्री दोनों भाव बाकी</span></td>
-        <td><span class="fill-line"></span> ₹</td>
+        <td class="text-center" style="font-weight: 700; color: #334155;">kg</td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div style="font-weight: 700; text-align: center; color: #0f172a;">50</div></td>
+        <td><span class="req-badge">☐ खरीद भाव</span> <span class="req-badge">☐ बिक्री भाव</span></td>
+        <td><div style="border-bottom: 1px dashed #cbd5e1; height: 18px;"></div></td>
       </tr>
       <tr>
         <td class="text-center" style="font-weight: 700; color: #64748b;">12</td>
         <td>
-          <b style="color: #0f172a;">सेंधा नमक 100g (Sendha Namak 100g)</b>
+          <b style="color: #0f172a; font-size: 9pt;">सेंधा नमक 100g (Sendha Namak 100g)</b>
           <span style="font-size: 7.5pt; color: #64748b; display: block;">कैटेगरी: General</span>
         </td>
-        <td class="text-center" style="font-weight: 700;">pcs</td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-center" style="font-weight: 700;">25</td>
-        <td><span class="missing-pill">खरीद और बिक्री दोनों भाव बाकी</span></td>
-        <td><span class="fill-line"></span> ₹</td>
+        <td class="text-center" style="font-weight: 700; color: #334155;">pcs</td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div style="font-weight: 700; text-align: center; color: #0f172a;">25</div></td>
+        <td><span class="req-badge">☐ खरीद भाव</span> <span class="req-badge">☐ बिक्री भाव</span></td>
+        <td><div style="border-bottom: 1px dashed #cbd5e1; height: 18px;"></div></td>
       </tr>
       <tr>
         <td class="text-center" style="font-weight: 700; color: #64748b;">13</td>
         <td>
-          <b style="color: #0f172a;">हल्दी खड़ी (Haldi Khadi)</b>
+          <b style="color: #0f172a; font-size: 9pt;">हल्दी खड़ी (Haldi Khadi)</b>
           <span style="font-size: 7.5pt; color: #64748b; display: block;">कैटेगरी: Spices</span>
         </td>
-        <td class="text-center" style="font-weight: 700;">kg</td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-center" style="font-weight: 700;">15</td>
-        <td><span class="missing-pill">खरीद और बिक्री दोनों भाव बाकी</span></td>
-        <td><span class="fill-line"></span> ₹</td>
+        <td class="text-center" style="font-weight: 700; color: #334155;">kg</td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div style="font-weight: 700; text-align: center; color: #0f172a;">15</div></td>
+        <td><span class="req-badge">☐ खरीद भाव</span> <span class="req-badge">☐ बिक्री भाव</span></td>
+        <td><div style="border-bottom: 1px dashed #cbd5e1; height: 18px;"></div></td>
       </tr>
       <tr>
         <td class="text-center" style="font-weight: 700; color: #64748b;">14</td>
         <td>
-          <b style="color: #0f172a;">मरीच / काली मिर्च (Kali Mirch)</b>
+          <b style="color: #0f172a; font-size: 9pt;">मरीच / काली मिर्च (Kali Mirch)</b>
           <span style="font-size: 7.5pt; color: #64748b; display: block;">कैटेगरी: Spices</span>
         </td>
-        <td class="text-center" style="font-weight: 700;">kg</td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-center" style="font-weight: 700;">10</td>
-        <td><span class="missing-pill">खरीद और बिक्री दोनों भाव बाकी</span></td>
-        <td><span class="fill-line"></span> ₹</td>
+        <td class="text-center" style="font-weight: 700; color: #334155;">kg</td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div style="font-weight: 700; text-align: center; color: #0f172a;">10</div></td>
+        <td><span class="req-badge">☐ खरीद भाव</span> <span class="req-badge">☐ बिक्री भाव</span></td>
+        <td><div style="border-bottom: 1px dashed #cbd5e1; height: 18px;"></div></td>
       </tr>
       <tr>
         <td class="text-center" style="font-weight: 700; color: #64748b;">15</td>
         <td>
-          <b style="color: #0f172a;">रंग लाल (Red Food Color)</b>
+          <b style="color: #0f172a; font-size: 9pt;">रंग लाल (Red Food Color)</b>
           <span style="font-size: 7.5pt; color: #64748b; display: block;">कैटेगरी: General</span>
         </td>
-        <td class="text-center" style="font-weight: 700;">pcs</td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-center" style="font-weight: 700;">30</td>
-        <td><span class="missing-pill">खरीद और बिक्री दोनों भाव बाकी</span></td>
-        <td><span class="fill-line"></span> ₹</td>
+        <td class="text-center" style="font-weight: 700; color: #334155;">pcs</td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div style="font-weight: 700; text-align: center; color: #0f172a;">30</div></td>
+        <td><span class="req-badge">☐ खरीद भाव</span> <span class="req-badge">☐ बिक्री भाव</span></td>
+        <td><div style="border-bottom: 1px dashed #cbd5e1; height: 18px;"></div></td>
       </tr>
       <tr>
         <td class="text-center" style="font-weight: 700; color: #64748b;">16</td>
         <td>
-          <b style="color: #0f172a;">मॉम्स मैजिक बिस्किट (Mom's Magic Biscuit)</b>
+          <b style="color: #0f172a; font-size: 9pt;">मॉम्स मैजिक बिस्किट (Mom's Magic Biscuit)</b>
           <span style="font-size: 7.5pt; color: #64748b; display: block;">कैटेगरी: Snacks & Biscuits</span>
         </td>
-        <td class="text-center" style="font-weight: 700;">pcs</td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-center" style="font-weight: 700;">48</td>
-        <td><span class="missing-pill">खरीद और बिक्री दोनों भाव बाकी</span></td>
-        <td><span class="fill-line"></span> ₹</td>
+        <td class="text-center" style="font-weight: 700; color: #334155;">pcs</td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div style="font-weight: 700; text-align: center; color: #0f172a;">48</div></td>
+        <td><span class="req-badge">☐ खरीद भाव</span> <span class="req-badge">☐ बिक्री भाव</span></td>
+        <td><div style="border-bottom: 1px dashed #cbd5e1; height: 18px;"></div></td>
       </tr>
       <tr>
         <td class="text-center" style="font-weight: 700; color: #64748b;">17</td>
         <td>
-          <b style="color: #0f172a;">मोनाको बिस्किट (Monaco Biscuit)</b>
+          <b style="color: #0f172a; font-size: 9pt;">मोनाको बिस्किट (Monaco Biscuit)</b>
           <span style="font-size: 7.5pt; color: #64748b; display: block;">कैटेगरी: Snacks & Biscuits</span>
         </td>
-        <td class="text-center" style="font-weight: 700;">pcs</td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-center" style="font-weight: 700;">48</td>
-        <td><span class="missing-pill">खरीद और बिक्री दोनों भाव बाकी</span></td>
-        <td><span class="fill-line"></span> ₹</td>
+        <td class="text-center" style="font-weight: 700; color: #334155;">pcs</td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div style="font-weight: 700; text-align: center; color: #0f172a;">48</div></td>
+        <td><span class="req-badge">☐ खरीद भाव</span> <span class="req-badge">☐ बिक्री भाव</span></td>
+        <td><div style="border-bottom: 1px dashed #cbd5e1; height: 18px;"></div></td>
       </tr>
       <tr>
         <td class="text-center" style="font-weight: 700; color: #64748b;">18</td>
         <td>
-          <b style="color: #0f172a;">क्रैकजैक बिस्किट (Krackjack Biscuit)</b>
+          <b style="color: #0f172a; font-size: 9pt;">क्रैकजैक बिस्किट (Krackjack Biscuit)</b>
           <span style="font-size: 7.5pt; color: #64748b; display: block;">कैटेगरी: Snacks & Biscuits</span>
         </td>
-        <td class="text-center" style="font-weight: 700;">pcs</td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-center" style="font-weight: 700;">48</td>
-        <td><span class="missing-pill">खरीद और बिक्री दोनों भाव बाकी</span></td>
-        <td><span class="fill-line"></span> ₹</td>
+        <td class="text-center" style="font-weight: 700; color: #334155;">pcs</td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div style="font-weight: 700; text-align: center; color: #0f172a;">48</div></td>
+        <td><span class="req-badge">☐ खरीद भाव</span> <span class="req-badge">☐ बिक्री भाव</span></td>
+        <td><div style="border-bottom: 1px dashed #cbd5e1; height: 18px;"></div></td>
       </tr>
       <tr>
         <td class="text-center" style="font-weight: 700; color: #64748b;">19</td>
         <td>
-          <b style="color: #0f172a;">डिस्पोजल कटोरा / दोना (Disposable Dona)</b>
+          <b style="color: #0f172a; font-size: 9pt;">डिस्पोजल कटोरा / दोना (Disposable Dona)</b>
           <span style="font-size: 7.5pt; color: #64748b; display: block;">कैटेगरी: General</span>
         </td>
-        <td class="text-center" style="font-weight: 700;">pcs</td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-center" style="font-weight: 700;">100</td>
-        <td><span class="missing-pill">खरीद और बिक्री दोनों भाव बाकी</span></td>
-        <td><span class="fill-line"></span> ₹</td>
+        <td class="text-center" style="font-weight: 700; color: #334155;">pcs</td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div style="font-weight: 700; text-align: center; color: #0f172a;">100</div></td>
+        <td><span class="req-badge">☐ खरीद भाव</span> <span class="req-badge">☐ बिक्री भाव</span></td>
+        <td><div style="border-bottom: 1px dashed #cbd5e1; height: 18px;"></div></td>
       </tr>
       <tr>
         <td class="text-center" style="font-weight: 700; color: #64748b;">20</td>
         <td>
-          <b style="color: #0f172a;">डिस्पोजल कप (Disposable Paper Cup)</b>
+          <b style="color: #0f172a; font-size: 9pt;">डिस्पोजल कप (Disposable Paper Cup)</b>
           <span style="font-size: 7.5pt; color: #64748b; display: block;">कैटेगरी: General</span>
         </td>
-        <td class="text-center" style="font-weight: 700;">pcs</td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-center" style="font-weight: 700;">100</td>
-        <td><span class="missing-pill">खरीद और बिक्री दोनों भाव बाकी</span></td>
-        <td><span class="fill-line"></span> ₹</td>
+        <td class="text-center" style="font-weight: 700; color: #334155;">pcs</td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div style="font-weight: 700; text-align: center; color: #0f172a;">100</div></td>
+        <td><span class="req-badge">☐ खरीद भाव</span> <span class="req-badge">☐ बिक्री भाव</span></td>
+        <td><div style="border-bottom: 1px dashed #cbd5e1; height: 18px;"></div></td>
       </tr>
       <tr>
         <td class="text-center" style="font-weight: 700; color: #64748b;">21</td>
         <td>
-          <b style="color: #0f172a;">रंग पीला (Yellow Food Color)</b>
+          <b style="color: #0f172a; font-size: 9pt;">रंग पीला (Yellow Food Color)</b>
           <span style="font-size: 7.5pt; color: #64748b; display: block;">कैटेगरी: General</span>
         </td>
-        <td class="text-center" style="font-weight: 700;">pcs</td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-center" style="font-weight: 700;">30</td>
-        <td><span class="missing-pill">खरीद और बिक्री दोनों भाव बाकी</span></td>
-        <td><span class="fill-line"></span> ₹</td>
+        <td class="text-center" style="font-weight: 700; color: #334155;">pcs</td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div style="font-weight: 700; text-align: center; color: #0f172a;">30</div></td>
+        <td><span class="req-badge">☐ खरीद भाव</span> <span class="req-badge">☐ बिक्री भाव</span></td>
+        <td><div style="border-bottom: 1px dashed #cbd5e1; height: 18px;"></div></td>
       </tr>
       <tr>
         <td class="text-center" style="font-weight: 700; color: #64748b;">22</td>
         <td>
-          <b style="color: #0f172a;">डिस्पोजल ग्लास (Disposable Glass)</b>
+          <b style="color: #0f172a; font-size: 9pt;">डिस्पोजल ग्लास (Disposable Glass)</b>
           <span style="font-size: 7.5pt; color: #64748b; display: block;">कैटेगरी: General</span>
         </td>
-        <td class="text-center" style="font-weight: 700;">pcs</td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-center" style="font-weight: 700;">100</td>
-        <td><span class="missing-pill">खरीद और बिक्री दोनों भाव बाकी</span></td>
-        <td><span class="fill-line"></span> ₹</td>
+        <td class="text-center" style="font-weight: 700; color: #334155;">pcs</td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div style="font-weight: 700; text-align: center; color: #0f172a;">100</div></td>
+        <td><span class="req-badge">☐ खरीद भाव</span> <span class="req-badge">☐ बिक्री भाव</span></td>
+        <td><div style="border-bottom: 1px dashed #cbd5e1; height: 18px;"></div></td>
       </tr>
       <tr>
         <td class="text-center" style="font-weight: 700; color: #64748b;">23</td>
         <td>
-          <b style="color: #0f172a;">डिस्पोजल पत्तल (Disposable Pattal)</b>
+          <b style="color: #0f172a; font-size: 9pt;">डिस्पोजल पत्तल (Disposable Pattal)</b>
           <span style="font-size: 7.5pt; color: #64748b; display: block;">कैटेगरी: General</span>
         </td>
-        <td class="text-center" style="font-weight: 700;">pcs</td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-center" style="font-weight: 700;">100</td>
-        <td><span class="missing-pill">खरीद और बिक्री दोनों भाव बाकी</span></td>
-        <td><span class="fill-line"></span> ₹</td>
+        <td class="text-center" style="font-weight: 700; color: #334155;">pcs</td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div style="font-weight: 700; text-align: center; color: #0f172a;">100</div></td>
+        <td><span class="req-badge">☐ खरीद भाव</span> <span class="req-badge">☐ बिक्री भाव</span></td>
+        <td><div style="border-bottom: 1px dashed #cbd5e1; height: 18px;"></div></td>
       </tr>
       <tr>
         <td class="text-center" style="font-weight: 700; color: #64748b;">24</td>
         <td>
-          <b style="color: #0f172a;">मीट मसाला 100g (Meat Masala)</b>
+          <b style="color: #0f172a; font-size: 9pt;">मीट मसाला 100g (Meat Masala)</b>
           <span style="font-size: 7.5pt; color: #64748b; display: block;">कैटेगरी: Spices</span>
         </td>
-        <td class="text-center" style="font-weight: 700;">pcs</td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-center" style="font-weight: 700;">20</td>
-        <td><span class="missing-pill">खरीद और बिक्री दोनों भाव बाकी</span></td>
-        <td><span class="fill-line"></span> ₹</td>
+        <td class="text-center" style="font-weight: 700; color: #334155;">pcs</td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div style="font-weight: 700; text-align: center; color: #0f172a;">20</div></td>
+        <td><span class="req-badge">☐ खरीद भाव</span> <span class="req-badge">☐ बिक्री भाव</span></td>
+        <td><div style="border-bottom: 1px dashed #cbd5e1; height: 18px;"></div></td>
       </tr>
       <tr>
         <td class="text-center" style="font-weight: 700; color: #64748b;">25</td>
         <td>
-          <b style="color: #0f172a;">गरम मसाला 100g (Garam Masala)</b>
+          <b style="color: #0f172a; font-size: 9pt;">गरम मसाला 100g (Garam Masala)</b>
           <span style="font-size: 7.5pt; color: #64748b; display: block;">कैटेगरी: Spices</span>
         </td>
-        <td class="text-center" style="font-weight: 700;">pcs</td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-center" style="font-weight: 700;">20</td>
-        <td><span class="missing-pill">खरीद और बिक्री दोनों भाव बाकी</span></td>
-        <td><span class="fill-line"></span> ₹</td>
+        <td class="text-center" style="font-weight: 700; color: #334155;">pcs</td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div style="font-weight: 700; text-align: center; color: #0f172a;">20</div></td>
+        <td><span class="req-badge">☐ खरीद भाव</span> <span class="req-badge">☐ बिक्री भाव</span></td>
+        <td><div style="border-bottom: 1px dashed #cbd5e1; height: 18px;"></div></td>
       </tr>
       <tr>
         <td class="text-center" style="font-weight: 700; color: #64748b;">26</td>
         <td>
-          <b style="color: #0f172a;">सब्जी मसाला 100g (Sabji Masala)</b>
+          <b style="color: #0f172a; font-size: 9pt;">सब्जी मसाला 100g (Sabji Masala)</b>
           <span style="font-size: 7.5pt; color: #64748b; display: block;">कैटेगरी: Spices</span>
         </td>
-        <td class="text-center" style="font-weight: 700;">pcs</td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-center" style="font-weight: 700;">20</td>
-        <td><span class="missing-pill">खरीद और बिक्री दोनों भाव बाकी</span></td>
-        <td><span class="fill-line"></span> ₹</td>
+        <td class="text-center" style="font-weight: 700; color: #334155;">pcs</td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div style="font-weight: 700; text-align: center; color: #0f172a;">20</div></td>
+        <td><span class="req-badge">☐ खरीद भाव</span> <span class="req-badge">☐ बिक्री भाव</span></td>
+        <td><div style="border-bottom: 1px dashed #cbd5e1; height: 18px;"></div></td>
       </tr>
       <tr>
         <td class="text-center" style="font-weight: 700; color: #64748b;">27</td>
         <td>
-          <b style="color: #0f172a;">पनीर मसाला 50g (Paneer Masala)</b>
+          <b style="color: #0f172a; font-size: 9pt;">पनीर मसाला 50g (Paneer Masala)</b>
           <span style="font-size: 7.5pt; color: #64748b; display: block;">कैटेगरी: Spices</span>
         </td>
-        <td class="text-center" style="font-weight: 700;">pcs</td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-center" style="font-weight: 700;">20</td>
-        <td><span class="missing-pill">खरीद और बिक्री दोनों भाव बाकी</span></td>
-        <td><span class="fill-line"></span> ₹</td>
+        <td class="text-center" style="font-weight: 700; color: #334155;">pcs</td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div style="font-weight: 700; text-align: center; color: #0f172a;">20</div></td>
+        <td><span class="req-badge">☐ खरीद भाव</span> <span class="req-badge">☐ बिक्री भाव</span></td>
+        <td><div style="border-bottom: 1px dashed #cbd5e1; height: 18px;"></div></td>
       </tr>
       <tr>
         <td class="text-center" style="font-weight: 700; color: #64748b;">28</td>
         <td>
-          <b style="color: #0f172a;">धनिया पैकेट 200g (Dhaniya Packet)</b>
+          <b style="color: #0f172a; font-size: 9pt;">धनिया पैकेट 200g (Dhaniya Packet)</b>
           <span style="font-size: 7.5pt; color: #64748b; display: block;">कैटेगरी: Spices</span>
         </td>
-        <td class="text-center" style="font-weight: 700;">pcs</td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-center" style="font-weight: 700;">25</td>
-        <td><span class="missing-pill">खरीद और बिक्री दोनों भाव बाकी</span></td>
-        <td><span class="fill-line"></span> ₹</td>
+        <td class="text-center" style="font-weight: 700; color: #334155;">pcs</td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div style="font-weight: 700; text-align: center; color: #0f172a;">25</div></td>
+        <td><span class="req-badge">☐ खरीद भाव</span> <span class="req-badge">☐ बिक्री भाव</span></td>
+        <td><div style="border-bottom: 1px dashed #cbd5e1; height: 18px;"></div></td>
       </tr>
       <tr>
         <td class="text-center" style="font-weight: 700; color: #64748b;">29</td>
         <td>
-          <b style="color: #0f172a;">मिर्च पैकेट 200g (Mirch Packet 200g)</b>
+          <b style="color: #0f172a; font-size: 9pt;">मिर्च पैकेट 200g (Mirch Packet 200g)</b>
           <span style="font-size: 7.5pt; color: #64748b; display: block;">कैटेगरी: Spices</span>
         </td>
-        <td class="text-center" style="font-weight: 700;">pcs</td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-center" style="font-weight: 700;">25</td>
-        <td><span class="missing-pill">खरीद और बिक्री दोनों भाव बाकी</span></td>
-        <td><span class="fill-line"></span> ₹</td>
+        <td class="text-center" style="font-weight: 700; color: #334155;">pcs</td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div style="font-weight: 700; text-align: center; color: #0f172a;">25</div></td>
+        <td><span class="req-badge">☐ खरीद भाव</span> <span class="req-badge">☐ बिक्री भाव</span></td>
+        <td><div style="border-bottom: 1px dashed #cbd5e1; height: 18px;"></div></td>
       </tr>
       <tr>
         <td class="text-center" style="font-weight: 700; color: #64748b;">30</td>
         <td>
-          <b style="color: #0f172a;">मिर्च पैकेट 100g (Mirch Packet 100g)</b>
+          <b style="color: #0f172a; font-size: 9pt;">मिर्च पैकेट 100g (Mirch Packet 100g)</b>
           <span style="font-size: 7.5pt; color: #64748b; display: block;">कैटेगरी: Spices</span>
         </td>
-        <td class="text-center" style="font-weight: 700;">pcs</td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-center" style="font-weight: 700;">30</td>
-        <td><span class="missing-pill">खरीद और बिक्री दोनों भाव बाकी</span></td>
-        <td><span class="fill-line"></span> ₹</td>
+        <td class="text-center" style="font-weight: 700; color: #334155;">pcs</td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div style="font-weight: 700; text-align: center; color: #0f172a;">30</div></td>
+        <td><span class="req-badge">☐ खरीद भाव</span> <span class="req-badge">☐ बिक्री भाव</span></td>
+        <td><div style="border-bottom: 1px dashed #cbd5e1; height: 18px;"></div></td>
       </tr>
       <tr>
         <td class="text-center" style="font-weight: 700; color: #64748b;">31</td>
         <td>
-          <b style="color: #0f172a;">सरसों दाना (Sarso Dana)</b>
+          <b style="color: #0f172a; font-size: 9pt;">सरसों दाना (Sarso Dana)</b>
           <span style="font-size: 7.5pt; color: #64748b; display: block;">कैटेगरी: Spices</span>
         </td>
-        <td class="text-center" style="font-weight: 700;">kg</td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-center" style="font-weight: 700;">25</td>
-        <td><span class="missing-pill">खरीद और बिक्री दोनों भाव बाकी</span></td>
-        <td><span class="fill-line"></span> ₹</td>
+        <td class="text-center" style="font-weight: 700; color: #334155;">kg</td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div style="font-weight: 700; text-align: center; color: #0f172a;">25</div></td>
+        <td><span class="req-badge">☐ खरीद भाव</span> <span class="req-badge">☐ बिक्री भाव</span></td>
+        <td><div style="border-bottom: 1px dashed #cbd5e1; height: 18px;"></div></td>
       </tr>
       <tr>
         <td class="text-center" style="font-weight: 700; color: #64748b;">32</td>
         <td>
-          <b style="color: #0f172a;">सत्तू 500g (Sattu 500g)</b>
+          <b style="color: #0f172a; font-size: 9pt;">सत्तू 500g (Sattu 500g)</b>
           <span style="font-size: 7.5pt; color: #64748b; display: block;">कैटेगरी: Grains & Pulses</span>
         </td>
-        <td class="text-center" style="font-weight: 700;">pcs</td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-center" style="font-weight: 700;">15</td>
-        <td><span class="missing-pill">खरीद और बिक्री दोनों भाव बाकी</span></td>
-        <td><span class="fill-line"></span> ₹</td>
+        <td class="text-center" style="font-weight: 700; color: #334155;">pcs</td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div style="font-weight: 700; text-align: center; color: #0f172a;">15</div></td>
+        <td><span class="req-badge">☐ खरीद भाव</span> <span class="req-badge">☐ बिक्री भाव</span></td>
+        <td><div style="border-bottom: 1px dashed #cbd5e1; height: 18px;"></div></td>
       </tr>
       <tr>
         <td class="text-center" style="font-weight: 700; color: #64748b;">33</td>
         <td>
-          <b style="color: #0f172a;">नारियल झाड़ू (Nariyal Jhadu)</b>
+          <b style="color: #0f172a; font-size: 9pt;">नारियल झाड़ू (Nariyal Jhadu)</b>
           <span style="font-size: 7.5pt; color: #64748b; display: block;">कैटेगरी: General</span>
         </td>
-        <td class="text-center" style="font-weight: 700;">pcs</td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-center" style="font-weight: 700;">12</td>
-        <td><span class="missing-pill">खरीद और बिक्री दोनों भाव बाकी</span></td>
-        <td><span class="fill-line"></span> ₹</td>
+        <td class="text-center" style="font-weight: 700; color: #334155;">pcs</td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div style="font-weight: 700; text-align: center; color: #0f172a;">12</div></td>
+        <td><span class="req-badge">☐ खरीद भाव</span> <span class="req-badge">☐ बिक्री भाव</span></td>
+        <td><div style="border-bottom: 1px dashed #cbd5e1; height: 18px;"></div></td>
       </tr>
       <tr>
         <td class="text-center" style="font-weight: 700; color: #64748b;">34</td>
         <td>
-          <b style="color: #0f172a;">सीक / फूल झाड़ू (Seek / Phool Jhadu)</b>
+          <b style="color: #0f172a; font-size: 9pt;">सीक / फूल झाड़ू (Seek / Phool Jhadu)</b>
           <span style="font-size: 7.5pt; color: #64748b; display: block;">कैटेगरी: General</span>
         </td>
-        <td class="text-center" style="font-weight: 700;">pcs</td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-center" style="font-weight: 700;">15</td>
-        <td><span class="missing-pill">खरीद और बिक्री दोनों भाव बाकी</span></td>
-        <td><span class="fill-line"></span> ₹</td>
+        <td class="text-center" style="font-weight: 700; color: #334155;">pcs</td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div style="font-weight: 700; text-align: center; color: #0f172a;">15</div></td>
+        <td><span class="req-badge">☐ खरीद भाव</span> <span class="req-badge">☐ बिक्री भाव</span></td>
+        <td><div style="border-bottom: 1px dashed #cbd5e1; height: 18px;"></div></td>
       </tr>
       <tr>
         <td class="text-center" style="font-weight: 700; color: #64748b;">35</td>
         <td>
-          <b style="color: #0f172a;">स्टील जूना / स्क्रबर (Steel Juna)</b>
+          <b style="color: #0f172a; font-size: 9pt;">स्टील जूना / स्क्रबर (Steel Juna)</b>
           <span style="font-size: 7.5pt; color: #64748b; display: block;">कैटेगरी: Soaps & Detergents</span>
         </td>
-        <td class="text-center" style="font-weight: 700;">pcs</td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-center" style="font-weight: 700;">36</td>
-        <td><span class="missing-pill">खरीद और बिक्री दोनों भाव बाकी</span></td>
-        <td><span class="fill-line"></span> ₹</td>
+        <td class="text-center" style="font-weight: 700; color: #334155;">pcs</td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div style="font-weight: 700; text-align: center; color: #0f172a;">36</div></td>
+        <td><span class="req-badge">☐ खरीद भाव</span> <span class="req-badge">☐ बिक्री भाव</span></td>
+        <td><div style="border-bottom: 1px dashed #cbd5e1; height: 18px;"></div></td>
       </tr>
       <tr>
         <td class="text-center" style="font-weight: 700; color: #64748b;">36</td>
         <td>
-          <b style="color: #0f172a;">सत्तू 200g (Sattu 200g)</b>
+          <b style="color: #0f172a; font-size: 9pt;">सत्तू 200g (Sattu 200g)</b>
           <span style="font-size: 7.5pt; color: #64748b; display: block;">कैटेगरी: Grains & Pulses</span>
         </td>
-        <td class="text-center" style="font-weight: 700;">pcs</td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-center" style="font-weight: 700;">20</td>
-        <td><span class="missing-pill">खरीद और बिक्री दोनों भाव बाकी</span></td>
-        <td><span class="fill-line"></span> ₹</td>
+        <td class="text-center" style="font-weight: 700; color: #334155;">pcs</td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div style="font-weight: 700; text-align: center; color: #0f172a;">20</div></td>
+        <td><span class="req-badge">☐ खरीद भाव</span> <span class="req-badge">☐ बिक्री भाव</span></td>
+        <td><div style="border-bottom: 1px dashed #cbd5e1; height: 18px;"></div></td>
       </tr>
       <tr>
         <td class="text-center" style="font-weight: 700; color: #64748b;">37</td>
         <td>
-          <b style="color: #0f172a;">टूथपेस्ट (Toothpaste)</b>
+          <b style="color: #0f172a; font-size: 9pt;">टूथपेस्ट (Toothpaste)</b>
           <span style="font-size: 7.5pt; color: #64748b; display: block;">कैटेगरी: General</span>
         </td>
-        <td class="text-center" style="font-weight: 700;">pcs</td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-center" style="font-weight: 700;">24</td>
-        <td><span class="missing-pill">खरीद और बिक्री दोनों भाव बाकी</span></td>
-        <td><span class="fill-line"></span> ₹</td>
+        <td class="text-center" style="font-weight: 700; color: #334155;">pcs</td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div style="font-weight: 700; text-align: center; color: #0f172a;">24</div></td>
+        <td><span class="req-badge">☐ खरीद भाव</span> <span class="req-badge">☐ बिक्री भाव</span></td>
+        <td><div style="border-bottom: 1px dashed #cbd5e1; height: 18px;"></div></td>
       </tr>
       <tr>
         <td class="text-center" style="font-weight: 700; color: #64748b;">38</td>
         <td>
-          <b style="color: #0f172a;">गुड नाईट लिक्विड रिफिल (Good Knight Refill)</b>
+          <b style="color: #0f172a; font-size: 9pt;">गुड नाईट लिक्विड रिफिल (Good Knight Refill)</b>
           <span style="font-size: 7.5pt; color: #64748b; display: block;">कैटेगरी: General</span>
         </td>
-        <td class="text-center" style="font-weight: 700;">pcs</td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-center" style="font-weight: 700;">20</td>
-        <td><span class="missing-pill">खरीद और बिक्री दोनों भाव बाकी</span></td>
-        <td><span class="fill-line"></span> ₹</td>
+        <td class="text-center" style="font-weight: 700; color: #334155;">pcs</td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div style="font-weight: 700; text-align: center; color: #0f172a;">20</div></td>
+        <td><span class="req-badge">☐ खरीद भाव</span> <span class="req-badge">☐ बिक्री भाव</span></td>
+        <td><div style="border-bottom: 1px dashed #cbd5e1; height: 18px;"></div></td>
       </tr>
       <tr>
         <td class="text-center" style="font-weight: 700; color: #64748b;">39</td>
         <td>
-          <b style="color: #0f172a;">हल्दी पाउडर 200g (Haldi 200g)</b>
+          <b style="color: #0f172a; font-size: 9pt;">हल्दी पाउडर 200g (Haldi 200g)</b>
           <span style="font-size: 7.5pt; color: #64748b; display: block;">कैटेगरी: Spices</span>
         </td>
-        <td class="text-center" style="font-weight: 700;">pcs</td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-center" style="font-weight: 700;">25</td>
-        <td><span class="missing-pill">खरीद और बिक्री दोनों भाव बाकी</span></td>
-        <td><span class="fill-line"></span> ₹</td>
+        <td class="text-center" style="font-weight: 700; color: #334155;">pcs</td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div style="font-weight: 700; text-align: center; color: #0f172a;">25</div></td>
+        <td><span class="req-badge">☐ खरीद भाव</span> <span class="req-badge">☐ बिक्री भाव</span></td>
+        <td><div style="border-bottom: 1px dashed #cbd5e1; height: 18px;"></div></td>
       </tr>
       <tr>
         <td class="text-center" style="font-weight: 700; color: #64748b;">40</td>
         <td>
-          <b style="color: #0f172a;">वासमोल हेयर कलर (Vasmol)</b>
+          <b style="color: #0f172a; font-size: 9pt;">वासमोल हेयर कलर (Vasmol)</b>
           <span style="font-size: 7.5pt; color: #64748b; display: block;">कैटेगरी: General</span>
         </td>
-        <td class="text-center" style="font-weight: 700;">pcs</td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-center" style="font-weight: 700;">18</td>
-        <td><span class="missing-pill">खरीद और बिक्री दोनों भाव बाकी</span></td>
-        <td><span class="fill-line"></span> ₹</td>
+        <td class="text-center" style="font-weight: 700; color: #334155;">pcs</td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div style="font-weight: 700; text-align: center; color: #0f172a;">18</div></td>
+        <td><span class="req-badge">☐ खरीद भाव</span> <span class="req-badge">☐ बिक्री भाव</span></td>
+        <td><div style="border-bottom: 1px dashed #cbd5e1; height: 18px;"></div></td>
       </tr>
       <tr>
         <td class="text-center" style="font-weight: 700; color: #64748b;">41</td>
         <td>
-          <b style="color: #0f172a;">निहार तेल जार पैक (Nihar Oil Jar)</b>
+          <b style="color: #0f172a; font-size: 9pt;">निहार तेल जार पैक (Nihar Oil Jar)</b>
           <span style="font-size: 7.5pt; color: #64748b; display: block;">कैटेगरी: Oils & Ghee</span>
         </td>
-        <td class="text-center" style="font-weight: 700;">pcs</td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-center" style="font-weight: 700;">12</td>
-        <td><span class="missing-pill">खरीद और बिक्री दोनों भाव बाकी</span></td>
-        <td><span class="fill-line"></span> ₹</td>
+        <td class="text-center" style="font-weight: 700; color: #334155;">pcs</td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div style="font-weight: 700; text-align: center; color: #0f172a;">12</div></td>
+        <td><span class="req-badge">☐ खरीद भाव</span> <span class="req-badge">☐ बिक्री भाव</span></td>
+        <td><div style="border-bottom: 1px dashed #cbd5e1; height: 18px;"></div></td>
       </tr>
       <tr>
         <td class="text-center" style="font-weight: 700; color: #64748b;">42</td>
         <td>
-          <b style="color: #0f172a;">हल्दी पाउडर 100g (Haldi 100g)</b>
+          <b style="color: #0f172a; font-size: 9pt;">हल्दी पाउडर 100g (Haldi 100g)</b>
           <span style="font-size: 7.5pt; color: #64748b; display: block;">कैटेगरी: Spices</span>
         </td>
-        <td class="text-center" style="font-weight: 700;">pcs</td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-center" style="font-weight: 700;">30</td>
-        <td><span class="missing-pill">खरीद और बिक्री दोनों भाव बाकी</span></td>
-        <td><span class="fill-line"></span> ₹</td>
+        <td class="text-center" style="font-weight: 700; color: #334155;">pcs</td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div style="font-weight: 700; text-align: center; color: #0f172a;">30</div></td>
+        <td><span class="req-badge">☐ खरीद भाव</span> <span class="req-badge">☐ बिक्री भाव</span></td>
+        <td><div style="border-bottom: 1px dashed #cbd5e1; height: 18px;"></div></td>
       </tr>
       <tr>
         <td class="text-center" style="font-weight: 700; color: #64748b;">43</td>
         <td>
-          <b style="color: #0f172a;">दाना चीनी 100g (Daana Cheeni)</b>
+          <b style="color: #0f172a; font-size: 9pt;">दाना चीनी 100g (Daana Cheeni)</b>
           <span style="font-size: 7.5pt; color: #64748b; display: block;">कैटेगरी: General</span>
         </td>
-        <td class="text-center" style="font-weight: 700;">pcs</td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-center" style="font-weight: 700;">20</td>
-        <td><span class="missing-pill">खरीद और बिक्री दोनों भाव बाकी</span></td>
-        <td><span class="fill-line"></span> ₹</td>
+        <td class="text-center" style="font-weight: 700; color: #334155;">pcs</td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div style="font-weight: 700; text-align: center; color: #0f172a;">20</div></td>
+        <td><span class="req-badge">☐ खरीद भाव</span> <span class="req-badge">☐ बिक्री भाव</span></td>
+        <td><div style="border-bottom: 1px dashed #cbd5e1; height: 18px;"></div></td>
       </tr>
       <tr>
         <td class="text-center" style="font-weight: 700; color: #64748b;">44</td>
         <td>
-          <b style="color: #0f172a;">सेंधा नमक 500g (Sendha Namak 500g)</b>
+          <b style="color: #0f172a; font-size: 9pt;">सेंधा नमक 500g (Sendha Namak 500g)</b>
           <span style="font-size: 7.5pt; color: #64748b; display: block;">कैटेगरी: General</span>
         </td>
-        <td class="text-center" style="font-weight: 700;">pcs</td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-right" style="font-weight: 700;">₹50.00</td>
-        <td class="text-center" style="font-weight: 700;">21</td>
-        <td><span class="missing-pill">खरीद भाव बाकी</span></td>
-        <td><span class="fill-line"></span> ₹</td>
+        <td class="text-center" style="font-weight: 700; color: #334155;">pcs</td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div class="value-filled text-right">₹50.00</div></td>
+        <td><div style="font-weight: 700; text-align: center; color: #0f172a;">21</div></td>
+        <td><span class="req-badge">☐ खरीद भाव</span></td>
+        <td><div style="border-bottom: 1px dashed #cbd5e1; height: 18px;"></div></td>
       </tr>
       <tr>
         <td class="text-center" style="font-weight: 700; color: #64748b;">45</td>
         <td>
-          <b style="color: #0f172a;">सादा नमक (Sada Namak)</b>
+          <b style="color: #0f172a; font-size: 9pt;">सादा नमक (Sada Namak)</b>
           <span style="font-size: 7.5pt; color: #64748b; display: block;">कैटेगरी: General</span>
         </td>
-        <td class="text-center" style="font-weight: 700;">pcs</td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-right" style="font-weight: 700;">₹25.00</td>
-        <td class="text-center" style="font-weight: 700;">50</td>
-        <td><span class="missing-pill">खरीद भाव बाकी</span></td>
-        <td><span class="fill-line"></span> ₹</td>
+        <td class="text-center" style="font-weight: 700; color: #334155;">pcs</td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div class="value-filled text-right">₹25.00</div></td>
+        <td><div style="font-weight: 700; text-align: center; color: #0f172a;">50</div></td>
+        <td><span class="req-badge">☐ खरीद भाव</span></td>
+        <td><div style="border-bottom: 1px dashed #cbd5e1; height: 18px;"></div></td>
       </tr>
       <tr>
         <td class="text-center" style="font-weight: 700; color: #64748b;">46</td>
         <td>
-          <b style="color: #0f172a;">जीरा (Jeera)</b>
+          <b style="color: #0f172a; font-size: 9pt;">जीरा (Jeera)</b>
           <span style="font-size: 7.5pt; color: #64748b; display: block;">कैटेगरी: Spices</span>
         </td>
-        <td class="text-center" style="font-weight: 700;">kg</td>
-        <td class="text-right" style="font-weight: 700;">₹300.00</td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-center" style="font-weight: 700;">1</td>
-        <td><span class="missing-pill">बिक्री भाव बाकी</span></td>
-        <td><span class="fill-line"></span> ₹</td>
+        <td class="text-center" style="font-weight: 700; color: #334155;">kg</td>
+        <td><div class="value-filled text-right">₹300.00</div></td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div style="font-weight: 700; text-align: center; color: #0f172a;">1</div></td>
+        <td><span class="req-badge">☐ बिक्री भाव</span></td>
+        <td><div style="border-bottom: 1px dashed #cbd5e1; height: 18px;"></div></td>
       </tr>
       <tr>
         <td class="text-center" style="font-weight: 700; color: #64748b;">47</td>
         <td>
-          <b style="color: #0f172a;">गढ़ी / सूखा नारियल (Gari Dry Coconut)</b>
+          <b style="color: #0f172a; font-size: 9pt;">गढ़ी / सूखा नारियल (Gari Dry Coconut)</b>
           <span style="font-size: 7.5pt; color: #64748b; display: block;">कैटेगरी: General</span>
         </td>
-        <td class="text-center" style="font-weight: 700;">gm</td>
-        <td class="text-right" style="font-weight: 700;">₹0.44</td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-center" style="font-weight: 700;">500</td>
-        <td><span class="missing-pill">बिक्री भाव बाकी</span></td>
-        <td><span class="fill-line"></span> ₹</td>
+        <td class="text-center" style="font-weight: 700; color: #334155;">gm</td>
+        <td><div class="value-filled text-right">₹0.44</div></td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div style="font-weight: 700; text-align: center; color: #0f172a;">500</div></td>
+        <td><span class="req-badge">☐ बिक्री भाव</span></td>
+        <td><div style="border-bottom: 1px dashed #cbd5e1; height: 18px;"></div></td>
       </tr>
       <tr>
         <td class="text-center" style="font-weight: 700; color: #64748b;">48</td>
         <td>
-          <b style="color: #0f172a;">छोहारा (Chhohara Dry Dates)</b>
+          <b style="color: #0f172a; font-size: 9pt;">छोहारा (Chhohara Dry Dates)</b>
           <span style="font-size: 7.5pt; color: #64748b; display: block;">कैटेगरी: General</span>
         </td>
-        <td class="text-center" style="font-weight: 700;">gm</td>
-        <td class="text-right" style="font-weight: 700;">₹0.30</td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-center" style="font-weight: 700;">500</td>
-        <td><span class="missing-pill">बिक्री भाव बाकी</span></td>
-        <td><span class="fill-line"></span> ₹</td>
+        <td class="text-center" style="font-weight: 700; color: #334155;">gm</td>
+        <td><div class="value-filled text-right">₹0.30</div></td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div style="font-weight: 700; text-align: center; color: #0f172a;">500</div></td>
+        <td><span class="req-badge">☐ बिक्री भाव</span></td>
+        <td><div style="border-bottom: 1px dashed #cbd5e1; height: 18px;"></div></td>
       </tr>
       <tr>
         <td class="text-center" style="font-weight: 700; color: #64748b;">49</td>
         <td>
-          <b style="color: #0f172a;">मिसरी (Mishri Sugar Candy)</b>
+          <b style="color: #0f172a; font-size: 9pt;">मिसरी (Mishri Sugar Candy)</b>
           <span style="font-size: 7.5pt; color: #64748b; display: block;">कैटेगरी: General</span>
         </td>
-        <td class="text-center" style="font-weight: 700;">kg</td>
-        <td class="text-right" style="font-weight: 700;">₹70.00</td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-center" style="font-weight: 700;">1</td>
-        <td><span class="missing-pill">बिक्री भाव बाकी</span></td>
-        <td><span class="fill-line"></span> ₹</td>
+        <td class="text-center" style="font-weight: 700; color: #334155;">kg</td>
+        <td><div class="value-filled text-right">₹70.00</div></td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div style="font-weight: 700; text-align: center; color: #0f172a;">1</div></td>
+        <td><span class="req-badge">☐ बिक्री भाव</span></td>
+        <td><div style="border-bottom: 1px dashed #cbd5e1; height: 18px;"></div></td>
       </tr>
       <tr>
         <td class="text-center" style="font-weight: 700; color: #64748b;">50</td>
         <td>
-          <b style="color: #0f172a;">कसैली / सुपारी (Kasaili Supari)</b>
+          <b style="color: #0f172a; font-size: 9pt;">कसैली / सुपारी (Kasaili Supari)</b>
           <span style="font-size: 7.5pt; color: #64748b; display: block;">कैटेगरी: General</span>
         </td>
-        <td class="text-center" style="font-weight: 700;">gm</td>
-        <td class="text-right" style="font-weight: 700;">₹0.60</td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-center" style="font-weight: 700;">200</td>
-        <td><span class="missing-pill">बिक्री भाव बाकी</span></td>
-        <td><span class="fill-line"></span> ₹</td>
+        <td class="text-center" style="font-weight: 700; color: #334155;">gm</td>
+        <td><div class="value-filled text-right">₹0.60</div></td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div style="font-weight: 700; text-align: center; color: #0f172a;">200</div></td>
+        <td><span class="req-badge">☐ बिक्री भाव</span></td>
+        <td><div style="border-bottom: 1px dashed #cbd5e1; height: 18px;"></div></td>
       </tr>
       <tr>
         <td class="text-center" style="font-weight: 700; color: #64748b;">51</td>
         <td>
-          <b style="color: #0f172a;">उजाला लिक्विड (Ujala Liquid)</b>
+          <b style="color: #0f172a; font-size: 9pt;">उजाला लिक्विड (Ujala Liquid)</b>
           <span style="font-size: 7.5pt; color: #64748b; display: block;">कैटेगरी: Soaps & Detergents</span>
         </td>
-        <td class="text-center" style="font-weight: 700;">pcs</td>
-        <td class="text-right" style="font-weight: 700;">₹36.00</td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-center" style="font-weight: 700;">2</td>
-        <td><span class="missing-pill">बिक्री भाव बाकी</span></td>
-        <td><span class="fill-line"></span> ₹</td>
+        <td class="text-center" style="font-weight: 700; color: #334155;">pcs</td>
+        <td><div class="value-filled text-right">₹36.00</div></td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div style="font-weight: 700; text-align: center; color: #0f172a;">2</div></td>
+        <td><span class="req-badge">☐ बिक्री भाव</span></td>
+        <td><div style="border-bottom: 1px dashed #cbd5e1; height: 18px;"></div></td>
       </tr>
       <tr>
         <td class="text-center" style="font-weight: 700; color: #64748b;">52</td>
         <td>
-          <b style="color: #0f172a;">साबूदाना 500g (Sabudana 500g)</b>
+          <b style="color: #0f172a; font-size: 9pt;">साबूदाना 500g (Sabudana 500g)</b>
           <span style="font-size: 7.5pt; color: #64748b; display: block;">कैटेगरी: Grains & Pulses</span>
         </td>
-        <td class="text-center" style="font-weight: 700;">pcs</td>
-        <td class="text-right" style="font-weight: 700;">₹47.50</td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-center" style="font-weight: 700;">6</td>
-        <td><span class="missing-pill">बिक्री भाव बाकी</span></td>
-        <td><span class="fill-line"></span> ₹</td>
+        <td class="text-center" style="font-weight: 700; color: #334155;">pcs</td>
+        <td><div class="value-filled text-right">₹47.50</div></td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div style="font-weight: 700; text-align: center; color: #0f172a;">6</div></td>
+        <td><span class="req-badge">☐ बिक्री भाव</span></td>
+        <td><div style="border-bottom: 1px dashed #cbd5e1; height: 18px;"></div></td>
       </tr>
       <tr>
         <td class="text-center" style="font-weight: 700; color: #64748b;">53</td>
         <td>
-          <b style="color: #0f172a;">काजू 250g (Kaju Cashew)</b>
+          <b style="color: #0f172a; font-size: 9pt;">काजू 250g (Kaju Cashew)</b>
           <span style="font-size: 7.5pt; color: #64748b; display: block;">कैटेगरी: General</span>
         </td>
-        <td class="text-center" style="font-weight: 700;">pcs</td>
-        <td class="text-right" style="font-weight: 700;">₹225.00</td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-center" style="font-weight: 700;">2</td>
-        <td><span class="missing-pill">बिक्री भाव बाकी</span></td>
-        <td><span class="fill-line"></span> ₹</td>
+        <td class="text-center" style="font-weight: 700; color: #334155;">pcs</td>
+        <td><div class="value-filled text-right">₹225.00</div></td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div style="font-weight: 700; text-align: center; color: #0f172a;">2</div></td>
+        <td><span class="req-badge">☐ बिक्री भाव</span></td>
+        <td><div style="border-bottom: 1px dashed #cbd5e1; height: 18px;"></div></td>
       </tr>
       <tr>
         <td class="text-center" style="font-weight: 700; color: #64748b;">54</td>
         <td>
-          <b style="color: #0f172a;">किशमिश 100g (Kishmish Raisins)</b>
+          <b style="color: #0f172a; font-size: 9pt;">किशमिश 100g (Kishmish Raisins)</b>
           <span style="font-size: 7.5pt; color: #64748b; display: block;">कैटेगरी: General</span>
         </td>
-        <td class="text-center" style="font-weight: 700;">pcs</td>
-        <td class="text-right" style="font-weight: 700;">₹45.00</td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-center" style="font-weight: 700;">6</td>
-        <td><span class="missing-pill">बिक्री भाव बाकी</span></td>
-        <td><span class="fill-line"></span> ₹</td>
+        <td class="text-center" style="font-weight: 700; color: #334155;">pcs</td>
+        <td><div class="value-filled text-right">₹45.00</div></td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div style="font-weight: 700; text-align: center; color: #0f172a;">6</div></td>
+        <td><span class="req-badge">☐ बिक्री भाव</span></td>
+        <td><div style="border-bottom: 1px dashed #cbd5e1; height: 18px;"></div></td>
       </tr>
       <tr>
         <td class="text-center" style="font-weight: 700; color: #64748b;">55</td>
         <td>
-          <b style="color: #0f172a;">निहार शांति आंवला तेल (Nihar Amla Oil)</b>
+          <b style="color: #0f172a; font-size: 9pt;">निहार शांति आंवला तेल (Nihar Amla Oil)</b>
           <span style="font-size: 7.5pt; color: #64748b; display: block;">कैटेगरी: Oils & Ghee</span>
         </td>
-        <td class="text-center" style="font-weight: 700;">pcs</td>
-        <td class="text-right" style="font-weight: 700;">₹80.00</td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-center" style="font-weight: 700;">2</td>
-        <td><span class="missing-pill">बिक्री भाव बाकी</span></td>
-        <td><span class="fill-line"></span> ₹</td>
+        <td class="text-center" style="font-weight: 700; color: #334155;">pcs</td>
+        <td><div class="value-filled text-right">₹80.00</div></td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div style="font-weight: 700; text-align: center; color: #0f172a;">2</div></td>
+        <td><span class="req-badge">☐ बिक्री भाव</span></td>
+        <td><div style="border-bottom: 1px dashed #cbd5e1; height: 18px;"></div></td>
       </tr>
       <tr>
         <td class="text-center" style="font-weight: 700; color: #64748b;">56</td>
         <td>
-          <b style="color: #0f172a;">डाबर आंवला तेल (Dabur Amla Oil)</b>
+          <b style="color: #0f172a; font-size: 9pt;">डाबर आंवला तेल (Dabur Amla Oil)</b>
           <span style="font-size: 7.5pt; color: #64748b; display: block;">कैटेगरी: Oils & Ghee</span>
         </td>
-        <td class="text-center" style="font-weight: 700;">pcs</td>
-        <td class="text-right" style="font-weight: 700;">₹18.00</td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-center" style="font-weight: 700;">3</td>
-        <td><span class="missing-pill">बिक्री भाव बाकी</span></td>
-        <td><span class="fill-line"></span> ₹</td>
+        <td class="text-center" style="font-weight: 700; color: #334155;">pcs</td>
+        <td><div class="value-filled text-right">₹18.00</div></td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div style="font-weight: 700; text-align: center; color: #0f172a;">3</div></td>
+        <td><span class="req-badge">☐ बिक्री भाव</span></td>
+        <td><div style="border-bottom: 1px dashed #cbd5e1; height: 18px;"></div></td>
       </tr>
       <tr>
         <td class="text-center" style="font-weight: 700; color: #64748b;">57</td>
         <td>
-          <b style="color: #0f172a;">जैस्मिन हेयर ऑयल (Jasmine Hair Oil)</b>
+          <b style="color: #0f172a; font-size: 9pt;">जैस्मिन हेयर ऑयल (Jasmine Hair Oil)</b>
           <span style="font-size: 7.5pt; color: #64748b; display: block;">कैटेगरी: Oils & Ghee</span>
         </td>
-        <td class="text-center" style="font-weight: 700;">pcs</td>
-        <td class="text-right" style="font-weight: 700;">₹42.33</td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-center" style="font-weight: 700;">3</td>
-        <td><span class="missing-pill">बिक्री भाव बाकी</span></td>
-        <td><span class="fill-line"></span> ₹</td>
+        <td class="text-center" style="font-weight: 700; color: #334155;">pcs</td>
+        <td><div class="value-filled text-right">₹42.33</div></td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div style="font-weight: 700; text-align: center; color: #0f172a;">3</div></td>
+        <td><span class="req-badge">☐ बिक्री भाव</span></td>
+        <td><div style="border-bottom: 1px dashed #cbd5e1; height: 18px;"></div></td>
       </tr>
       <tr>
         <td class="text-center" style="font-weight: 700; color: #64748b;">58</td>
         <td>
-          <b style="color: #0f172a;">पैराशूट नारियल तेल (Parachute Coconut Oil)</b>
+          <b style="color: #0f172a; font-size: 9pt;">पैराशूट नारियल तेल (Parachute Coconut Oil)</b>
           <span style="font-size: 7.5pt; color: #64748b; display: block;">कैटेगरी: Oils & Ghee</span>
         </td>
-        <td class="text-center" style="font-weight: 700;">pcs</td>
-        <td class="text-right" style="font-weight: 700;">₹115.00</td>
-        <td class="text-right" style="font-weight: 700;"><span class="missing-pill">बाकी है</span></td>
-        <td class="text-center" style="font-weight: 700;">2</td>
-        <td><span class="missing-pill">बिक्री भाव बाकी</span></td>
-        <td><span class="fill-line"></span> ₹</td>
+        <td class="text-center" style="font-weight: 700; color: #334155;">pcs</td>
+        <td><div class="value-filled text-right">₹115.00</div></td>
+        <td><div class="write-box">₹ &nbsp;</div></td>
+        <td><div style="font-weight: 700; text-align: center; color: #0f172a;">2</div></td>
+        <td><span class="req-badge">☐ बिक्री भाव</span></td>
+        <td><div style="border-bottom: 1px dashed #cbd5e1; height: 18px;"></div></td>
       </tr>
       <tr>
         <td class="text-center" style="font-weight: 700; color: #64748b;">59</td>
         <td>
-          <b style="color: #0f172a;">laal bajaj rice</b>
+          <b style="color: #0f172a; font-size: 9pt;">laal bajaj rice</b>
           <span style="font-size: 7.5pt; color: #64748b; display: block;">कैटेगरी: Grains & Pulses</span>
         </td>
-        <td class="text-center" style="font-weight: 700;">kg</td>
-        <td class="text-right" style="font-weight: 700;">₹70.00</td>
-        <td class="text-right" style="font-weight: 700;">₹75.00</td>
-        <td class="text-center" style="font-weight: 700;"><span class="missing-pill">0</span></td>
-        <td><span class="missing-pill">स्टॉक 0 (आउट ऑफ स्टॉक)</span></td>
-        <td><span class="fill-line"></span> ₹</td>
+        <td class="text-center" style="font-weight: 700; color: #334155;">kg</td>
+        <td><div class="value-filled text-right">₹70.00</div></td>
+        <td><div class="value-filled text-right">₹75.00</div></td>
+        <td><div class="write-box" style="text-align: center;">&nbsp;</div></td>
+        <td><span class="req-badge">☐ स्टॉक 0</span></td>
+        <td><div style="border-bottom: 1px dashed #cbd5e1; height: 18px;"></div></td>
       </tr>
     </tbody>
   </table>
 
   <div class="footer">
-    *** Kirana Store App - ऑटो-जनरेटेड चेकलिस्ट शीट ***
+    *** Kirana Store App - प्रिंट करके पेन से भरें और ऐप में अपडेट करें ***
   </div>
 
 </body>
