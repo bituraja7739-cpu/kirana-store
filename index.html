@@ -725,6 +725,10 @@
             <i data-lucide="alert-triangle" class="w-4 h-4"></i>
             <span>Low Stock (<span id="lowStockCountSpan">0</span>)</span>
           </button>
+          <button onclick="openPendingItemsSheetModal()" id="btnPendingItemsSheet" class="px-3 py-2 border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-black rounded-xl flex items-center gap-1.5 shadow-xs transition" title="जिन सामानों में खरीद/बिक्री भाव या स्टॉक बाकी है उनकी PDF शीट">
+            <i data-lucide="clipboard-list" class="w-4 h-4 text-amber-600"></i>
+            <span>📋 बाकी सामान लिस्ट (<span id="pendingCountSpan">0</span>)</span>
+          </button>
           <button onclick="openAddItemModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-xl text-sm shadow flex items-center gap-2 transition">
             <i data-lucide="plus" class="w-4 h-4"></i>
             <span>+ Add New Item</span>
@@ -2130,6 +2134,16 @@
         }
       }
       if (lowSpan) lowSpan.innerText = lowStockCount;
+
+      // Update pending items badge
+      const pendingItemsList = (storeData.items || []).filter(i => {
+        const b = Number(i.buyPrice) || 0;
+        const s = Number(i.sellPrice) || 0;
+        const st = Number(i.stock) || 0;
+        return b <= 0 || s <= 0 || st <= 0;
+      });
+      const pSpan = document.getElementById('pendingCountSpan');
+      if (pSpan) pSpan.innerText = pendingItemsList.length;
     }
 
     // ==========================================
@@ -3209,6 +3223,150 @@
     }
 
     // ==========================================
+
+    // ==========================================
+    // PENDING PRODUCTS CHECKLIST & PDF MODAL
+    // ==========================================
+    function getPendingProductsList() {
+      const q = (document.getElementById('pendingModalSearch')?.value || '').toLowerCase().trim();
+      return (storeData.items || []).filter(item => {
+        const buy = Number(item.buyPrice) || 0;
+        const sell = Number(item.sellPrice) || 0;
+        const stock = Number(item.stock) || 0;
+        const isPending = (buy <= 0 || sell <= 0 || stock <= 0);
+        if (!isPending) return false;
+        if (!q) return true;
+        return (item.name || '').toLowerCase().includes(q) || (item.category || '').toLowerCase().includes(q);
+      });
+    }
+
+    function openPendingItemsSheetModal() {
+      document.getElementById('pendingItemsModal').classList.remove('hidden');
+      if (document.getElementById('pendingModalSearch')) document.getElementById('pendingModalSearch').value = '';
+      renderPendingModalTable();
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function closePendingItemsSheetModal() {
+      document.getElementById('pendingItemsModal').classList.add('hidden');
+    }
+
+    function renderPendingModalTable() {
+      const allPending = (storeData.items || []).filter(item => {
+        const buy = Number(item.buyPrice) || 0;
+        const sell = Number(item.sellPrice) || 0;
+        const stock = Number(item.stock) || 0;
+        return (buy <= 0 || sell <= 0 || stock <= 0);
+      });
+
+      // Update counters
+      const pendingBuyCount = allPending.filter(i => (Number(i.buyPrice) || 0) <= 0).length;
+      const pendingSellCount = allPending.filter(i => (Number(i.sellPrice) || 0) <= 0).length;
+      const pendingStockCount = allPending.filter(i => (Number(i.stock) || 0) <= 0).length;
+
+      const badge = document.getElementById('pendingModalCountBadge');
+      if (badge) badge.innerText = allPending.length + ' बाकी';
+      const pSpan = document.getElementById('pendingCountSpan');
+      if (pSpan) pSpan.innerText = allPending.length;
+
+      const tEl = document.getElementById('statPendingTotal');
+      const bEl = document.getElementById('statPendingBuy');
+      const sEl = document.getElementById('statPendingSell');
+      const stEl = document.getElementById('statPendingStock');
+      if (tEl) tEl.innerText = allPending.length;
+      if (bEl) bEl.innerText = pendingBuyCount;
+      if (sEl) sEl.innerText = pendingSellCount;
+      if (stEl) stEl.innerText = pendingStockCount;
+
+      const filteredList = getPendingProductsList();
+      const tbody = document.getElementById('pendingModalTableBody');
+      if (!tbody) return;
+
+      if (filteredList.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-8 text-emerald-700 font-bold">🎉 बहुत बढ़िया! कोई भी अधूरा प्रोडक्ट नहीं मिला।</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filteredList.map((item, idx) => {
+        const buy = Number(item.buyPrice) || 0;
+        const sell = Number(item.sellPrice) || 0;
+        const stock = Number(item.stock) || 0;
+
+        const buyDisplay = buy > 0 ? `₹${buy.toFixed(2)}` : `<span class="bg-red-100 text-red-700 font-black px-1.5 py-0.5 rounded text-[10px]">⚠️ बाकी</span>`;
+        const sellDisplay = sell > 0 ? `₹${sell.toFixed(2)}` : `<span class="bg-red-100 text-red-700 font-black px-1.5 py-0.5 rounded text-[10px]">⚠️ बाकी</span>`;
+        const stockDisplay = stock > 0 ? stock : `<span class="bg-amber-100 text-amber-800 font-black px-1.5 py-0.5 rounded text-[10px]">0</span>`;
+
+        const issues = [];
+        if (buy <= 0 && sell <= 0) issues.push('खरीद & बिक्री दोनों भाव बाकी');
+        else if (buy <= 0) issues.push('खरीद भाव बाकी');
+        else if (sell <= 0) issues.push('बिक्री भाव बाकी');
+        if (stock <= 0) issues.push('स्टॉक 0');
+
+        const issuesHtml = issues.map(iss => `<span class="inline-block bg-rose-50 text-rose-700 border border-rose-200 px-1.5 py-0.5 rounded font-bold text-[10px] mr-1">${iss}</span>`).join('');
+
+        return `
+          <tr class="hover:bg-slate-50 transition ${idx % 2 === 1 ? 'bg-slate-50/50' : ''}">
+            <td class="py-2.5 px-3 text-center text-slate-500 font-bold">${idx + 1}</td>
+            <td class="py-2.5 px-3">
+              <b class="text-slate-900 font-bold">${escapeHtml(item.name || '')}</b>
+              <span class="block text-[10px] text-slate-400">कैटेगरी: ${escapeHtml(item.category || 'General')}</span>
+            </td>
+            <td class="py-2.5 px-2 text-center font-bold text-slate-700">${item.unit || 'pcs'}</td>
+            <td class="py-2.5 px-3 text-right font-black">${buyDisplay}</td>
+            <td class="py-2.5 px-3 text-right font-black">${sellDisplay}</td>
+            <td class="py-2.5 px-2 text-center font-black">${stockDisplay}</td>
+            <td class="py-2.5 px-3">${issuesHtml}</td>
+            <td class="py-2.5 px-3 text-center no-print">
+              <button onclick="closePendingItemsSheetModal(); openEditItemModal('${item.id}')" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-lg font-bold text-xs border border-emerald-300 transition">
+                ✏️ भरें
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function printPendingItemsSheet() {
+      // Direct user to printable HTML view or open system print
+      const url = './pending_products_sheet.html';
+      const win = window.open(url, '_blank');
+      if (win) {
+        win.focus();
+      } else {
+        window.print();
+      }
+    }
+
+    function exportPendingToExcel() {
+      const allPending = (storeData.items || []).filter(item => {
+        const buy = Number(item.buyPrice) || 0;
+        const sell = Number(item.sellPrice) || 0;
+        const stock = Number(item.stock) || 0;
+        return (buy <= 0 || sell <= 0 || stock <= 0);
+      });
+
+      if (allPending.length === 0) {
+        alert("कोई अधूरा प्रोडक्ट नहीं है!");
+        return;
+      }
+
+      const rows = allPending.map((it, idx) => ({
+        "क्र.सं. (S.No.)": idx + 1,
+        "सामान का नाम (Product Name)": it.name,
+        "कैटेगरी (Category)": it.category,
+        "इकाई (Unit)": it.unit,
+        "खरीद भाव (Buy ₹)": Number(it.buyPrice) || 'बाकी है',
+        "बिक्री भाव (Sell ₹)": Number(it.sellPrice) || 'बाकी है',
+        "स्टॉक (Stock)": Number(it.stock) || 0,
+        "नया भाव / अपडेट (Note)": ""
+      }));
+
+      const ws = XLSX.utils.json_to_sheet(rows);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Pending Items");
+      XLSX.writeFile(wb, "Pending_Products_Checklist.xlsx");
+    }
+
     // STOCK INVENTORY TABLE (TAB 3)
     // ==========================================
     let isLowStockFilterActive = false;
