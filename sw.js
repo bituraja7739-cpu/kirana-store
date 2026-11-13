@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kiranapro-offline-v22';
+const CACHE_NAME = 'kiranapro-offline-v23';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
