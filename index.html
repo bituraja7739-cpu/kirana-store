@@ -190,8 +190,8 @@
       </div>
     </div>
 
-    <!-- Navigation Tabs -->
-    <div class="bg-emerald-800/90 border-t border-emerald-600/40 px-4">
+    <!-- Navigation Tabs (Desktop / Tablets) -->
+    <div class="bg-emerald-800/90 border-t border-emerald-600/40 px-4 hidden md:block">
       <div class="max-w-7xl mx-auto flex overflow-x-auto gap-2 py-2 text-sm">
         <button onclick="switchTab('search')" id="tab-btn-search" class="tab-btn px-4 py-1.5 rounded-lg font-semibold flex items-center gap-2 transition bg-white text-emerald-900 shadow">
           <i data-lucide="search" class="w-4 h-4"></i>
@@ -235,54 +235,80 @@
   </div>
 
   <!-- Main Content Area -->
-  <main class="max-w-7xl mx-auto w-full p-3 md:p-6 flex-1">
+  <main class="max-w-7xl mx-auto w-full p-2.5 sm:p-4 md:p-6 flex-1 pb-28 md:pb-8">
 
     <!-- ========================================== -->
     <!-- TAB 1: INSTANT SEARCH & RATE CARDS -->
     <!-- ========================================== -->
     <section id="tab-search" class="tab-content block space-y-5">
-      <!-- Search Banner -->
-      <div class="bg-gradient-to-r from-emerald-600 to-teal-700 rounded-2xl p-5 md:p-7 shadow-md text-white">
-        <h2 class="text-xl md:text-2xl font-bold mb-1 flex items-center gap-2">
-          <span>⚡ Instant Item Search & Rates</span>
-        </h2>
-        <p class="text-emerald-100 text-sm mb-4">Works 100% offline on mobile even when laptop is turned off! Search any item to check Purchase Rate, Selling Rate, and unit calculations.</p>
-        
-        <div class="relative max-w-3xl">
-          <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
-            <i data-lucide="search" class="w-6 h-6"></i>
+      <!-- Flipkart Style Sticky Search & Category Bar -->
+      <div class="sticky top-[52px] md:top-[60px] z-30 bg-emerald-700 md:bg-emerald-800/95 md:backdrop-blur-md -mx-2.5 -mt-2.5 sm:-mx-4 sm:-mt-4 md:-mx-6 md:-mt-6 px-3 pt-3 pb-2.5 md:px-6 md:pt-4 shadow-md text-white border-b border-emerald-800">
+        <div class="max-w-4xl mx-auto space-y-2.5">
+          <!-- Flipkart Prominent Sticky Search Box -->
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-emerald-700">
+              <i data-lucide="search" class="w-5 h-5"></i>
+            </div>
+            <input 
+              type="text" 
+              id="quickSearchInput"
+              oninput="handleQuickSearch(this.value)" 
+              placeholder="🔍 89+ सामान खोजें (जैसे: चीनी, दाल, तेल, साबुन)..." 
+              class="w-full pl-11 pr-10 py-3 bg-white text-slate-900 rounded-2xl text-sm md:text-base font-bold shadow-lg focus:outline-none focus:ring-4 focus:ring-amber-300 placeholder-slate-400 border border-emerald-400"
+              autofocus
+            >
+            <button 
+              onclick="clearSearch()" 
+              id="clearSearchBtn" 
+              class="hidden absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-700"
+            >
+              <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
           </div>
-          <input 
-            type="text" 
-            id="quickSearchInput"
-            oninput="handleQuickSearch(this.value)" 
-            placeholder="Type item name to search (e.g., Sugar, Dal, Oil, Salt, Soap)..." 
-            class="w-full pl-12 pr-12 py-3.5 bg-white text-slate-800 rounded-xl text-lg font-medium shadow-lg focus:outline-none focus:ring-4 focus:ring-amber-300 placeholder-slate-400"
-            autofocus
-          >
-          <button 
-            onclick="clearSearch()" 
-            id="clearSearchBtn" 
-            class="hidden absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600"
-          >
-            <i data-lucide="x" class="w-5 h-5"></i>
-          </button>
-        </div>
 
-        <!-- Category Pills -->
-        <div class="flex flex-wrap gap-2 mt-4 text-xs font-semibold" id="categoryPills">
-          <button onclick="filterCategory('')" class="cat-pill active bg-amber-400 text-slate-900 px-3 py-1 rounded-full">All Items</button>
-          <button onclick="filterCategory('Grains & Pulses')" class="cat-pill bg-emerald-800/80 hover:bg-emerald-800 text-white px-3 py-1 rounded-full">Grains & Pulses</button>
-          <button onclick="filterCategory('Oils & Ghee')" class="cat-pill bg-emerald-800/80 hover:bg-emerald-800 text-white px-3 py-1 rounded-full">Oils & Ghee</button>
-          <button onclick="filterCategory('Spices')" class="cat-pill bg-emerald-800/80 hover:bg-emerald-800 text-white px-3 py-1 rounded-full">Spices</button>
-          <button onclick="filterCategory('Snacks & Biscuits')" class="cat-pill bg-emerald-800/80 hover:bg-emerald-800 text-white px-3 py-1 rounded-full">Snacks & Biscuits</button>
-          <button onclick="filterCategory('Soaps & Detergents')" class="cat-pill bg-emerald-800/80 hover:bg-emerald-800 text-white px-3 py-1 rounded-full">Soaps & Detergents</button>
-          <button onclick="filterCategory('General')" class="cat-pill bg-emerald-800/80 hover:bg-emerald-800 text-white px-3 py-1 rounded-full">General</button>
+          <!-- Flipkart Category Carousel (Horizontal Scroll Pills with Icons) -->
+          <div class="flex overflow-x-auto no-scrollbar gap-1.5 py-1 text-xs font-bold whitespace-nowrap" id="categoryPills">
+            <button onclick="filterCategory('')" class="cat-pill active bg-amber-400 text-slate-950 px-3.5 py-1.5 rounded-full shadow flex items-center gap-1.5 transition">
+              <span>📁 सभी (All)</span>
+            </button>
+            <button onclick="filterCategory('Grains & Pulses')" class="cat-pill bg-emerald-900/80 hover:bg-emerald-900 text-white px-3 py-1.5 rounded-full shadow flex items-center gap-1.5 transition">
+              <span>🌾 दाल व अनाज</span>
+            </button>
+            <button onclick="filterCategory('Oils & Ghee')" class="cat-pill bg-emerald-900/80 hover:bg-emerald-900 text-white px-3 py-1.5 rounded-full shadow flex items-center gap-1.5 transition">
+              <span>🛢️ तेल व घी</span>
+            </button>
+            <button onclick="filterCategory('Spices')" class="cat-pill bg-emerald-900/80 hover:bg-emerald-900 text-white px-3 py-1.5 rounded-full shadow flex items-center gap-1.5 transition">
+              <span>🌶️ मसाले</span>
+            </button>
+            <button onclick="filterCategory('Snacks & Biscuits')" class="cat-pill bg-emerald-900/80 hover:bg-emerald-900 text-white px-3 py-1.5 rounded-full shadow flex items-center gap-1.5 transition">
+              <span>🍪 बिस्कुट व नमकीन</span>
+            </button>
+            <button onclick="filterCategory('Soaps & Detergents')" class="cat-pill bg-emerald-900/80 hover:bg-emerald-900 text-white px-3 py-1.5 rounded-full shadow flex items-center gap-1.5 transition">
+              <span>🧼 साबुन व सर्फ</span>
+            </button>
+            <button onclick="filterCategory('General')" class="cat-pill bg-emerald-900/80 hover:bg-emerald-900 text-white px-3 py-1.5 rounded-full shadow flex items-center gap-1.5 transition">
+              <span>📦 अन्य सामान</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      <!-- ALWAYS VISIBLE QUICK LANDING COST & MARGIN CALCULATOR -->
-      <div class="bg-white rounded-2xl p-4 md:p-5 shadow-sm border-2 border-emerald-500 space-y-3">
+      <!-- COLLAPSIBLE QUICK LANDING COST & MARGIN CALCULATOR -->
+      <details id="quickCostCalcDetails" class="bg-white rounded-2xl shadow-sm border-2 border-emerald-500 overflow-hidden group">
+        <summary class="cursor-pointer p-3.5 md:p-4 bg-emerald-50/90 hover:bg-emerald-100 flex items-center justify-between font-bold text-slate-800 text-xs md:text-sm select-none transition">
+          <div class="flex items-center gap-2">
+            <span class="bg-amber-400 text-slate-900 p-1.5 rounded-lg font-black text-sm">🧮</span>
+            <div class="text-left">
+              <span class="font-black text-slate-900 text-xs sm:text-sm block">लागत कैलकुलेटर (1 प्रोडक्ट कितने का पड़ा)</span>
+              <span class="text-[11px] text-slate-500 font-medium hidden sm:inline">कुल रुपये ÷ स्टॉक = 1 का भाव तुरंत निकालें</span>
+            </div>
+          </div>
+          <div class="flex items-center gap-1.5 text-xs text-emerald-800 font-bold bg-white px-2.5 py-1 rounded-lg border border-emerald-300">
+            <span>कैलकुलेटर देखें / छिपाएं</span>
+            <span class="text-xs group-open:rotate-180 transition-transform">▼</span>
+          </div>
+        </summary>
+        <div class="p-3 md:p-5 space-y-3 border-t border-emerald-200">
         <div class="flex flex-wrap items-center justify-between gap-2 border-b pb-2">
           <div class="flex items-center gap-2">
             <span class="bg-amber-400 text-slate-900 p-1.5 rounded-lg font-black text-sm">🧮</span>
@@ -384,10 +410,11 @@
             </div>
           </div>
         </div>
-      </div>
+        </div>
+      </details>
 
-      <!-- Live Search Results Grid -->
-      <div id="searchResultsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <!-- Flipkart 2-Column Mobile Product Grid -->
+      <div id="searchResultsGrid" class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3.5">
         <!-- Rendered via JS -->
       </div>
       
@@ -1998,6 +2025,17 @@
         btn.classList.add('text-emerald-100');
       });
 
+      // Update Flipkart Mobile Bottom Navigation buttons
+      document.querySelectorAll('.mob-nav-btn').forEach(btn => {
+        btn.classList.remove('text-emerald-700', 'font-black');
+        btn.classList.add('text-slate-500', 'font-medium');
+      });
+      const activeMobBtn = document.getElementById('mob-nav-' + tabId);
+      if (activeMobBtn) {
+        activeMobBtn.classList.add('text-emerald-700', 'font-black');
+        activeMobBtn.classList.remove('text-slate-500', 'font-medium');
+      }
+
       const activeContent = document.getElementById('tab-' + tabId);
       const activeBtn = document.getElementById('tab-btn-' + tabId);
       if (activeContent) activeContent.classList.remove('hidden');
@@ -2007,13 +2045,18 @@
       }
 
       if (tabId === 'search') {
-        setTimeout(() => document.getElementById('quickSearchInput').focus(), 100);
+        handleQuickSearch(document.getElementById('quickSearchInput') ? document.getElementById('quickSearchInput').value : '');
+        setTimeout(() => {
+          const inp = document.getElementById('quickSearchInput');
+          if (inp && window.innerWidth > 768) inp.focus();
+        }, 100);
       } else if (tabId === 'stock') {
         renderStockTable();
       } else if (tabId === 'history') {
         renderSalesHistory();
       }
-      lucide.createIcons();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      if (window.lucide) lucide.createIcons();
     }
 
     // ==========================================
@@ -2151,13 +2194,13 @@
     // ==========================================
     function handleQuickSearch(query) {
       const clearBtn = document.getElementById('clearSearchBtn');
-      if (query.trim()) {
+      if (query && query.trim()) {
         clearBtn.classList.remove('hidden');
       } else {
         clearBtn.classList.add('hidden');
       }
 
-      const q = query.toLowerCase().trim();
+      const q = (query || '').toLowerCase().trim();
       const filtered = storeData.items.filter(item => {
         const matchesQuery = item.name.toLowerCase().includes(q) || item.category.toLowerCase().includes(q);
         const matchesCat = activeCategoryFilter ? item.category === activeCategoryFilter : true;
@@ -2166,128 +2209,304 @@
 
       const grid = document.getElementById('searchResultsGrid');
       const notice = document.getElementById('noResultsNotice');
+      if (!grid) return;
 
       if (filtered.length === 0) {
         grid.innerHTML = '';
-        notice.classList.remove('hidden');
+        if (notice) notice.classList.remove('hidden');
         return;
       }
 
-      notice.classList.add('hidden');
+      if (notice) notice.classList.add('hidden');
       grid.innerHTML = filtered.map(item => {
         const isKg = item.unit === 'kg';
         const isLitre = item.unit === 'litre';
-        const sell = Number(item.sellPrice);
-        const buy = Number(item.buyPrice);
+        const sell = Number(item.sellPrice) || 0;
+        const buy = Number(item.buyPrice) || 0;
         const profit = sell - buy;
-        const profitPercent = buy > 0 ? ((profit / buy) * 100).toFixed(0) : 0;
+        const profitPercent = buy > 0 ? ((profit / buy) * 100).toFixed(0) : (sell > 0 ? 15 : 0);
         const isLow = Number(item.stock) <= Number(item.minStock || 5);
 
-        let rateChipsHtml = '';
+        // Check if item is already in active cart
+        const cartItem = cart.find(c => c.itemId === item.id);
+        const inCart = !!cartItem;
+
+        // Flipkart category icon
+        let catIcon = '📦';
+        if (item.category === 'Grains & Pulses') catIcon = '🌾';
+        else if (item.category === 'Spices') catIcon = '🌶️';
+        else if (item.category === 'Oils & Ghee') catIcon = '🛢️';
+        else if (item.category === 'Snacks & Biscuits') catIcon = '🍪';
+        else if (item.category === 'Soaps & Detergents') catIcon = '🧼';
+
+        // Loose quick chips for kg items
+        let looseChipsHtml = '';
         if (isKg) {
-          const rate100g = ((sell / 1000) * 100).toFixed(1);
-          const rate250g = (sell / 4).toFixed(1);
-          const rate500g = (sell / 2).toFixed(1);
-          rateChipsHtml = `
-            <div class="grid grid-cols-3 gap-1.5 text-[11px] bg-slate-50 p-2 rounded-lg border border-slate-200 mt-2">
-              <div class="text-center bg-white p-1 rounded shadow-2xs border">
-                <span class="text-slate-400 block text-[9px]">100 Gram</span>
-                <span class="font-bold text-slate-800">₹${rate100g}</span>
-              </div>
-              <div class="text-center bg-white p-1 rounded shadow-2xs border">
-                <span class="text-slate-400 block text-[9px]">250g (1/4 kg)</span>
-                <span class="font-bold text-slate-800">₹${rate250g}</span>
-              </div>
-              <div class="text-center bg-white p-1 rounded shadow-2xs border">
-                <span class="text-slate-400 block text-[9px]">500g (1/2 kg)</span>
-                <span class="font-bold text-slate-800">₹${rate500g}</span>
-              </div>
-            </div>
-          `;
-        } else if (isLitre) {
-          const rate500ml = (sell / 2).toFixed(1);
-          rateChipsHtml = `
-            <div class="text-[11px] bg-slate-50 p-2 rounded-lg border border-slate-200 mt-2 flex justify-between">
-              <span class="text-slate-500">Half Litre (500 ml):</span>
-              <span class="font-bold text-slate-800">₹${rate500ml}</span>
+          looseChipsHtml = `
+            <div class="flex items-center gap-1 mt-1.5 overflow-x-auto no-scrollbar py-0.5">
+              <button type="button" onclick="event.stopPropagation(); addFlipkartItem('${item.id}', 250, 'gm')" class="px-1.5 py-0.5 bg-slate-100 hover:bg-emerald-100 text-slate-700 rounded text-[9px] font-bold whitespace-nowrap active:scale-90 transition">250g</button>
+              <button type="button" onclick="event.stopPropagation(); addFlipkartItem('${item.id}', 500, 'gm')" class="px-1.5 py-0.5 bg-slate-100 hover:bg-emerald-100 text-slate-700 rounded text-[9px] font-bold whitespace-nowrap active:scale-90 transition">500g</button>
+              <button type="button" onclick="event.stopPropagation(); addFlipkartItem('${item.id}', 1, 'kg')" class="px-1.5 py-0.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-900 rounded text-[9px] font-black whitespace-nowrap active:scale-90 transition">1kg</button>
+              <button type="button" onclick="event.stopPropagation(); addFlipkartLooseRupee('${item.id}', 20)" class="px-1.5 py-0.5 bg-amber-100 hover:bg-amber-200 text-amber-950 rounded text-[9px] font-black whitespace-nowrap active:scale-90 transition">🪙₹20</button>
             </div>
           `;
         }
 
+        // Flipkart Stepper or ADD Button
+        let actionBtnHtml = '';
+        if (inCart) {
+          actionBtnHtml = `
+            <div class="flex items-center justify-between bg-emerald-700 text-white rounded-xl p-0.5 shadow-sm font-bold">
+              <button type="button" onclick="event.stopPropagation(); decrementCartItemByItemId('${item.id}')" class="w-7 h-7 bg-emerald-800 hover:bg-emerald-900 rounded-lg flex items-center justify-center text-base font-black active:scale-90 transition" title="घटाएं">
+                −
+              </button>
+              <div class="text-center px-1">
+                <span class="text-xs sm:text-sm font-black text-amber-300">${cartItem.qty}</span>
+                <span class="text-[9px] block text-emerald-200 leading-none">${cartItem.unit}</span>
+              </div>
+              <button type="button" onclick="event.stopPropagation(); incrementCartItemByItemId('${item.id}')" class="w-7 h-7 bg-emerald-800 hover:bg-emerald-900 rounded-lg flex items-center justify-center text-base font-black active:scale-90 transition" title="बढ़ाएं">
+                +
+              </button>
+            </div>
+          `;
+        } else {
+          actionBtnHtml = `
+            <button type="button" onclick="event.stopPropagation(); addFlipkartItem('${item.id}')" class="w-full bg-emerald-50 hover:bg-emerald-600 text-emerald-800 hover:text-white border-2 border-emerald-600 font-black py-1.5 px-2 rounded-xl text-xs sm:text-sm flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition">
+              <span class="text-base leading-none font-black">+</span>
+              <span>जोड़ें (ADD)</span>
+            </button>
+          `;
+        }
+
         return `
-          <div class="bg-white rounded-2xl p-4 shadow-sm border ${isLow ? 'border-amber-300 ring-1 ring-amber-200' : 'border-slate-200'} hover:shadow-md transition flex flex-col justify-between">
+          <div class="bg-white rounded-2xl p-2.5 sm:p-3.5 shadow-xs border ${inCart ? 'border-2 border-emerald-500 bg-emerald-50/15 ring-2 ring-emerald-500/20' : (isLow ? 'border-amber-300 ring-1 ring-amber-200' : 'border-slate-200')} hover:shadow-md transition flex flex-col justify-between">
             <div>
-              <div class="flex items-start justify-between gap-2 mb-1.5">
-                <div>
-                  <h3 class="font-bold text-slate-900 text-base leading-snug">${escapeHtml(item.name)}</h3>
-                  <span class="text-[11px] font-semibold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">${escapeHtml(item.category)}</span>
+              <!-- Top Category & Stock Header -->
+              <div class="flex items-center justify-between gap-1 mb-1.5">
+                <span class="text-[9px] sm:text-[10px] font-bold bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded-md flex items-center gap-1 truncate max-w-[65%]">
+                  <span>${catIcon}</span>
+                  <span class="truncate">${escapeHtml(item.category)}</span>
+                </span>
+                <span class="text-[9px] sm:text-[10px] font-black px-1.5 py-0.2 rounded-md ${isLow ? 'bg-red-100 text-red-700 border border-red-200' : 'bg-slate-100 text-slate-600'}">
+                  ${isLow ? 'कम: ' : ''}${item.stock} ${item.unit}
+                </span>
+              </div>
+
+              <!-- Product Name -->
+              <h3 class="font-extrabold text-slate-900 text-xs sm:text-sm leading-snug line-clamp-2 min-h-[2.1rem]">
+                ${escapeHtml(item.name)}
+              </h3>
+
+              <!-- Flipkart Price Box -->
+              <div class="mt-1 bg-slate-50/90 p-1.5 sm:p-2 rounded-xl border border-slate-100">
+                <div class="flex items-baseline gap-1">
+                  <span class="text-base sm:text-lg font-black text-emerald-700">₹${sell.toFixed(2)}</span>
+                  <span class="text-[10px] font-bold text-slate-500">/${item.unit}</span>
                 </div>
-                <div class="text-right">
-                  <span class="text-[10px] text-slate-400 block font-semibold uppercase">Stock</span>
-                  <span class="font-black text-xs px-2 py-0.5 rounded-lg ${isLow ? 'bg-red-100 text-red-700' : 'bg-slate-100 text-slate-700'}">
-                    ${item.stock} ${item.unit}
-                  </span>
+                <div class="flex items-center justify-between text-[9px] sm:text-[10px] text-slate-500 mt-0.5">
+                  <span>खरीद: ₹${buy.toFixed(2)}</span>
+                  <span class="font-bold text-emerald-700">+₹${profit.toFixed(1)} (${profitPercent}%)</span>
                 </div>
               </div>
 
-              <!-- Main Rates Display with Direct Rate Edit Option -->
-              <div class="mt-3 grid grid-cols-2 gap-2 bg-slate-50/80 p-2.5 rounded-xl border border-slate-100 relative group">
-                <div>
-                  <span class="text-[11px] font-medium text-slate-500 block">Selling Rate:</span>
-                  <div class="text-lg font-black text-emerald-700">₹${sell.toFixed(2)} <span class="text-xs font-semibold text-slate-500">/${item.unit}</span></div>
-                </div>
-                <div class="border-l border-slate-200 pl-2">
-                  <span class="text-[11px] font-medium text-slate-500 block">Buy Rate (Cost):</span>
-                  <div class="text-base font-bold text-slate-700">₹${buy.toFixed(2)} <span class="text-xs font-semibold text-slate-500">/${item.unit}</span></div>
-                  <div class="text-[10px] font-bold text-emerald-600">+₹${profit.toFixed(1)} (${profitPercent}%) margin</div>
-                </div>
-                <button 
-                  onclick="openQuickRateEditModal('${item.id}')" 
-                  class="col-span-2 mt-1 py-1 px-2 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 rounded-lg text-xs font-bold flex items-center justify-center gap-1 transition"
-                  title="Directly edit Buy and Sell Rates"
-                >
-                  <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
-                  <span>✏️ Edit Rates</span>
-                </button>
-              </div>
-
-              ${rateChipsHtml}
+              ${looseChipsHtml}
             </div>
 
-            <!-- Action buttons -->
-            <div class="flex items-center gap-2 mt-4 pt-2 border-t border-slate-100">
-              <button onclick="openRateModal('${item.id}')" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold py-2 px-3 rounded-xl flex items-center justify-center gap-1 transition">
-                <i data-lucide="calculator" class="w-3.5 h-3.5"></i>
-                <span>Gram/Kg Chart</span>
-              </button>
-              <button onclick="quickSellItem('${item.id}')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2 px-3 rounded-xl flex items-center justify-center gap-1 transition shadow" title="Sell this item">
-                <i data-lucide="shopping-cart" class="w-3.5 h-3.5"></i>
-                <span>Sell</span>
-              </button>
+            <!-- Bottom Action Buttons: Stepper / ADD + Edit Rates -->
+            <div class="mt-2.5 space-y-1.5">
+              ${actionBtnHtml}
+              <div class="flex items-center gap-1">
+                <button 
+                  type="button"
+                  onclick="event.stopPropagation(); openQuickRateEditModal('${item.id}')" 
+                  class="flex-1 py-1 px-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-[10px] font-bold flex items-center justify-center gap-1 transition"
+                  title="भाव बदलें"
+                >
+                  <span>✏️ भाव</span>
+                </button>
+                <button 
+                  type="button"
+                  onclick="event.stopPropagation(); openRateModal('${item.id}')" 
+                  class="py-1 px-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-[10px] font-bold flex items-center justify-center gap-1 transition"
+                  title="ग्राम/किलो चार्ट"
+                >
+                  <span>🧮</span>
+                </button>
+              </div>
             </div>
           </div>
         `;
       }).join('');
 
-      lucide.createIcons();
+      if (window.lucide) lucide.createIcons();
     }
 
     function clearSearch() {
       const input = document.getElementById('quickSearchInput');
-      input.value = '';
-      handleQuickSearch('');
-      input.focus();
+      if (input) {
+        input.value = '';
+        handleQuickSearch('');
+        input.focus();
+      }
     }
 
     function filterCategory(cat) {
       activeCategoryFilter = cat;
       document.querySelectorAll('#categoryPills .cat-pill').forEach(btn => {
-        btn.classList.remove('bg-amber-400', 'text-slate-900', 'active');
-        btn.classList.add('bg-emerald-800/80', 'text-white');
+        btn.classList.remove('bg-amber-400', 'text-slate-950', 'active');
+        btn.classList.add('bg-emerald-900/80', 'text-white');
       });
-      event.target.classList.add('bg-amber-400', 'text-slate-900', 'active');
-      event.target.classList.remove('bg-emerald-800/80', 'text-white');
-      handleQuickSearch(document.getElementById('quickSearchInput').value);
+      if (window.event && window.event.currentTarget) {
+        window.event.currentTarget.classList.add('bg-amber-400', 'text-slate-950', 'active');
+        window.event.currentTarget.classList.remove('bg-emerald-900/80', 'text-white');
+      }
+      const qInput = document.getElementById('quickSearchInput');
+      handleQuickSearch(qInput ? qInput.value : '');
+    }
+
+    // ==========================================
+    // FLIPKART MOBILE HELPER FUNCTIONS
+    // ==========================================
+    function updateFlipkartFloatingCart() {
+      const bar = document.getElementById('flipkartFloatingCart');
+      if (!bar) return;
+
+      if (!cart || cart.length === 0) {
+        bar.classList.add('translate-y-36', 'opacity-0', 'pointer-events-none');
+        return;
+      }
+
+      let subtotal = 0;
+      let estimatedProfit = 0;
+      cart.forEach(c => {
+        const tot = Number(c.total) || 0;
+        subtotal += tot;
+        let buy = Number(c.buyRate) || 0;
+        if (!buy) {
+          const matched = (storeData.items || []).find(i => String(i.id) === String(c.itemId) || i.name === c.name);
+          if (matched && Number(matched.buyPrice) > 0) buy = Number(matched.buyPrice);
+        }
+        const deduction = Number(c.baseDeduction) || Number(c.qty) || 1;
+        const cost = buy * deduction;
+        if (cost > 0 && cost <= tot) {
+          estimatedProfit += (tot - cost);
+        } else {
+          estimatedProfit += (tot * 0.15); // Standard 15% kirana retail margin
+        }
+      });
+
+      const countBadge = document.getElementById('flipCartBadgeCount');
+      const itemsText = document.getElementById('flipCartItemsText');
+      const totalText = document.getElementById('flipCartTotalText');
+      const profitText = document.getElementById('flipCartProfitText');
+
+      if (countBadge) countBadge.innerText = cart.length;
+      if (itemsText) itemsText.innerText = `${cart.length} सामान:`;
+      if (totalText) totalText.innerText = '₹' + subtotal.toFixed(2);
+      if (profitText) profitText.innerText = `मुनाफा: ₹${estimatedProfit.toFixed(1)}`;
+
+      bar.classList.remove('translate-y-36', 'opacity-0', 'pointer-events-none');
+    }
+
+    function updateMobileBottomNavBadges() {
+      const mobCartBadge = document.getElementById('mobCartBadge');
+      if (mobCartBadge) {
+        if (cart && cart.length > 0) {
+          mobCartBadge.innerText = cart.length;
+          mobCartBadge.classList.remove('hidden');
+        } else {
+          mobCartBadge.classList.add('hidden');
+        }
+      }
+
+      const mobLowStockBadge = document.getElementById('mobLowStockBadge');
+      if (mobLowStockBadge) {
+        const lowCount = (storeData.items || []).filter(i => Number(i.stock) <= Number(i.minStock || 5)).length;
+        if (lowCount > 0) {
+          mobLowStockBadge.innerText = lowCount > 9 ? '9+' : lowCount;
+          mobLowStockBadge.classList.remove('hidden');
+        } else {
+          mobLowStockBadge.classList.add('hidden');
+        }
+      }
+    }
+
+    function addFlipkartItem(itemId, qty = 1, unit = null, customTotal = null) {
+      addPosItemToCart(itemId, qty, unit, customTotal);
+      const qInput = document.getElementById('quickSearchInput');
+      handleQuickSearch(qInput ? qInput.value : '');
+    }
+
+    function incrementCartItemByItemId(itemId) {
+      const index = cart.findIndex(c => c.itemId === itemId);
+      if (index !== -1) {
+        incrementCartItem(index);
+        const qInput = document.getElementById('quickSearchInput');
+        handleQuickSearch(qInput ? qInput.value : '');
+      }
+    }
+
+    function decrementCartItemByItemId(itemId) {
+      const index = cart.findIndex(c => c.itemId === itemId);
+      if (index !== -1) {
+        decrementCartItem(index);
+        const qInput = document.getElementById('quickSearchInput');
+        handleQuickSearch(qInput ? qInput.value : '');
+      }
+    }
+
+    function addFlipkartLooseRupee(itemId, rupees) {
+      const item = (storeData.items || []).find(i => i.id === itemId);
+      if (!item) return;
+      const sellPrice = Number(item.sellPrice) || 0;
+      if (sellPrice <= 0) {
+        addFlipkartItem(itemId, 1);
+        return;
+      }
+      let q = 0;
+      let u = item.unit;
+      if (item.unit === 'kg') {
+        const totalKg = rupees / sellPrice;
+        if (totalKg < 1) {
+          q = Math.round(totalKg * 1000);
+          u = 'gm';
+        } else {
+          q = parseFloat(totalKg.toFixed(3));
+          u = 'kg';
+        }
+      } else if (item.unit === 'gm') {
+        q = Math.round(rupees / sellPrice);
+        u = 'gm';
+      } else if (item.unit === 'litre') {
+        const totalL = rupees / sellPrice;
+        if (totalL < 1) {
+          q = Math.round(totalL * 1000);
+          u = 'ml';
+        } else {
+          q = parseFloat(totalL.toFixed(3));
+          u = 'litre';
+        }
+      } else {
+        q = parseFloat((rupees / sellPrice).toFixed(1));
+        u = item.unit;
+      }
+      const baseDeduction = (u === 'gm' || u === 'ml') ? q / 1000 : q;
+      cart.push({
+        id: Date.now().toString(),
+        itemId: item.id,
+        name: item.name,
+        category: item.category,
+        qty: q,
+        unit: u,
+        baseDeduction: baseDeduction,
+        rate: sellPrice,
+        buyRate: Number(item.buyPrice) || 0,
+        total: rupees
+      });
+      renderCart();
+      const qInput = document.getElementById('quickSearchInput');
+      handleQuickSearch(qInput ? qInput.value : '');
+      showPosToast(`✅ ₹${rupees} का ${item.name} (${q} ${u}) बिल में जुड़ा!`);
     }
 
     // ==========================================
@@ -2821,6 +3040,8 @@
         document.getElementById('cartTotalItemsCount').innerText = '0';
         document.getElementById('cartSubtotal').innerText = '₹0.00';
         document.getElementById('cartGrandTotal').innerText = '₹0.00';
+        updateFlipkartFloatingCart();
+        updateMobileBottomNavBadges();
         return;
       }
 
@@ -2905,6 +3126,8 @@
       document.getElementById('cartTotalItemsCount').innerText = cart.length;
       document.getElementById('cartSubtotal').innerText = '₹' + subtotal.toFixed(2);
       recalcCartGrandTotal();
+      updateFlipkartFloatingCart();
+      updateMobileBottomNavBadges();
       if (window.lucide) lucide.createIcons();
     }
 
@@ -4360,8 +4583,74 @@
       initData();
     });
   </script>
+  <!-- FLIPKART FLOATING BOTTOM CART BAR (Appears when cart has items) -->
+  <div id="flipkartFloatingCart" class="fixed bottom-16 md:bottom-6 left-3 right-3 md:left-auto md:right-8 md:w-96 z-40 bg-gradient-to-r from-slate-900 via-slate-800 to-emerald-950 text-white rounded-2xl p-3 shadow-2xl border-2 border-emerald-400 flex items-center justify-between transition-all duration-300 transform translate-y-36 opacity-0 pointer-events-none">
+    <div class="flex items-center gap-3">
+      <div class="relative bg-emerald-600 text-white p-2.5 rounded-xl shadow-md flex items-center justify-center">
+        <i data-lucide="shopping-cart" class="w-5 h-5"></i>
+        <span id="flipCartBadgeCount" class="absolute -top-1.5 -right-1.5 bg-amber-400 text-slate-950 font-black text-[10px] w-5 h-5 rounded-full flex items-center justify-center border-2 border-slate-900">0</span>
+      </div>
+      <div>
+        <div class="flex items-center gap-1.5">
+          <span class="text-xs text-slate-300 font-semibold" id="flipCartItemsText">0 सामान:</span>
+          <span class="text-lg font-black text-amber-300" id="flipCartTotalText">₹0.00</span>
+        </div>
+        <div class="text-[10px] text-emerald-300 font-bold" id="flipCartProfitText">मुनाफा: ₹0.00</div>
+      </div>
+    </div>
+    <button onclick="switchTab('billing')" class="bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 active:scale-95 text-slate-950 font-black px-4 py-2.5 rounded-xl text-xs sm:text-sm shadow-lg flex items-center gap-1.5 transition">
+      <span>बिल देखें</span>
+      <span class="text-base font-black">➔</span>
+    </button>
+  </div>
+
+  <!-- FLIPKART MOBILE FIXED BOTTOM NAVIGATION BAR -->
+  <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-50 flex items-center justify-around py-1.5 px-1 shadow-[0_-4px_16px_rgba(0,0,0,0.08)]">
+    <!-- 1. Shop / Items Grid -->
+    <button onclick="switchTab('search')" id="mob-nav-search" class="mob-nav-btn flex-1 flex flex-col items-center justify-center py-1 text-emerald-700 font-black transition">
+      <div class="relative">
+        <i data-lucide="store" class="w-5 h-5"></i>
+      </div>
+      <span class="text-[10px] mt-0.5">दुकान</span>
+    </button>
+
+    <!-- 2. Billing / POS Cart -->
+    <button onclick="switchTab('billing')" id="mob-nav-billing" class="mob-nav-btn flex-1 flex flex-col items-center justify-center py-1 text-slate-500 font-medium transition">
+      <div class="relative">
+        <i data-lucide="shopping-cart" class="w-5 h-5"></i>
+        <span id="mobCartBadge" class="hidden absolute -top-1.5 -right-2 bg-red-600 text-white font-black text-[9px] w-4 h-4 rounded-full flex items-center justify-center shadow">0</span>
+      </div>
+      <span class="text-[10px] mt-0.5">बिलिंग</span>
+    </button>
+
+    <!-- 3. Stock / Inventory -->
+    <button onclick="switchTab('stock')" id="mob-nav-stock" class="mob-nav-btn flex-1 flex flex-col items-center justify-center py-1 text-slate-500 font-medium transition">
+      <div class="relative">
+        <i data-lucide="boxes" class="w-5 h-5"></i>
+        <span id="mobLowStockBadge" class="hidden absolute -top-1.5 -right-2 bg-amber-500 text-slate-950 font-black text-[9px] w-4 h-4 rounded-full flex items-center justify-center shadow">!</span>
+      </div>
+      <span class="text-[10px] mt-0.5">स्टॉक</span>
+    </button>
+
+    <!-- 4. Sales History & Profit -->
+    <button onclick="switchTab('history')" id="mob-nav-history" class="mob-nav-btn flex-1 flex flex-col items-center justify-center py-1 text-slate-500 font-medium transition">
+      <div class="relative">
+        <i data-lucide="receipt" class="w-5 h-5"></i>
+      </div>
+      <span class="text-[10px] mt-0.5">बिक्री</span>
+    </button>
+
+    <!-- 5. Settings & Backup -->
+    <button onclick="switchTab('settings')" id="mob-nav-settings" class="mob-nav-btn flex-1 flex flex-col items-center justify-center py-1 text-slate-500 font-medium transition">
+      <div class="relative">
+        <i data-lucide="settings" class="w-5 h-5"></i>
+      </div>
+      <span class="text-[10px] mt-0.5">सेटिंग्स</span>
+    </button>
+  </nav>
+
   <!-- FLOATING POS TOAST NOTIFICATION -->
-  <div id="posToast" class="hidden fixed bottom-6 right-6 z-50 bg-emerald-800 text-white font-bold px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-2 border-2 border-emerald-300 animate-in fade-in slide-in-from-bottom duration-200">
+  <div id="posToast" class="hidden fixed bottom-20 md:bottom-6 right-4 md:right-6 z-50 bg-emerald-800 text-white font-bold px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-2 border-2 border-emerald-300 animate-in fade-in slide-in-from-bottom duration-200">
     <i data-lucide="check-circle" class="w-5 h-5 text-emerald-300"></i>
     <span id="posToastMsg">Item added</span>
   </div>
